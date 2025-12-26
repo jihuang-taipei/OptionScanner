@@ -1134,7 +1134,28 @@ const CalendarSpreadTable = ({ spreads, currentPrice }) => {
   );
 };
 
+// Common stock/index symbols with options
+const POPULAR_SYMBOLS = [
+  { value: "^SPX", label: "^SPX (S&P 500 Index)" },
+  { value: "^GSPC", label: "^GSPC (S&P 500)" },
+  { value: "SPY", label: "SPY (S&P 500 ETF)" },
+  { value: "QQQ", label: "QQQ (Nasdaq-100 ETF)" },
+  { value: "^NDX", label: "^NDX (Nasdaq-100 Index)" },
+  { value: "IWM", label: "IWM (Russell 2000 ETF)" },
+  { value: "AAPL", label: "AAPL (Apple)" },
+  { value: "MSFT", label: "MSFT (Microsoft)" },
+  { value: "NVDA", label: "NVDA (Nvidia)" },
+  { value: "TSLA", label: "TSLA (Tesla)" },
+  { value: "AMZN", label: "AMZN (Amazon)" },
+  { value: "META", label: "META (Meta)" },
+  { value: "GOOGL", label: "GOOGL (Google)" },
+];
+
 function App() {
+  // Symbol state
+  const [symbol, setSymbol] = useState("^SPX");
+  const [symbolInput, setSymbolInput] = useState("^SPX");
+  
   const [quote, setQuote] = useState(null);
   const [history, setHistory] = useState([]);
   const [period, setPeriod] = useState("1mo");
