@@ -25,6 +25,7 @@ Build an app to retrieve SPX quote from Yahoo Finance
 - [x] **Options Chain** (SPY as proxy) with Calls/Puts tabs, expiration selector, Strike, Bid/Ask, IV%, Volume, OI
 - [x] **Greeks Display** (Delta, Gamma, Theta, Vega) calculated via Black-Scholes model with color-coded columns
 - [x] **Credit Spreads Scanner** - Bull Put & Bear Call spreads with configurable width ($1-$20), showing net credit, max profit/loss, breakeven, risk/reward ratio, P(OTM)
+- [x] **Credit Spread Filters** - Filter by Min Credit ($0-$2) and Max Risk/Reward (5:1 to 100:1), with Reset button and "X of Y" counter
 
 ## API Endpoints
 - `GET /api/spx/quote` - Current SPX quote with all metrics
