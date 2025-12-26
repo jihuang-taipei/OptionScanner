@@ -1203,6 +1203,171 @@ async def get_strangles(expiration: str, width: int = 50):
         raise HTTPException(status_code=500, detail=f"Failed to fetch strangles: {str(e)}")
 
 
+@api_router.get("/spx/calendar-spreads", response_model=CalendarSpreadsResponse)
+async def get_calendar_spreads(near_exp: str, far_exp: str):
+    """Get Calendar Spread opportunities - sell near-term, buy far-term at same strike
+    
+    Calendar spreads profit from time decay differential between expirations
+    """
+    try:
+        ticker = yf.Ticker("^SPX")
+        
+        if near_exp not in ticker.options:
+            raise HTTPException(status_code=400, detail=f"Invalid near expiration date")
+        if far_exp not in ticker.options:
+            raise HTTPException(status_code=400, detail=f"Invalid far expiration date")
+        
+        # Get current SPX price
+        spx_ticker = yf.Ticker("^GSPC")
+        spx_hist = spx_ticker.history(period="1d")
+        current_price = float(spx_hist['Close'].iloc[-1]) if not spx_hist.empty else 5900.0
+        
+        # Get option chains for both expirations
+        near_chain = ticker.option_chain(near_exp)
+        far_chain = ticker.option_chain(far_exp)
+        
+        # Calculate times to expiration
+        near_date = datetime.strptime(near_exp, "%Y-%m-%d")
+        far_date = datetime.strptime(far_exp, "%Y-%m-%d")
+        today = datetime.now()
+        near_T = max((near_date - today).days / 365.0, 1/365.0)
+        far_T = max((far_date - today).days / 365.0, 1/365.0)
+        r = 0.045
+        
+        calendar_spreads = []
+        
+        # Process calls
+        for _, near_row in near_chain.calls.iterrows():
+            strike = float(near_row['strike'])
+            
+            # Only look at strikes within 5% of current price
+            if strike < current_price * 0.95 or strike > current_price * 1.05:
+                continue
+            
+            # Find matching far-term call
+            far_calls = far_chain.calls[far_chain.calls['strike'] == strike]
+            if far_calls.empty:
+                continue
+            
+            far_row = far_calls.iloc[0]
+            
+            near_bid = float(near_row['bid']) if not pd.isna(near_row['bid']) else 0
+            far_ask = float(far_row['ask']) if not pd.isna(far_row['ask']) else 0
+            
+            if near_bid <= 0 or far_ask <= 0:
+                continue
+            
+            # Calendar spread: sell near (collect bid), buy far (pay ask)
+            net_debit = far_ask - near_bid
+            
+            if net_debit <= 0:
+                continue
+            
+            near_iv = float(near_row['impliedVolatility']) * 100 if not pd.isna(near_row['impliedVolatility']) else 0
+            far_iv = float(far_row['impliedVolatility']) * 100 if not pd.isna(far_row['impliedVolatility']) else 0
+            iv_diff = near_iv - far_iv  # Positive = backwardation (favorable)
+            
+            # Calculate thetas
+            near_sigma = near_iv / 100 if near_iv > 0 else 0.3
+            far_sigma = far_iv / 100 if far_iv > 0 else 0.3
+            _, _, near_theta, _ = calculate_greeks(current_price, strike, near_T, r, near_sigma, 'call')
+            _, _, far_theta, _ = calculate_greeks(current_price, strike, far_T, r, far_sigma, 'call')
+            
+            theta_edge = abs(near_theta or 0) - abs(far_theta or 0) if near_theta and far_theta else None
+            
+            distance_from_spot = ((strike - current_price) / current_price) * 100
+            
+            calendar_spreads.append(CalendarSpread(
+                strike=strike,
+                option_type='call',
+                near_expiration=near_exp,
+                far_expiration=far_exp,
+                near_price=round(near_bid, 2),
+                far_price=round(far_ask, 2),
+                net_debit=round(net_debit, 2),
+                near_iv=round(near_iv, 1),
+                far_iv=round(far_iv, 1),
+                iv_difference=round(iv_diff, 1),
+                near_theta=near_theta,
+                far_theta=far_theta,
+                theta_edge=round(theta_edge, 4) if theta_edge else None,
+                distance_from_spot=round(distance_from_spot, 2)
+            ))
+        
+        # Process puts
+        for _, near_row in near_chain.puts.iterrows():
+            strike = float(near_row['strike'])
+            
+            if strike < current_price * 0.95 or strike > current_price * 1.05:
+                continue
+            
+            far_puts = far_chain.puts[far_chain.puts['strike'] == strike]
+            if far_puts.empty:
+                continue
+            
+            far_row = far_puts.iloc[0]
+            
+            near_bid = float(near_row['bid']) if not pd.isna(near_row['bid']) else 0
+            far_ask = float(far_row['ask']) if not pd.isna(far_row['ask']) else 0
+            
+            if near_bid <= 0 or far_ask <= 0:
+                continue
+            
+            net_debit = far_ask - near_bid
+            
+            if net_debit <= 0:
+                continue
+            
+            near_iv = float(near_row['impliedVolatility']) * 100 if not pd.isna(near_row['impliedVolatility']) else 0
+            far_iv = float(far_row['impliedVolatility']) * 100 if not pd.isna(far_row['impliedVolatility']) else 0
+            iv_diff = near_iv - far_iv
+            
+            near_sigma = near_iv / 100 if near_iv > 0 else 0.3
+            far_sigma = far_iv / 100 if far_iv > 0 else 0.3
+            _, _, near_theta, _ = calculate_greeks(current_price, strike, near_T, r, near_sigma, 'put')
+            _, _, far_theta, _ = calculate_greeks(current_price, strike, far_T, r, far_sigma, 'put')
+            
+            theta_edge = abs(near_theta or 0) - abs(far_theta or 0) if near_theta and far_theta else None
+            
+            distance_from_spot = ((strike - current_price) / current_price) * 100
+            
+            calendar_spreads.append(CalendarSpread(
+                strike=strike,
+                option_type='put',
+                near_expiration=near_exp,
+                far_expiration=far_exp,
+                near_price=round(near_bid, 2),
+                far_price=round(far_ask, 2),
+                net_debit=round(net_debit, 2),
+                near_iv=round(near_iv, 1),
+                far_iv=round(far_iv, 1),
+                iv_difference=round(iv_diff, 1),
+                near_theta=near_theta,
+                far_theta=far_theta,
+                theta_edge=round(theta_edge, 4) if theta_edge else None,
+                distance_from_spot=round(distance_from_spot, 2)
+            ))
+        
+        # Sort by distance from spot (ATM first)
+        calendar_spreads.sort(key=lambda x: abs(x.distance_from_spot))
+        
+        logger.info(f"Calendar spreads fetched: {len(calendar_spreads)}")
+        
+        return CalendarSpreadsResponse(
+            symbol="^SPX",
+            near_expiration=near_exp,
+            far_expiration=far_exp,
+            current_price=round(current_price, 2),
+            calendar_spreads=calendar_spreads[:20]
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching calendar spreads: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch calendar spreads: {str(e)}")
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
