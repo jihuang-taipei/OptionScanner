@@ -1701,6 +1701,31 @@ function App() {
           </div>
         </div>
 
+        {/* P/L Chart Dialog */}
+        {showPLChart && selectedStrategy && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={() => setShowPLChart(false)}>
+            <div className="glass-card p-6 w-full max-w-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-white flex items-center gap-2">
+                  <LineChartIcon className="w-5 h-5 text-purple-400" />
+                  P/L at Expiration: {selectedStrategy.name}
+                </h3>
+                <button 
+                  onClick={() => setShowPLChart(false)}
+                  className="text-zinc-400 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <PLChart 
+                strategy={selectedStrategy} 
+                currentPrice={quote?.price} 
+                onClose={() => setShowPLChart(false)}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Footer */}
         <footer className="mt-12 text-center text-zinc-600 text-sm">
           <p>Data provided by Yahoo Finance. Prices may be delayed.</p>
