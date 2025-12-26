@@ -184,6 +184,35 @@ function App() {
     }
   }, []);
 
+  const fetchExpirations = useCallback(async () => {
+    try {
+      const response = await axios.get(`${API}/spx/options/expirations`);
+      setExpirations(response.data.expirations);
+      if (response.data.expirations.length > 0 && !selectedExpiration) {
+        setSelectedExpiration(response.data.expirations[0]);
+      }
+    } catch (e) {
+      console.error("Error fetching options expirations:", e);
+    }
+  }, [selectedExpiration]);
+
+  const fetchOptionsChain = useCallback(async (expiration) => {
+    if (!expiration) return;
+    setIsLoadingOptions(true);
+    try {
+      const response = await axios.get(`${API}/spx/options/chain?expiration=${expiration}`);
+      setOptionsChain(response.data);
+      // Estimate SPY price from ATM options (SPY ≈ SPX / 10)
+      if (quote?.price) {
+        setSpyPrice(quote.price / 10);
+      }
+    } catch (e) {
+      console.error("Error fetching options chain:", e);
+    } finally {
+      setIsLoadingOptions(false);
+    }
+  }, [quote?.price]);
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await Promise.all([fetchQuote(), fetchHistory(period)]);
