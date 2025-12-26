@@ -820,8 +820,10 @@ function App() {
       fetchCreditSpreads(selectedExpiration, spreadWidth);
       fetchIronCondors(selectedExpiration, spreadWidth);
       fetchIronButterflies(selectedExpiration, wingWidth);
+      fetchStraddles(selectedExpiration);
+      fetchStrangles(selectedExpiration);
     }
-  }, [selectedExpiration, fetchOptionsChain, fetchCreditSpreads, fetchIronCondors, fetchIronButterflies, spreadWidth, wingWidth]);
+  }, [selectedExpiration, fetchOptionsChain, fetchCreditSpreads, fetchIronCondors, fetchIronButterflies, fetchStraddles, fetchStrangles, spreadWidth, wingWidth]);
 
   const isPositive = quote?.change >= 0;
   const priceColor = isPositive ? 'text-green-500' : 'text-red-500';
