@@ -83,6 +83,11 @@ class OptionContract(BaseModel):
     openInterest: Optional[int] = None
     impliedVolatility: float
     inTheMoney: bool
+    # Greeks
+    delta: Optional[float] = None
+    gamma: Optional[float] = None
+    theta: Optional[float] = None
+    vega: Optional[float] = None
 
 class OptionsChain(BaseModel):
     symbol: str
