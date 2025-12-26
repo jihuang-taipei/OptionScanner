@@ -640,6 +640,12 @@ function App() {
   const [ironButterflies, setIronButterflies] = useState(null);
   const [isLoadingButterflies, setIsLoadingButterflies] = useState(false);
   const [wingWidth, setWingWidth] = useState(25);
+  
+  // Straddle/Strangle state
+  const [straddles, setStraddles] = useState(null);
+  const [strangles, setStrangles] = useState(null);
+  const [isLoadingStraddles, setIsLoadingStraddles] = useState(false);
+  const [isLoadingStrangles, setIsLoadingStrangles] = useState(false);
 
   const fetchQuote = useCallback(async () => {
     try {
