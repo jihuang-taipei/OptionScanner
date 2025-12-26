@@ -1059,6 +1059,11 @@ function App() {
   const [isLoadingStraddles, setIsLoadingStraddles] = useState(false);
   const [isLoadingStrangles, setIsLoadingStrangles] = useState(false);
   
+  // Calendar spreads state
+  const [calendarSpreads, setCalendarSpreads] = useState(null);
+  const [isLoadingCalendars, setIsLoadingCalendars] = useState(false);
+  const [farExpiration, setFarExpiration] = useState("");
+  
   // P/L Chart state
   const [selectedStrategy, setSelectedStrategy] = useState(null);
   const [showPLChart, setShowPLChart] = useState(false);
