@@ -101,3 +101,158 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: SPX Options Analysis App - Calendar Spreads, Export CSV, P/L Charts for remaining strategies
+
+backend:
+  - task: "Calendar Spreads API Endpoint"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Backend endpoint /api/spx/calendar-spreads exists and returns calendar spread data with near/far expirations"
+
+frontend:
+  - task: "Calendar Spreads Scanner UI"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added Calendar Spreads section with Far Expiration selector, CalendarSpreadTable component, fetchCalendarSpreads function"
+
+  - task: "Export to CSV - Options Chain"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added export buttons for Calls and Puts in Options Chain section"
+
+  - task: "Export to CSV - Credit Spreads"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added export buttons for Bull Put and Bear Call spreads"
+
+  - task: "Export to CSV - Iron Condors"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added export button for Iron Condors section"
+
+  - task: "Export to CSV - Iron Butterflies"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added export button and exportIronButterflies function"
+
+  - task: "Export to CSV - Straddles and Strangles"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added export buttons for Straddles and Strangles, created exportStrangles function"
+
+  - task: "Export to CSV - Calendar Spreads"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added export button and exportCalendarSpreads function"
+
+  - task: "P/L Chart - Iron Butterflies"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added P/L chart button to IronButterflyTable, passes onSelectStrategy prop"
+
+  - task: "P/L Chart - Straddles"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added P/L chart button to StraddleTable, passes onSelectStrategy prop. Verified working with screenshot."
+
+  - task: "P/L Chart - Strangles"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added P/L chart button to StrangleTable, passes onSelectStrategy prop"
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 1
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Calendar Spreads Scanner UI"
+    - "Export to CSV functionality"
+    - "P/L Charts for Iron Butterflies, Straddles, Strangles"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Implemented all three features: 1) Calendar Spreads frontend with far expiration selector and table, 2) Export CSV buttons for all data tables (Options Chain, Credit Spreads, Iron Condors, Iron Butterflies, Straddles, Strangles, Calendar Spreads), 3) P/L chart buttons for Iron Butterflies, Straddles, and Strangles. Screenshots verified Straddle P/L chart working. Please test all export buttons and P/L chart buttons work correctly."
