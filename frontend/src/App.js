@@ -329,6 +329,75 @@ const exportStraddles = (straddles, expiration) => {
   downloadCSV(csv, `SPX_Straddles_${expiration}.csv`);
 };
 
+const exportStrangles = (strangles, expiration) => {
+  if (!strangles || strangles.length === 0) return;
+  
+  const headers = ['PutStrike', 'CallStrike', 'PutPrice', 'CallPrice', 'TotalCost', 'LowerBE', 'UpperBE', 'MoveToBreakeven%', 'Width', 'AvgIV'];
+  const rows = strangles.map(s => [
+    s.put_strike,
+    s.call_strike,
+    s.put_price,
+    s.call_price,
+    s.total_cost,
+    s.lower_breakeven,
+    s.upper_breakeven,
+    s.breakeven_move_pct,
+    s.width,
+    s.avg_iv
+  ]);
+  
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  downloadCSV(csv, `SPX_Strangles_${expiration}.csv`);
+};
+
+const exportIronButterflies = (butterflies, expiration) => {
+  if (!butterflies || butterflies.length === 0) return;
+  
+  const headers = ['CenterStrike', 'LowerStrike', 'UpperStrike', 'CallPremium', 'PutPremium', 'UpperCost', 'LowerCost', 'NetCredit', 'MaxProfit', 'MaxLoss', 'LowerBE', 'UpperBE', 'RiskReward', 'FromSpot%'];
+  const rows = butterflies.map(b => [
+    b.center_strike,
+    b.lower_strike,
+    b.upper_strike,
+    b.call_premium,
+    b.put_premium,
+    b.upper_cost,
+    b.lower_cost,
+    b.net_credit,
+    b.max_profit,
+    b.max_loss,
+    b.lower_breakeven,
+    b.upper_breakeven,
+    b.risk_reward_ratio,
+    b.distance_from_spot
+  ]);
+  
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  downloadCSV(csv, `SPX_IronButterflies_${expiration}.csv`);
+};
+
+const exportCalendarSpreads = (spreads, nearExp, farExp) => {
+  if (!spreads || spreads.length === 0) return;
+  
+  const headers = ['Strike', 'Type', 'NearExp', 'FarExp', 'NearPrice', 'FarPrice', 'NetDebit', 'NearIV', 'FarIV', 'IVDiff', 'ThetaEdge', 'FromSpot%'];
+  const rows = spreads.map(cs => [
+    cs.strike,
+    cs.option_type,
+    cs.near_expiration,
+    cs.far_expiration,
+    cs.near_price,
+    cs.far_price,
+    cs.net_debit,
+    cs.near_iv,
+    cs.far_iv,
+    cs.iv_difference,
+    cs.theta_edge || '',
+    cs.distance_from_spot
+  ]);
+  
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  downloadCSV(csv, `SPX_CalendarSpreads_${nearExp}_${farExp}.csv`);
+};
+
 // Auto-refresh interval options
 const REFRESH_INTERVALS = [
   { value: 0, label: "Off" },
