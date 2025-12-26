@@ -894,7 +894,7 @@ const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskRewar
 };
 
 // Straddle Table Component
-const StraddleTable = ({ straddles, currentPrice }) => {
+const StraddleTable = ({ straddles, currentPrice, onSelectStrategy }) => {
   if (!straddles || straddles.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Straddles available</p>;
   }
@@ -919,6 +919,7 @@ const StraddleTable = ({ straddles, currentPrice }) => {
             <th className="text-right py-3 px-2 font-medium text-amber-400">Move to B/E</th>
             <th className="text-right py-3 px-2 font-medium text-purple-400">Avg IV</th>
             <th className="text-right py-3 px-2 font-medium">From Spot</th>
+            <th className="text-center py-3 px-2 font-medium">P/L</th>
           </tr>
         </thead>
         <tbody>
@@ -952,6 +953,20 @@ const StraddleTable = ({ straddles, currentPrice }) => {
               </td>
               <td className={`text-right py-2.5 px-2 font-mono ${Math.abs(s.distance_from_spot) < 0.5 ? 'text-green-400' : 'text-zinc-400'}`}>
                 {s.distance_from_spot >= 0 ? '+' : ''}{s.distance_from_spot.toFixed(1)}%
+              </td>
+              <td className="text-center py-2.5 px-2">
+                <button
+                  onClick={() => onSelectStrategy({
+                    type: 'straddle',
+                    name: `Straddle ${s.strike}`,
+                    strike: s.strike,
+                    total_cost: s.total_cost
+                  })}
+                  className="text-purple-400 hover:text-purple-300 transition-colors"
+                  title="View P/L Chart"
+                >
+                  <LineChartIcon className="w-4 h-4" />
+                </button>
               </td>
             </tr>
           ))}
