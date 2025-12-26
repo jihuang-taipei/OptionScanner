@@ -350,16 +350,12 @@ function App() {
     try {
       const response = await axios.get(`${API}/spx/options/chain?expiration=${expiration}`);
       setOptionsChain(response.data);
-      // Use SPX price directly (not divided by 10 like SPY)
-      if (quote?.price) {
-        setSpyPrice(quote.price);
-      }
     } catch (e) {
       console.error("Error fetching options chain:", e);
     } finally {
       setIsLoadingOptions(false);
     }
-  }, [quote?.price]);
+  }, []);
 
   const fetchCreditSpreads = useCallback(async (expiration, width) => {
     if (!expiration) return;
