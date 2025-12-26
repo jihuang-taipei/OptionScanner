@@ -1255,7 +1255,7 @@ function App() {
     } finally {
       setIsLoadingOptions(false);
     }
-  }, []);
+  }, [symbol]);
 
   const fetchCreditSpreads = useCallback(async (expiration, width) => {
     if (!expiration) return;
