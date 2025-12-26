@@ -521,6 +521,65 @@ function App() {
               </span>
             </div>
           </div>
+
+          {/* Options Chain Section */}
+          <div className="lg:col-span-3 glass-card p-6" data-testid="options-chain">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-medium text-white flex items-center gap-2">
+                <Table2 className="w-5 h-5 text-zinc-400" />
+                Options Chain (SPY)
+              </h2>
+              <div className="flex items-center gap-3">
+                <span className="text-zinc-500 text-sm">Expiration:</span>
+                <Select value={selectedExpiration} onValueChange={setSelectedExpiration}>
+                  <SelectTrigger className="w-40 bg-zinc-900 border-zinc-800 text-white" data-testid="expiration-select">
+                    <SelectValue placeholder="Select date" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800">
+                    {expirations.slice(0, 12).map((exp) => (
+                      <SelectItem key={exp} value={exp} className="text-white hover:bg-zinc-800">
+                        {new Date(exp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {isLoadingOptions && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
+              </div>
+            </div>
+
+            <p className="text-zinc-500 text-xs mb-4">
+              Using SPY as proxy for S&P 500 options. SPY ≈ SPX/10. Showing strikes within ±15% of current price.
+            </p>
+
+            <Tabs defaultValue="calls" className="w-full">
+              <TabsList className="bg-zinc-900/50 mb-4">
+                <TabsTrigger value="calls" className="data-[state=active]:bg-green-500/20 data-[state=active]:text-green-500" data-testid="calls-tab">
+                  Calls
+                </TabsTrigger>
+                <TabsTrigger value="puts" className="data-[state=active]:bg-red-500/20 data-[state=active]:text-red-500" data-testid="puts-tab">
+                  Puts
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="calls" className="max-h-96 overflow-y-auto">
+                {isLoadingOptions ? (
+                  <div className="flex items-center justify-center py-12">
+                    <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                  </div>
+                ) : (
+                  <OptionsTable options={optionsChain?.calls} type="calls" currentPrice={spyPrice || (quote?.price / 10)} />
+                )}
+              </TabsContent>
+              <TabsContent value="puts" className="max-h-96 overflow-y-auto">
+                {isLoadingOptions ? (
+                  <div className="flex items-center justify-center py-12">
+                    <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                  </div>
+                ) : (
+                  <OptionsTable options={optionsChain?.puts} type="puts" currentPrice={spyPrice || (quote?.price / 10)} />
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
 
         {/* Footer */}
