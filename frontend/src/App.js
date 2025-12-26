@@ -1165,6 +1165,60 @@ function App() {
               )}
             </div>
           </div>
+
+          {/* Iron Butterfly Section */}
+          <div className="lg:col-span-3 glass-card p-6" data-testid="iron-butterflies">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-white flex items-center gap-2">
+                <Triangle className="w-5 h-5 text-zinc-400" />
+                Iron Butterflies
+              </h2>
+              <div className="flex items-center gap-3">
+                <span className="text-zinc-500 text-sm">Wing Width:</span>
+                <Select value={wingWidth.toString()} onValueChange={(v) => setWingWidth(parseInt(v))}>
+                  <SelectTrigger className="w-20 bg-zinc-900 border-zinc-800 text-white" data-testid="wing-width-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800">
+                    {[10, 15, 20, 25, 50, 75, 100].map((w) => (
+                      <SelectItem key={w} value={w.toString()} className="text-white hover:bg-zinc-800">
+                        ${w}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {isLoadingButterflies && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
+              </div>
+            </div>
+
+            <p className="text-zinc-500 text-xs mb-4">
+              Neutral strategy: Sell ATM call + put at same strike, buy OTM wings. 
+              Max profit if ^SPX expires exactly at center strike.
+            </p>
+
+            {ironButterflies && (
+              <div className="mb-4 flex gap-4 text-sm">
+                <span className="text-zinc-400">^SPX: <span className="text-white font-mono">${ironButterflies.current_price?.toLocaleString()}</span></span>
+                <span className="text-zinc-400">Exp: <span className="text-white">{new Date(ironButterflies.expiration).toLocaleDateString()}</span></span>
+                <span className="text-zinc-400">Found: <span className="text-white">{ironButterflies.iron_butterflies?.length || 0}</span></span>
+              </div>
+            )}
+
+            <div className="max-h-96 overflow-y-auto">
+              {isLoadingButterflies ? (
+                <div className="flex items-center justify-center py-12">
+                  <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                </div>
+              ) : (
+                <IronButterflyTable 
+                  butterflies={ironButterflies?.iron_butterflies} 
+                  currentPrice={ironButterflies?.current_price}
+                  minCredit={minCredit}
+                  maxRiskReward={maxRiskReward}
+                />
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
