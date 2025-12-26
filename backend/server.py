@@ -635,7 +635,7 @@ async def get_iron_condors(expiration: str, spread: int = 5):
                 continue
             
             # Only OTM puts (sell strike below current price)
-            if sell_strike >= current_price * 0.98:  # At least 2% below
+            if sell_strike >= current_price:
                 continue
                 
             buy_row = buy_rows.iloc[0]
