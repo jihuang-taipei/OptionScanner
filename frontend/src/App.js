@@ -120,6 +120,41 @@ function App() {
     fetchHistory(newPeriod);
   };
 
+  // Auto-refresh effect
+  useEffect(() => {
+    // Clear existing intervals
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    if (countdownRef.current) clearInterval(countdownRef.current);
+
+    if (autoRefreshInterval > 0) {
+      setCountdown(autoRefreshInterval);
+
+      // Countdown timer
+      countdownRef.current = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) return autoRefreshInterval;
+          return prev - 1;
+        });
+      }, 1000);
+
+      // Data refresh interval
+      intervalRef.current = setInterval(() => {
+        handleRefresh();
+      }, autoRefreshInterval * 1000);
+    } else {
+      setCountdown(0);
+    }
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
+  }, [autoRefreshInterval]);
+
+  const handleAutoRefreshChange = (value) => {
+    setAutoRefreshInterval(value);
+  };
+
   useEffect(() => {
     fetchQuote();
     fetchHistory(period);
