@@ -278,6 +278,8 @@ function App() {
   const [optionsChain, setOptionsChain] = useState(null);
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
   const [spyPrice, setSpyPrice] = useState(null);
+  const [minStrike, setMinStrike] = useState("");
+  const [maxStrike, setMaxStrike] = useState("");
   
   // Credit spreads state
   const [creditSpreads, setCreditSpreads] = useState(null);
