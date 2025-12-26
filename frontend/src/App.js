@@ -1516,6 +1516,7 @@ function App() {
                       currentPrice={creditSpreads?.current_price}
                       minCredit={minCredit}
                       maxRiskReward={maxRiskReward}
+                      onSelectStrategy={handleSelectStrategy}
                     />
                   </>
                 )}
