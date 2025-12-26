@@ -1579,6 +1579,7 @@ function App() {
                   currentPrice={ironCondors?.current_price}
                   minCredit={minCredit}
                   maxRiskReward={maxRiskReward}
+                  onSelectStrategy={handleSelectStrategy}
                 />
               )}
             </div>
