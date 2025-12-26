@@ -1970,7 +1970,27 @@ function App() {
                 <ArrowLeftRight className="w-5 h-5 text-zinc-400" />
                 Straddles & Strangles
               </h2>
-              {(isLoadingStraddles || isLoadingStrangles) && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
+              <div className="flex items-center gap-2">
+                {(isLoadingStraddles || isLoadingStrangles) && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
+                <button
+                  onClick={() => exportStraddles(straddles?.straddles, selectedExpiration)}
+                  disabled={!straddles?.straddles?.length}
+                  className="flex items-center gap-1 px-2 py-1 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Export Straddles to CSV"
+                >
+                  <Download className="w-3 h-3" />
+                  Straddles
+                </button>
+                <button
+                  onClick={() => exportStrangles(strangles?.strangles, selectedExpiration)}
+                  disabled={!strangles?.strangles?.length}
+                  className="flex items-center gap-1 px-2 py-1 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Export Strangles to CSV"
+                >
+                  <Download className="w-3 h-3" />
+                  Strangles
+                </button>
+              </div>
             </div>
 
             <p className="text-zinc-500 text-xs mb-4">
@@ -2003,7 +2023,7 @@ function App() {
                     <p className="text-zinc-500 text-xs mb-3">
                       Buy call + put at same strike. Profit if ^SPX moves more than the total premium paid.
                     </p>
-                    <StraddleTable straddles={straddles?.straddles} currentPrice={straddles?.current_price} />
+                    <StraddleTable straddles={straddles?.straddles} currentPrice={straddles?.current_price} onSelectStrategy={handleSelectStrategy} />
                   </>
                 )}
               </TabsContent>
@@ -2017,11 +2037,75 @@ function App() {
                     <p className="text-zinc-500 text-xs mb-3">
                       Buy OTM call + OTM put. Cheaper than straddles but needs larger move to profit.
                     </p>
-                    <StrangleTable strangles={strangles?.strangles} currentPrice={strangles?.current_price} />
+                    <StrangleTable strangles={strangles?.strangles} currentPrice={strangles?.current_price} onSelectStrategy={handleSelectStrategy} />
                   </>
                 )}
               </TabsContent>
             </Tabs>
+          </div>
+
+          {/* Calendar Spreads Section */}
+          <div className="lg:col-span-3 glass-card p-6" data-testid="calendar-spreads">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-white flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-zinc-400" />
+                Calendar Spreads
+              </h2>
+              <div className="flex items-center gap-3">
+                <span className="text-zinc-500 text-sm">Far Exp:</span>
+                <Select value={farExpiration} onValueChange={setFarExpiration}>
+                  <SelectTrigger className="w-40 bg-zinc-900 border-zinc-800 text-white" data-testid="far-expiration-select">
+                    <SelectValue placeholder="Select date" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800">
+                    {expirations.slice(1, 12).map((exp) => (
+                      <SelectItem 
+                        key={exp} 
+                        value={exp} 
+                        className="text-white hover:bg-zinc-800"
+                        disabled={exp === selectedExpiration}
+                      >
+                        {new Date(exp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {isLoadingCalendars && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
+                <button
+                  onClick={() => exportCalendarSpreads(calendarSpreads?.calendar_spreads, selectedExpiration, farExpiration)}
+                  disabled={!calendarSpreads?.calendar_spreads?.length}
+                  className="flex items-center gap-1 px-2 py-1 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Export Calendar Spreads to CSV"
+                >
+                  <Download className="w-3 h-3" />
+                  Export
+                </button>
+              </div>
+            </div>
+
+            <p className="text-zinc-500 text-xs mb-4">
+              Time decay strategy: Sell near-term option, buy far-term option at same strike. 
+              Profits from faster theta decay of near-term option and/or IV increase.
+            </p>
+
+            {calendarSpreads && (
+              <div className="mb-4 flex flex-wrap gap-4 text-sm">
+                <span className="text-zinc-400">^SPX: <span className="text-white font-mono">${calendarSpreads.current_price?.toLocaleString()}</span></span>
+                <span className="text-zinc-400">Near: <span className="text-white">{new Date(calendarSpreads.near_expiration).toLocaleDateString()}</span></span>
+                <span className="text-zinc-400">Far: <span className="text-white">{new Date(calendarSpreads.far_expiration).toLocaleDateString()}</span></span>
+                <span className="text-zinc-400">Found: <span className="text-white">{calendarSpreads.calendar_spreads?.length || 0}</span></span>
+              </div>
+            )}
+
+            <div className="max-h-96 overflow-y-auto">
+              {isLoadingCalendars ? (
+                <div className="flex items-center justify-center py-12">
+                  <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                </div>
+              ) : (
+                <CalendarSpreadTable spreads={calendarSpreads?.calendar_spreads} currentPrice={calendarSpreads?.current_price} />
+              )}
+            </div>
           </div>
         </div>
 
