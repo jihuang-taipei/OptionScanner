@@ -287,16 +287,15 @@ async def get_spx_history(period: str = "1mo"):
 async def get_options_expirations():
     """Get available expiration dates for SPX options"""
     try:
-        # Use SPY as proxy since ^GSPC doesn't have tradeable options
-        # SPX options trade under ^SPX but yfinance uses SPY for liquid options
-        ticker = yf.Ticker("SPY")
+        # Use ^SPX for S&P 500 index options
+        ticker = yf.Ticker("^SPX")
         expirations = ticker.options
         
         if not expirations:
             raise HTTPException(status_code=503, detail="No options data available")
         
         return OptionsExpirations(
-            symbol="SPY",
+            symbol="^SPX",
             expirations=list(expirations)
         )
         
