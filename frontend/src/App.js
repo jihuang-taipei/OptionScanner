@@ -329,9 +329,9 @@ function App() {
     try {
       const response = await axios.get(`${API}/spx/options/chain?expiration=${expiration}`);
       setOptionsChain(response.data);
-      // Estimate SPY price from ATM options (SPY ≈ SPX / 10)
+      // Use SPX price directly (not divided by 10 like SPY)
       if (quote?.price) {
-        setSpyPrice(quote.price / 10);
+        setSpyPrice(quote.price);
       }
     } catch (e) {
       console.error("Error fetching options chain:", e);
