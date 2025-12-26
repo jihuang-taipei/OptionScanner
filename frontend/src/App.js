@@ -13,6 +13,15 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// Auto-refresh interval options
+const REFRESH_INTERVALS = [
+  { value: 0, label: "Off" },
+  { value: 10, label: "10 seconds" },
+  { value: 30, label: "30 seconds" },
+  { value: 60, label: "1 minute" },
+  { value: 300, label: "5 minutes" },
+];
+
 // Custom Tooltip for Chart
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
