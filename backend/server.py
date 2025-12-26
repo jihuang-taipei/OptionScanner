@@ -157,6 +157,35 @@ class IronCondorsResponse(BaseModel):
     iron_condors: List[IronCondor]
 
 
+class IronButterfly(BaseModel):
+    # Center strike (ATM) - sell both call and put
+    center_strike: float
+    call_premium: float
+    put_premium: float
+    # Wings
+    upper_strike: float  # Buy call
+    lower_strike: float  # Buy put
+    upper_cost: float
+    lower_cost: float
+    # Combined metrics
+    net_credit: float
+    max_profit: float
+    max_loss: float
+    lower_breakeven: float
+    upper_breakeven: float
+    risk_reward_ratio: float
+    probability_profit: Optional[float] = None
+    distance_from_spot: float  # How far center is from current price
+
+
+class IronButterfliesResponse(BaseModel):
+    symbol: str
+    expiration: str
+    current_price: float
+    wing_width: int
+    iron_butterflies: List[IronButterfly]
+
+
 def calculate_greeks(S: float, K: float, T: float, r: float, sigma: float, option_type: str = 'call'):
     """
     Calculate option Greeks using Black-Scholes model
