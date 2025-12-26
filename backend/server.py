@@ -103,6 +103,31 @@ class OptionsExpirations(BaseModel):
     expirations: List[str]
 
 
+class CreditSpread(BaseModel):
+    spread_type: str  # "Bull Put" or "Bear Call"
+    sell_strike: float
+    buy_strike: float
+    sell_premium: float
+    buy_premium: float
+    net_credit: float
+    max_profit: float
+    max_loss: float
+    breakeven: float
+    risk_reward_ratio: float
+    probability_otm: Optional[float] = None
+    sell_delta: Optional[float] = None
+    buy_delta: Optional[float] = None
+
+
+class CreditSpreadsResponse(BaseModel):
+    symbol: str
+    expiration: str
+    current_price: float
+    spread_width: int
+    bull_put_spreads: List[CreditSpread]
+    bear_call_spreads: List[CreditSpread]
+
+
 def calculate_greeks(S: float, K: float, T: float, r: float, sigma: float, option_type: str = 'call'):
     """
     Calculate option Greeks using Black-Scholes model
