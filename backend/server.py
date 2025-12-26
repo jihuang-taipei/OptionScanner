@@ -965,6 +965,219 @@ async def get_iron_butterflies(expiration: str, wing: int = 25):
         raise HTTPException(status_code=500, detail=f"Failed to fetch iron butterflies: {str(e)}")
 
 
+@api_router.get("/spx/straddles", response_model=StraddlesResponse)
+async def get_straddles(expiration: str):
+    """Get Straddle opportunities - buy call + put at same strike
+    
+    A straddle profits from large moves in either direction
+    """
+    try:
+        ticker = yf.Ticker("^SPX")
+        
+        if expiration not in ticker.options:
+            raise HTTPException(status_code=400, detail=f"Invalid expiration date")
+        
+        opt_chain = ticker.option_chain(expiration)
+        
+        # Get current SPX price
+        spx_ticker = yf.Ticker("^GSPC")
+        spx_hist = spx_ticker.history(period="1d")
+        current_price = float(spx_hist['Close'].iloc[-1]) if not spx_hist.empty else 5900.0
+        
+        calls_df = opt_chain.calls.copy()
+        puts_df = opt_chain.puts.copy()
+        
+        # Find straddles near ATM (within 5%)
+        min_strike = current_price * 0.95
+        max_strike = current_price * 1.05
+        
+        straddles = []
+        
+        for _, call_row in calls_df.iterrows():
+            strike = float(call_row['strike'])
+            
+            if strike < min_strike or strike > max_strike:
+                continue
+            
+            # Find matching put
+            matching_puts = puts_df[puts_df['strike'] == strike]
+            if matching_puts.empty:
+                continue
+            
+            put_row = matching_puts.iloc[0]
+            
+            call_ask = float(call_row['ask']) if not pd.isna(call_row['ask']) else 0
+            put_ask = float(put_row['ask']) if not pd.isna(put_row['ask']) else 0
+            
+            if call_ask <= 0 or put_ask <= 0:
+                continue
+            
+            total_cost = call_ask + put_ask
+            lower_breakeven = strike - total_cost
+            upper_breakeven = strike + total_cost
+            
+            # % move needed to breakeven
+            breakeven_move_pct = (total_cost / strike) * 100
+            
+            distance_from_spot = ((strike - current_price) / current_price) * 100
+            
+            call_iv = float(call_row['impliedVolatility']) * 100 if not pd.isna(call_row['impliedVolatility']) else 0
+            put_iv = float(put_row['impliedVolatility']) * 100 if not pd.isna(put_row['impliedVolatility']) else 0
+            avg_iv = (call_iv + put_iv) / 2
+            
+            straddles.append(Straddle(
+                strike=strike,
+                call_price=round(call_ask, 2),
+                put_price=round(put_ask, 2),
+                total_cost=round(total_cost, 2),
+                lower_breakeven=round(lower_breakeven, 2),
+                upper_breakeven=round(upper_breakeven, 2),
+                breakeven_move_pct=round(breakeven_move_pct, 2),
+                distance_from_spot=round(distance_from_spot, 2),
+                call_iv=round(call_iv, 1),
+                put_iv=round(put_iv, 1),
+                avg_iv=round(avg_iv, 1)
+            ))
+        
+        # Sort by distance from spot
+        straddles.sort(key=lambda x: abs(x.distance_from_spot))
+        
+        logger.info(f"Straddles fetched: {len(straddles)}")
+        
+        return StraddlesResponse(
+            symbol="^SPX",
+            expiration=expiration,
+            current_price=round(current_price, 2),
+            straddles=straddles[:15]
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching straddles: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch straddles: {str(e)}")
+
+
+@api_router.get("/spx/strangles", response_model=StranglesResponse)
+async def get_strangles(expiration: str, width: int = 50):
+    """Get Strangle opportunities - buy OTM call + OTM put at different strikes
+    
+    A strangle is cheaper than a straddle but needs a larger move to profit
+    width: Distance between call and put strikes (default 50)
+    """
+    try:
+        ticker = yf.Ticker("^SPX")
+        
+        if expiration not in ticker.options:
+            raise HTTPException(status_code=400, detail=f"Invalid expiration date")
+        
+        opt_chain = ticker.option_chain(expiration)
+        
+        # Get current SPX price
+        spx_ticker = yf.Ticker("^GSPC")
+        spx_hist = spx_ticker.history(period="1d")
+        current_price = float(spx_hist['Close'].iloc[-1]) if not spx_hist.empty else 5900.0
+        
+        calls_df = opt_chain.calls.copy()
+        puts_df = opt_chain.puts.copy()
+        
+        strangles = []
+        
+        # Find OTM calls (above current price)
+        otm_calls = calls_df[calls_df['strike'] > current_price].copy()
+        
+        for _, call_row in otm_calls.iterrows():
+            call_strike = float(call_row['strike'])
+            
+            # Find put strike that's approximately 'width' below the call
+            # Or symmetrically below current price
+            put_strike = call_strike - width
+            
+            matching_puts = puts_df[puts_df['strike'] == put_strike]
+            if matching_puts.empty:
+                # Try to find closest put strike
+                puts_below = puts_df[puts_df['strike'] < current_price]
+                if puts_below.empty:
+                    continue
+                # Find put with similar distance from spot as the call
+                call_distance = call_strike - current_price
+                target_put_strike = current_price - call_distance
+                closest_put = puts_below.iloc[(puts_below['strike'] - target_put_strike).abs().argsort()[:1]]
+                if closest_put.empty:
+                    continue
+                put_row = closest_put.iloc[0]
+                put_strike = float(put_row['strike'])
+            else:
+                put_row = matching_puts.iloc[0]
+            
+            # Both must be OTM
+            if put_strike >= current_price or call_strike <= current_price:
+                continue
+            
+            call_ask = float(call_row['ask']) if not pd.isna(call_row['ask']) else 0
+            put_ask = float(put_row['ask']) if not pd.isna(put_row['ask']) else 0
+            
+            if call_ask <= 0 or put_ask <= 0:
+                continue
+            
+            total_cost = call_ask + put_ask
+            lower_breakeven = put_strike - total_cost
+            upper_breakeven = call_strike + total_cost
+            
+            # % move needed (from current price to nearest breakeven)
+            move_to_upper = ((upper_breakeven - current_price) / current_price) * 100
+            move_to_lower = ((current_price - lower_breakeven) / current_price) * 100
+            breakeven_move_pct = min(move_to_upper, move_to_lower)
+            
+            actual_width = call_strike - put_strike
+            
+            call_iv = float(call_row['impliedVolatility']) * 100 if not pd.isna(call_row['impliedVolatility']) else 0
+            put_iv = float(put_row['impliedVolatility']) * 100 if not pd.isna(put_row['impliedVolatility']) else 0
+            avg_iv = (call_iv + put_iv) / 2
+            
+            strangles.append(Strangle(
+                call_strike=call_strike,
+                put_strike=put_strike,
+                call_price=round(call_ask, 2),
+                put_price=round(put_ask, 2),
+                total_cost=round(total_cost, 2),
+                lower_breakeven=round(lower_breakeven, 2),
+                upper_breakeven=round(upper_breakeven, 2),
+                breakeven_move_pct=round(breakeven_move_pct, 2),
+                width=actual_width,
+                call_iv=round(call_iv, 1),
+                put_iv=round(put_iv, 1),
+                avg_iv=round(avg_iv, 1)
+            ))
+        
+        # Sort by total cost (cheapest first)
+        strangles.sort(key=lambda x: x.total_cost)
+        
+        # Remove duplicates based on strikes
+        seen = set()
+        unique_strangles = []
+        for s in strangles:
+            key = (s.call_strike, s.put_strike)
+            if key not in seen:
+                seen.add(key)
+                unique_strangles.append(s)
+        
+        logger.info(f"Strangles fetched: {len(unique_strangles)}")
+        
+        return StranglesResponse(
+            symbol="^SPX",
+            expiration=expiration,
+            current_price=round(current_price, 2),
+            strangles=unique_strangles[:15]
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching strangles: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch strangles: {str(e)}")
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
