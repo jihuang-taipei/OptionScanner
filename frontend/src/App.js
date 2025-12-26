@@ -653,8 +653,9 @@ function App() {
       fetchOptionsChain(selectedExpiration);
       fetchCreditSpreads(selectedExpiration, spreadWidth);
       fetchIronCondors(selectedExpiration, spreadWidth);
+      fetchIronButterflies(selectedExpiration, wingWidth);
     }
-  }, [selectedExpiration, fetchOptionsChain, fetchCreditSpreads, fetchIronCondors, spreadWidth]);
+  }, [selectedExpiration, fetchOptionsChain, fetchCreditSpreads, fetchIronCondors, fetchIronButterflies, spreadWidth, wingWidth]);
 
   const isPositive = quote?.change >= 0;
   const priceColor = isPositive ? 'text-green-500' : 'text-red-500';
