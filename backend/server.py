@@ -550,7 +550,7 @@ async def get_credit_spreads(expiration: str, spread: int = 5):
         logger.info(f"Credit spreads fetched: {len(bull_put_spreads)} bull puts, {len(bear_call_spreads)} bear calls")
         
         return CreditSpreadsResponse(
-            symbol="SPY",
+            symbol="^SPX",
             expiration=expiration,
             current_price=round(current_price, 2),
             spread_width=spread,
