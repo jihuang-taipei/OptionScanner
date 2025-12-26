@@ -1381,6 +1381,22 @@ function App() {
     }
   }, [selectedExpiration, fetchOptionsChain, fetchCreditSpreads, fetchIronCondors, fetchIronButterflies, fetchStraddles, fetchStrangles, spreadWidth, wingWidth]);
 
+  // Set far expiration when expirations are loaded (pick a later one)
+  useEffect(() => {
+    if (expirations.length > 2 && !farExpiration) {
+      // Pick an expiration that's a few weeks after the first one
+      const farIndex = Math.min(3, expirations.length - 1);
+      setFarExpiration(expirations[farIndex]);
+    }
+  }, [expirations, farExpiration]);
+
+  // Fetch calendar spreads when both expirations are set
+  useEffect(() => {
+    if (selectedExpiration && farExpiration && selectedExpiration !== farExpiration) {
+      fetchCalendarSpreads(selectedExpiration, farExpiration);
+    }
+  }, [selectedExpiration, farExpiration, fetchCalendarSpreads]);
+
   const isPositive = quote?.change >= 0;
   const priceColor = isPositive ? 'text-green-500' : 'text-red-500';
   const glowClass = isPositive ? 'glow-green' : 'glow-red';
