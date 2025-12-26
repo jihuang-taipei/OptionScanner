@@ -376,11 +376,12 @@ async def get_spx_quote():
     return await get_quote("^GSPC")
 
 
-@api_router.get("/spx/history", response_model=SPXHistory)
-async def get_spx_history(period: str = "1mo"):
-    """Get historical SPX data for charting
+@api_router.get("/history", response_model=SPXHistory)
+async def get_history(symbol: str = "^GSPC", period: str = "1mo"):
+    """Get historical data for any stock/index
     
-    Valid periods: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max
+    symbol: Yahoo Finance ticker symbol
+    period: Valid periods: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max
     """
     valid_periods = ["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"]
     
@@ -388,11 +389,11 @@ async def get_spx_history(period: str = "1mo"):
         raise HTTPException(status_code=400, detail=f"Invalid period. Valid options: {', '.join(valid_periods)}")
     
     try:
-        ticker = yf.Ticker("^GSPC")
+        ticker = yf.Ticker(symbol)
         hist = ticker.history(period=period)
         
         if hist.empty:
-            raise HTTPException(status_code=503, detail="Unable to fetch historical data")
+            raise HTTPException(status_code=503, detail=f"Unable to fetch historical data for {symbol}")
         
         data_points = []
         for date, row in hist.iterrows():
@@ -405,17 +406,24 @@ async def get_spx_history(period: str = "1mo"):
                 volume=int(row['Volume']) if row['Volume'] > 0 else None
             ))
         
-        logger.info(f"SPX History fetched: {len(data_points)} data points for period {period}")
+        logger.info(f"History fetched for {symbol}: {len(data_points)} data points for period {period}")
         
         return SPXHistory(
-            symbol="^GSPC",
+            symbol=symbol,
             period=period,
             data=data_points
         )
         
     except Exception as e:
-        logger.error(f"Error fetching SPX history: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch historical data: {str(e)}")
+        logger.error(f"Error fetching history for {symbol}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch historical data for {symbol}: {str(e)}")
+
+
+# Keep old endpoint for backwards compatibility
+@api_router.get("/spx/history", response_model=SPXHistory)
+async def get_spx_history(period: str = "1mo"):
+    """Get historical SPX data - backwards compatible endpoint"""
+    return await get_history("^GSPC", period)
 
 
 @api_router.get("/spx/options/expirations", response_model=OptionsExpirations)
