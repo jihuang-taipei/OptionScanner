@@ -190,6 +190,217 @@ class SPXAPITester:
             params={"period": "invalid"}
         )
 
+    def validate_options_expirations(self, data):
+        """Validate options expirations response"""
+        required_fields = ['symbol', 'expirations']
+        
+        for field in required_fields:
+            if field not in data:
+                print(f"   Missing required field: {field}")
+                return False
+        
+        if data['symbol'] != '^SPX':
+            print(f"   Expected symbol '^SPX', got '{data['symbol']}'")
+            return False
+        
+        if not isinstance(data['expirations'], list):
+            print(f"   Expirations should be a list, got {type(data['expirations'])}")
+            return False
+        
+        if len(data['expirations']) == 0:
+            print(f"   Expirations list is empty")
+            return False
+        
+        print(f"   Expirations validation passed - {len(data['expirations'])} expiration dates")
+        return True
+
+    def validate_options_chain(self, data):
+        """Validate options chain response"""
+        required_fields = ['symbol', 'expirationDate', 'calls', 'puts']
+        
+        for field in required_fields:
+            if field not in data:
+                print(f"   Missing required field: {field}")
+                return False
+        
+        if not isinstance(data['calls'], list) or not isinstance(data['puts'], list):
+            print(f"   Calls and puts should be lists")
+            return False
+        
+        if len(data['calls']) == 0 or len(data['puts']) == 0:
+            print(f"   Empty calls or puts list")
+            return False
+        
+        # Validate first call option structure
+        first_call = data['calls'][0]
+        required_option_fields = ['strike', 'lastPrice', 'bid', 'ask', 'impliedVolatility', 'inTheMoney']
+        
+        for field in required_option_fields:
+            if field not in first_call:
+                print(f"   Missing field in option: {field}")
+                return False
+        
+        print(f"   Options chain validation passed - {len(data['calls'])} calls, {len(data['puts'])} puts")
+        return True
+
+    def validate_calendar_spreads(self, data):
+        """Validate calendar spreads response"""
+        required_fields = ['symbol', 'near_expiration', 'far_expiration', 'current_price', 'calendar_spreads']
+        
+        for field in required_fields:
+            if field not in data:
+                print(f"   Missing required field: {field}")
+                return False
+        
+        if not isinstance(data['calendar_spreads'], list):
+            print(f"   Calendar spreads should be a list, got {type(data['calendar_spreads'])}")
+            return False
+        
+        if len(data['calendar_spreads']) == 0:
+            print(f"   Calendar spreads list is empty")
+            return False
+        
+        # Validate first spread structure
+        first_spread = data['calendar_spreads'][0]
+        required_spread_fields = ['strike', 'option_type', 'near_expiration', 'far_expiration', 'near_price', 'far_price', 'net_debit']
+        
+        for field in required_spread_fields:
+            if field not in first_spread:
+                print(f"   Missing field in calendar spread: {field}")
+                return False
+        
+        print(f"   Calendar spreads validation passed - {len(data['calendar_spreads'])} spreads")
+        return True
+
+    def test_options_expirations(self):
+        """Test options expirations endpoint"""
+        return self.run_test(
+            "Options Expirations",
+            "GET",
+            "api/spx/options/expirations",
+            200,
+            validate_response=self.validate_options_expirations
+        )
+
+    def test_options_chain(self, expiration=None):
+        """Test options chain endpoint"""
+        if not expiration:
+            # First get expirations
+            success, exp_data = self.test_options_expirations()
+            if not success or not exp_data.get('expirations'):
+                print("   Cannot test options chain without valid expiration")
+                return False, {}
+            expiration = exp_data['expirations'][0]
+        
+        return self.run_test(
+            f"Options Chain ({expiration})",
+            "GET",
+            "api/spx/options/chain",
+            200,
+            params={"expiration": expiration},
+            validate_response=self.validate_options_chain
+        )
+
+    def test_calendar_spreads(self):
+        """Test calendar spreads endpoint"""
+        # First get expirations
+        success, exp_data = self.test_options_expirations()
+        if not success or not exp_data.get('expirations') or len(exp_data['expirations']) < 2:
+            print("   Cannot test calendar spreads without at least 2 expirations")
+            return False, {}
+        
+        near_exp = exp_data['expirations'][0]
+        far_exp = exp_data['expirations'][1]
+        
+        return self.run_test(
+            f"Calendar Spreads ({near_exp} to {far_exp})",
+            "GET",
+            "api/spx/calendar-spreads",
+            200,
+            params={"near_exp": near_exp, "far_exp": far_exp},
+            validate_response=self.validate_calendar_spreads
+        )
+
+    def test_credit_spreads(self, expiration=None):
+        """Test credit spreads endpoint"""
+        if not expiration:
+            success, exp_data = self.test_options_expirations()
+            if not success or not exp_data.get('expirations'):
+                return False, {}
+            expiration = exp_data['expirations'][0]
+        
+        return self.run_test(
+            f"Credit Spreads ({expiration})",
+            "GET",
+            "api/spx/credit-spreads",
+            200,
+            params={"expiration": expiration, "spread": 5}
+        )
+
+    def test_iron_condors(self, expiration=None):
+        """Test iron condors endpoint"""
+        if not expiration:
+            success, exp_data = self.test_options_expirations()
+            if not success or not exp_data.get('expirations'):
+                return False, {}
+            expiration = exp_data['expirations'][0]
+        
+        return self.run_test(
+            f"Iron Condors ({expiration})",
+            "GET",
+            "api/spx/iron-condors",
+            200,
+            params={"expiration": expiration, "spread": 5}
+        )
+
+    def test_iron_butterflies(self, expiration=None):
+        """Test iron butterflies endpoint"""
+        if not expiration:
+            success, exp_data = self.test_options_expirations()
+            if not success or not exp_data.get('expirations'):
+                return False, {}
+            expiration = exp_data['expirations'][0]
+        
+        return self.run_test(
+            f"Iron Butterflies ({expiration})",
+            "GET",
+            "api/spx/iron-butterflies",
+            200,
+            params={"expiration": expiration, "wing": 25}
+        )
+
+    def test_straddles(self, expiration=None):
+        """Test straddles endpoint"""
+        if not expiration:
+            success, exp_data = self.test_options_expirations()
+            if not success or not exp_data.get('expirations'):
+                return False, {}
+            expiration = exp_data['expirations'][0]
+        
+        return self.run_test(
+            f"Straddles ({expiration})",
+            "GET",
+            "api/spx/straddles",
+            200,
+            params={"expiration": expiration}
+        )
+
+    def test_strangles(self, expiration=None):
+        """Test strangles endpoint"""
+        if not expiration:
+            success, exp_data = self.test_options_expirations()
+            if not success or not exp_data.get('expirations'):
+                return False, {}
+            expiration = exp_data['expirations'][0]
+        
+        return self.run_test(
+            f"Strangles ({expiration})",
+            "GET",
+            "api/spx/strangles",
+            200,
+            params={"expiration": expiration}
+        )
+
 def main():
     print("🚀 Starting SPX Finance API Tests")
     print("=" * 50)
