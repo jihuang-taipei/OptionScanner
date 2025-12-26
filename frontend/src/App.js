@@ -501,6 +501,11 @@ function App() {
   // Iron Condors state
   const [ironCondors, setIronCondors] = useState(null);
   const [isLoadingCondors, setIsLoadingCondors] = useState(false);
+  
+  // Iron Butterflies state
+  const [ironButterflies, setIronButterflies] = useState(null);
+  const [isLoadingButterflies, setIsLoadingButterflies] = useState(false);
+  const [wingWidth, setWingWidth] = useState(25);
 
   const fetchQuote = useCallback(async () => {
     try {
