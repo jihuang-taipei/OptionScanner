@@ -399,7 +399,7 @@ const OptionsTable = ({ options, type, currentPrice, strikeRange }) => {
 };
 
 // Credit Spread Table Component
-const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskReward }) => {
+const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskReward, onSelectStrategy }) => {
   if (!spreads || spreads.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No {type} spreads available</p>;
   }
@@ -442,6 +442,7 @@ const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskRewa
             <th className="text-right py-3 px-2 font-medium">Breakeven</th>
             <th className="text-right py-3 px-2 font-medium">Risk/Reward</th>
             <th className="text-right py-3 px-2 font-medium text-cyan-400">P(OTM)</th>
+            <th className="text-center py-3 px-2 font-medium">P/L</th>
           </tr>
         </thead>
         <tbody>
@@ -472,6 +473,21 @@ const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskRewa
                 <td className="text-right py-2.5 px-2 font-mono text-zinc-400">{spread.risk_reward_ratio.toFixed(1)}:1</td>
                 <td className="text-right py-2.5 px-2 font-mono text-cyan-400 font-medium">
                   {spread.probability_otm ? `${spread.probability_otm.toFixed(0)}%` : '-'}
+                </td>
+                <td className="text-center py-2.5 px-2">
+                  <button
+                    onClick={() => onSelectStrategy({
+                      type: isBullPut ? 'bull_put' : 'bear_call',
+                      name: `${type} ${spread.sell_strike}/${spread.buy_strike}`,
+                      sell_strike: spread.sell_strike,
+                      buy_strike: spread.buy_strike,
+                      net_credit: spread.net_credit
+                    })}
+                    className="text-purple-400 hover:text-purple-300 transition-colors"
+                    title="View P/L Chart"
+                  >
+                    <LineChartIcon className="w-4 h-4" />
+                  </button>
                 </td>
               </tr>
             );
