@@ -232,6 +232,103 @@ const PLChart = ({ strategy, currentPrice, onClose }) => {
   );
 };
 
+// CSV Export utility functions
+const downloadCSV = (data, filename) => {
+  const blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
+};
+
+const exportOptionsChain = (options, type, expiration) => {
+  if (!options || options.length === 0) return;
+  
+  const headers = ['Strike', 'Last', 'Bid', 'Ask', 'IV%', 'Delta', 'Gamma', 'Theta', 'Vega', 'Volume', 'OpenInterest', 'ITM'];
+  const rows = options.map(opt => [
+    opt.strike,
+    opt.lastPrice,
+    opt.bid,
+    opt.ask,
+    opt.impliedVolatility,
+    opt.delta || '',
+    opt.gamma || '',
+    opt.theta || '',
+    opt.vega || '',
+    opt.volume || '',
+    opt.openInterest || '',
+    opt.inTheMoney ? 'Yes' : 'No'
+  ]);
+  
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  downloadCSV(csv, `SPX_${type}_${expiration}.csv`);
+};
+
+const exportCreditSpreads = (spreads, type, expiration) => {
+  if (!spreads || spreads.length === 0) return;
+  
+  const headers = ['SellStrike', 'BuyStrike', 'SellPremium', 'BuyPremium', 'NetCredit', 'MaxProfit', 'MaxLoss', 'Breakeven', 'RiskReward', 'ProbOTM'];
+  const rows = spreads.map(s => [
+    s.sell_strike,
+    s.buy_strike,
+    s.sell_premium,
+    s.buy_premium,
+    s.net_credit,
+    s.max_profit,
+    s.max_loss,
+    s.breakeven,
+    s.risk_reward_ratio,
+    s.probability_otm || ''
+  ]);
+  
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  downloadCSV(csv, `SPX_${type}_Spreads_${expiration}.csv`);
+};
+
+const exportIronCondors = (condors, expiration) => {
+  if (!condors || condors.length === 0) return;
+  
+  const headers = ['PutSell', 'PutBuy', 'PutCredit', 'CallSell', 'CallBuy', 'CallCredit', 'NetCredit', 'MaxProfit', 'MaxLoss', 'LowerBE', 'UpperBE', 'RiskReward', 'ProbProfit'];
+  const rows = condors.map(ic => [
+    ic.put_sell_strike,
+    ic.put_buy_strike,
+    ic.put_credit,
+    ic.call_sell_strike,
+    ic.call_buy_strike,
+    ic.call_credit,
+    ic.net_credit,
+    ic.max_profit,
+    ic.max_loss,
+    ic.lower_breakeven,
+    ic.upper_breakeven,
+    ic.risk_reward_ratio,
+    ic.probability_profit || ''
+  ]);
+  
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  downloadCSV(csv, `SPX_IronCondors_${expiration}.csv`);
+};
+
+const exportStraddles = (straddles, expiration) => {
+  if (!straddles || straddles.length === 0) return;
+  
+  const headers = ['Strike', 'CallPrice', 'PutPrice', 'TotalCost', 'LowerBE', 'UpperBE', 'MoveToBreakeven%', 'AvgIV'];
+  const rows = straddles.map(s => [
+    s.strike,
+    s.call_price,
+    s.put_price,
+    s.total_cost,
+    s.lower_breakeven,
+    s.upper_breakeven,
+    s.breakeven_move_pct,
+    s.avg_iv
+  ]);
+  
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  downloadCSV(csv, `SPX_Straddles_${expiration}.csv`);
+};
+
 // Auto-refresh interval options
 const REFRESH_INTERVALS = [
   { value: 0, label: "Off" },
