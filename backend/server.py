@@ -426,25 +426,34 @@ async def get_spx_history(period: str = "1mo"):
     return await get_history("^GSPC", period)
 
 
-@api_router.get("/spx/options/expirations", response_model=OptionsExpirations)
-async def get_options_expirations():
-    """Get available expiration dates for SPX options"""
+@api_router.get("/options/expirations", response_model=OptionsExpirations)
+async def get_options_expirations(symbol: str = "^SPX"):
+    """Get available expiration dates for options
+    
+    symbol: Yahoo Finance ticker symbol (e.g., ^SPX, SPY, AAPL, QQQ)
+    """
     try:
-        # Use ^SPX for S&P 500 index options
-        ticker = yf.Ticker("^SPX")
+        ticker = yf.Ticker(symbol)
         expirations = ticker.options
         
         if not expirations:
-            raise HTTPException(status_code=503, detail="No options data available")
+            raise HTTPException(status_code=503, detail=f"No options data available for {symbol}")
         
         return OptionsExpirations(
-            symbol="^SPX",
+            symbol=symbol,
             expirations=list(expirations)
         )
         
     except Exception as e:
-        logger.error(f"Error fetching options expirations: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch options expirations: {str(e)}")
+        logger.error(f"Error fetching options expirations for {symbol}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch options expirations for {symbol}: {str(e)}")
+
+
+# Keep old endpoint for backwards compatibility
+@api_router.get("/spx/options/expirations", response_model=OptionsExpirations)
+async def get_spx_options_expirations():
+    """Get SPX options expirations - backwards compatible endpoint"""
+    return await get_options_expirations("^SPX")
 
 
 @api_router.get("/spx/options/chain", response_model=OptionsChain)
