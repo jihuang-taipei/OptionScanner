@@ -292,11 +292,29 @@ async def get_options_chain(expiration: str):
         
         opt_chain = ticker.option_chain(expiration)
         
+        # Get current SPY price for Greeks calculation
+        spy_hist = ticker.history(period="1d")
+        current_price = float(spy_hist['Close'].iloc[-1]) if not spy_hist.empty else 590.0
+        
+        # Calculate time to expiration in years
+        exp_date = datetime.strptime(expiration, "%Y-%m-%d")
+        today = datetime.now()
+        days_to_exp = (exp_date - today).days
+        T = max(days_to_exp / 365.0, 1/365.0)  # At least 1 day
+        
+        # Risk-free rate (approximate)
+        r = 0.045  # 4.5% 
+        
         # Process calls
         calls = []
         for _, row in opt_chain.calls.iterrows():
+            strike = float(row['strike'])
+            iv = float(row['impliedVolatility']) if not pd.isna(row['impliedVolatility']) else 0.3
+            
+            delta, gamma, theta, vega = calculate_greeks(current_price, strike, T, r, iv, 'call')
+            
             calls.append(OptionContract(
-                strike=round(float(row['strike']), 2),
+                strike=round(strike, 2),
                 lastPrice=round(float(row['lastPrice']), 2),
                 bid=round(float(row['bid']), 2),
                 ask=round(float(row['ask']), 2),
@@ -304,19 +322,24 @@ async def get_options_chain(expiration: str):
                 percentChange=round(float(row['percentChange']) if not pd.isna(row['percentChange']) else 0, 2),
                 volume=int(row['volume']) if not pd.isna(row['volume']) else None,
                 openInterest=int(row['openInterest']) if not pd.isna(row['openInterest']) else None,
-                impliedVolatility=round(float(row['impliedVolatility']) * 100, 2),
+                impliedVolatility=round(iv * 100, 2),
                 inTheMoney=bool(row['inTheMoney']),
-                delta=round(float(row['delta']), 4) if 'delta' in row and not pd.isna(row.get('delta')) else None,
-                gamma=round(float(row['gamma']), 4) if 'gamma' in row and not pd.isna(row.get('gamma')) else None,
-                theta=round(float(row['theta']), 4) if 'theta' in row and not pd.isna(row.get('theta')) else None,
-                vega=round(float(row['vega']), 4) if 'vega' in row and not pd.isna(row.get('vega')) else None
+                delta=delta,
+                gamma=gamma,
+                theta=theta,
+                vega=vega
             ))
         
         # Process puts
         puts = []
         for _, row in opt_chain.puts.iterrows():
+            strike = float(row['strike'])
+            iv = float(row['impliedVolatility']) if not pd.isna(row['impliedVolatility']) else 0.3
+            
+            delta, gamma, theta, vega = calculate_greeks(current_price, strike, T, r, iv, 'put')
+            
             puts.append(OptionContract(
-                strike=round(float(row['strike']), 2),
+                strike=round(strike, 2),
                 lastPrice=round(float(row['lastPrice']), 2),
                 bid=round(float(row['bid']), 2),
                 ask=round(float(row['ask']), 2),
@@ -324,12 +347,12 @@ async def get_options_chain(expiration: str):
                 percentChange=round(float(row['percentChange']) if not pd.isna(row['percentChange']) else 0, 2),
                 volume=int(row['volume']) if not pd.isna(row['volume']) else None,
                 openInterest=int(row['openInterest']) if not pd.isna(row['openInterest']) else None,
-                impliedVolatility=round(float(row['impliedVolatility']) * 100, 2),
+                impliedVolatility=round(iv * 100, 2),
                 inTheMoney=bool(row['inTheMoney']),
-                delta=round(float(row['delta']), 4) if 'delta' in row and not pd.isna(row.get('delta')) else None,
-                gamma=round(float(row['gamma']), 4) if 'gamma' in row and not pd.isna(row.get('gamma')) else None,
-                theta=round(float(row['theta']), 4) if 'theta' in row and not pd.isna(row.get('theta')) else None,
-                vega=round(float(row['vega']), 4) if 'vega' in row and not pd.isna(row.get('vega')) else None
+                delta=delta,
+                gamma=gamma,
+                theta=theta,
+                vega=vega
             ))
         
         logger.info(f"Options chain fetched: {len(calls)} calls, {len(puts)} puts for {expiration}")
