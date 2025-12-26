@@ -93,6 +93,10 @@ const OptionsTable = ({ options, type, currentPrice, strikeRange }) => {
     return <p className="text-zinc-500 text-center py-8">No {type} data available</p>;
   }
 
+  if (!currentPrice) {
+    return <p className="text-zinc-500 text-center py-8">Loading price data...</p>;
+  }
+
   // Apply strike range filter based on percentage
   const rangePct = strikeRange / 100;
   const minS = currentPrice * (1 - rangePct);
