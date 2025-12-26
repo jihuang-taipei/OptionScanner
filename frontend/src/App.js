@@ -1912,7 +1912,18 @@ function App() {
                 <Layers className="w-5 h-5 text-zinc-400" />
                 Iron Condors (${spreadWidth} wide legs)
               </h2>
-              {isLoadingCondors && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
+              <div className="flex items-center gap-2">
+                {isLoadingCondors && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
+                <button
+                  onClick={() => exportIronCondors(ironCondors?.iron_condors, selectedExpiration)}
+                  disabled={!ironCondors?.iron_condors?.length}
+                  className="flex items-center gap-1 px-2 py-1 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Export Iron Condors to CSV"
+                >
+                  <Download className="w-3 h-3" />
+                  Export
+                </button>
+              </div>
             </div>
 
             <p className="text-zinc-500 text-xs mb-4">
