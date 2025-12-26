@@ -1568,8 +1568,8 @@ function App() {
           {/* Hero Ticker Card - Spans 1 column */}
           <div className={`glass-card p-8 ${glowClass} transition-all duration-500`} data-testid="price-display">
             <div className="flex items-center gap-2 mb-4">
-              <span className="text-zinc-400 text-lg">^GSPC</span>
-              <span className="text-zinc-600 text-sm">S&P 500</span>
+              <span className="text-zinc-400 text-lg font-mono">{symbol}</span>
+              <span className="text-zinc-600 text-sm">{quote?.symbol || symbol}</span>
             </div>
             
             {isLoadingQuote ? (
