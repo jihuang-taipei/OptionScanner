@@ -396,6 +396,174 @@ async def get_options_chain(expiration: str):
         raise HTTPException(status_code=500, detail=f"Failed to fetch options chain: {str(e)}")
 
 
+@api_router.get("/spx/credit-spreads", response_model=CreditSpreadsResponse)
+async def get_credit_spreads(expiration: str, spread: int = 5):
+    """Get credit spread opportunities for a specific expiration date
+    
+    spread: Width of the spread in dollars (default 5)
+    """
+    try:
+        ticker = yf.Ticker("SPY")
+        
+        if expiration not in ticker.options:
+            raise HTTPException(status_code=400, detail=f"Invalid expiration date")
+        
+        opt_chain = ticker.option_chain(expiration)
+        
+        # Get current SPY price
+        spy_hist = ticker.history(period="1d")
+        current_price = float(spy_hist['Close'].iloc[-1]) if not spy_hist.empty else 590.0
+        
+        # Calculate time to expiration
+        exp_date = datetime.strptime(expiration, "%Y-%m-%d")
+        today = datetime.now()
+        days_to_exp = (exp_date - today).days
+        T = max(days_to_exp / 365.0, 1/365.0)
+        r = 0.045
+        
+        # Process puts for Bull Put Spreads (sell higher, buy lower)
+        puts_df = opt_chain.puts.copy()
+        puts_df = puts_df.sort_values('strike')
+        
+        bull_put_spreads = []
+        for i, sell_row in puts_df.iterrows():
+            sell_strike = float(sell_row['strike'])
+            buy_strike = sell_strike - spread
+            
+            # Find the buy leg
+            buy_rows = puts_df[puts_df['strike'] == buy_strike]
+            if buy_rows.empty:
+                continue
+            
+            buy_row = buy_rows.iloc[0]
+            
+            # Only show OTM spreads (sell strike below current price)
+            if sell_strike >= current_price:
+                continue
+            
+            sell_bid = float(sell_row['bid']) if not pd.isna(sell_row['bid']) else 0
+            buy_ask = float(buy_row['ask']) if not pd.isna(buy_row['ask']) else 0
+            
+            if sell_bid <= 0 or buy_ask <= 0:
+                continue
+            
+            net_credit = sell_bid - buy_ask
+            if net_credit <= 0:
+                continue
+            
+            max_profit = net_credit * 100  # per contract
+            max_loss = (spread - net_credit) * 100
+            breakeven = sell_strike - net_credit
+            risk_reward = max_loss / max_profit if max_profit > 0 else 999
+            
+            # Calculate deltas
+            sell_iv = float(sell_row['impliedVolatility']) if not pd.isna(sell_row['impliedVolatility']) else 0.3
+            buy_iv = float(buy_row['impliedVolatility']) if not pd.isna(buy_row['impliedVolatility']) else 0.3
+            
+            sell_delta, _, _, _ = calculate_greeks(current_price, sell_strike, T, r, sell_iv, 'put')
+            buy_delta, _, _, _ = calculate_greeks(current_price, buy_strike, T, r, buy_iv, 'put')
+            
+            # Probability OTM (roughly 1 - |delta| for the short strike)
+            prob_otm = (1 - abs(sell_delta)) * 100 if sell_delta else None
+            
+            bull_put_spreads.append(CreditSpread(
+                spread_type="Bull Put",
+                sell_strike=sell_strike,
+                buy_strike=buy_strike,
+                sell_premium=round(sell_bid, 2),
+                buy_premium=round(buy_ask, 2),
+                net_credit=round(net_credit, 2),
+                max_profit=round(max_profit, 2),
+                max_loss=round(max_loss, 2),
+                breakeven=round(breakeven, 2),
+                risk_reward_ratio=round(risk_reward, 2),
+                probability_otm=round(prob_otm, 1) if prob_otm else None,
+                sell_delta=sell_delta,
+                buy_delta=buy_delta
+            ))
+        
+        # Process calls for Bear Call Spreads (sell lower, buy higher)
+        calls_df = opt_chain.calls.copy()
+        calls_df = calls_df.sort_values('strike')
+        
+        bear_call_spreads = []
+        for i, sell_row in calls_df.iterrows():
+            sell_strike = float(sell_row['strike'])
+            buy_strike = sell_strike + spread
+            
+            # Find the buy leg
+            buy_rows = calls_df[calls_df['strike'] == buy_strike]
+            if buy_rows.empty:
+                continue
+            
+            buy_row = buy_rows.iloc[0]
+            
+            # Only show OTM spreads (sell strike above current price)
+            if sell_strike <= current_price:
+                continue
+            
+            sell_bid = float(sell_row['bid']) if not pd.isna(sell_row['bid']) else 0
+            buy_ask = float(buy_row['ask']) if not pd.isna(buy_row['ask']) else 0
+            
+            if sell_bid <= 0 or buy_ask <= 0:
+                continue
+            
+            net_credit = sell_bid - buy_ask
+            if net_credit <= 0:
+                continue
+            
+            max_profit = net_credit * 100
+            max_loss = (spread - net_credit) * 100
+            breakeven = sell_strike + net_credit
+            risk_reward = max_loss / max_profit if max_profit > 0 else 999
+            
+            # Calculate deltas
+            sell_iv = float(sell_row['impliedVolatility']) if not pd.isna(sell_row['impliedVolatility']) else 0.3
+            buy_iv = float(buy_row['impliedVolatility']) if not pd.isna(buy_row['impliedVolatility']) else 0.3
+            
+            sell_delta, _, _, _ = calculate_greeks(current_price, sell_strike, T, r, sell_iv, 'call')
+            buy_delta, _, _, _ = calculate_greeks(current_price, buy_strike, T, r, buy_iv, 'call')
+            
+            prob_otm = (1 - abs(sell_delta)) * 100 if sell_delta else None
+            
+            bear_call_spreads.append(CreditSpread(
+                spread_type="Bear Call",
+                sell_strike=sell_strike,
+                buy_strike=buy_strike,
+                sell_premium=round(sell_bid, 2),
+                buy_premium=round(buy_ask, 2),
+                net_credit=round(net_credit, 2),
+                max_profit=round(max_profit, 2),
+                max_loss=round(max_loss, 2),
+                breakeven=round(breakeven, 2),
+                risk_reward_ratio=round(risk_reward, 2),
+                probability_otm=round(prob_otm, 1) if prob_otm else None,
+                sell_delta=sell_delta,
+                buy_delta=buy_delta
+            ))
+        
+        # Sort by probability OTM (highest first) and limit results
+        bull_put_spreads.sort(key=lambda x: x.probability_otm or 0, reverse=True)
+        bear_call_spreads.sort(key=lambda x: x.probability_otm or 0, reverse=True)
+        
+        logger.info(f"Credit spreads fetched: {len(bull_put_spreads)} bull puts, {len(bear_call_spreads)} bear calls")
+        
+        return CreditSpreadsResponse(
+            symbol="SPY",
+            expiration=expiration,
+            current_price=round(current_price, 2),
+            spread_width=spread,
+            bull_put_spreads=bull_put_spreads[:15],  # Top 15
+            bear_call_spreads=bear_call_spreads[:15]
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching credit spreads: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch credit spreads: {str(e)}")
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
