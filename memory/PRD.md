@@ -22,10 +22,13 @@ Build an app to retrieve SPX quote from Yahoo Finance
 - [x] Refresh button with loading state
 - [x] Dark theme "Midnight Trader" design with glassmorphism cards
 - [x] **Auto-refresh at configurable intervals** (Off, 10s, 30s, 1min, 5min) with live countdown
+- [x] **Options Chain** (SPY as proxy) with Calls/Puts tabs, expiration selector, Strike, Bid/Ask, IV%, Volume, OI
 
 ## API Endpoints
 - `GET /api/spx/quote` - Current SPX quote with all metrics
 - `GET /api/spx/history?period={1d|5d|1mo|3mo|1y|5y}` - Historical data
+- `GET /api/spx/options/expirations` - Available options expiration dates
+- `GET /api/spx/options/chain?expiration={date}` - Options chain for specific expiration
 
 ## Tech Stack
 - Backend: FastAPI, yfinance, Motor (MongoDB)
