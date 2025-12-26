@@ -689,7 +689,7 @@ function App() {
             </div>
 
             <p className="text-zinc-500 text-xs mb-4">
-              Using SPY as proxy for S&P 500 options. SPY ≈ SPX/10. Showing strikes within ±15% of current price.
+              S&P 500 Index Options (^SPX). European-style, cash-settled. Showing strikes within ±15% of current price.
             </p>
 
             <Tabs defaultValue="calls" className="w-full">
