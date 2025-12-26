@@ -1740,7 +1740,7 @@ function App() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-white flex items-center gap-2">
                 <Table2 className="w-5 h-5 text-zinc-400" />
-                Options Chain (^SPX)
+                Options Chain ({symbol})
               </h2>
               <div className="flex items-center gap-3">
                 <span className="text-zinc-500 text-sm">Expiration:</span>
