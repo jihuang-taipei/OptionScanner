@@ -789,7 +789,7 @@ function App() {
 
             {creditSpreads && (
               <div className="mb-4 flex gap-4 text-sm">
-                <span className="text-zinc-400">SPY: <span className="text-white font-mono">${creditSpreads.current_price}</span></span>
+                <span className="text-zinc-400">^SPX: <span className="text-white font-mono">${creditSpreads.current_price.toLocaleString()}</span></span>
                 <span className="text-zinc-400">Exp: <span className="text-white">{new Date(creditSpreads.expiration).toLocaleDateString()}</span></span>
               </div>
             )}
