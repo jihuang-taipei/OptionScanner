@@ -767,10 +767,9 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
         
         opt_chain = ticker.option_chain(expiration)
         
-        # Get current SPX price
-        spx_ticker = yf.Ticker("^GSPC")
-        spx_hist = spx_ticker.history(period="1d")
-        current_price = float(spx_hist['Close'].iloc[-1]) if not spx_hist.empty else 5900.0
+        # Get current price
+        hist = ticker.history(period="1d")
+        current_price = float(hist['Close'].iloc[-1]) if not hist.empty else 100.0
         
         # Calculate time to expiration
         exp_date = datetime.strptime(expiration, "%Y-%m-%d")
