@@ -186,15 +186,51 @@ function App() {
             </h1>
             <p className="text-zinc-500 text-sm mt-1">Real-time market data from Yahoo Finance</p>
           </div>
-          <button
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="flex items-center gap-2 bg-white text-black px-5 py-2.5 rounded-full font-medium hover:bg-zinc-200 transition-all duration-200 active:scale-95 disabled:opacity-50"
-            data-testid="refresh-button"
-          >
-            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Auto-refresh dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button 
+                  className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-2.5 rounded-full font-medium hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-200"
+                  data-testid="auto-refresh-dropdown"
+                >
+                  <Clock className="w-4 h-4" />
+                  <span className="text-sm">
+                    {autoRefreshInterval === 0 
+                      ? "Auto: Off" 
+                      : `Auto: ${REFRESH_INTERVALS.find(i => i.value === autoRefreshInterval)?.label}`}
+                  </span>
+                  {autoRefreshInterval > 0 && (
+                    <span className="text-xs text-zinc-500 font-mono">({countdown}s)</span>
+                  )}
+                  <ChevronDown className="w-3 h-3 text-zinc-500" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-zinc-900 border-zinc-800">
+                {REFRESH_INTERVALS.map((interval) => (
+                  <DropdownMenuItem
+                    key={interval.value}
+                    onClick={() => handleAutoRefreshChange(interval.value)}
+                    className={`cursor-pointer ${autoRefreshInterval === interval.value ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`}
+                    data-testid={`auto-refresh-${interval.value}`}
+                  >
+                    {interval.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Manual refresh button */}
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="flex items-center gap-2 bg-white text-black px-5 py-2.5 rounded-full font-medium hover:bg-zinc-200 transition-all duration-200 active:scale-95 disabled:opacity-50"
+              data-testid="refresh-button"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
         </header>
 
         {error && (
