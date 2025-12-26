@@ -1978,6 +1978,15 @@ function App() {
                   </SelectContent>
                 </Select>
                 {isLoadingButterflies && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
+                <button
+                  onClick={() => exportIronButterflies(ironButterflies?.iron_butterflies, selectedExpiration)}
+                  disabled={!ironButterflies?.iron_butterflies?.length}
+                  className="flex items-center gap-1 px-2 py-1 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Export Iron Butterflies to CSV"
+                >
+                  <Download className="w-3 h-3" />
+                  Export
+                </button>
               </div>
             </div>
 
@@ -2005,6 +2014,7 @@ function App() {
                   currentPrice={ironButterflies?.current_price}
                   minCredit={minCredit}
                   maxRiskReward={maxRiskReward}
+                  onSelectStrategy={handleSelectStrategy}
                 />
               )}
             </div>
