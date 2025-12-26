@@ -375,6 +375,102 @@ const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward }) =>
   );
 };
 
+// Iron Butterfly Table Component
+const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskReward }) => {
+  if (!butterflies || butterflies.length === 0) {
+    return <p className="text-zinc-500 text-center py-8">No Iron Butterflies available</p>;
+  }
+
+  if (!currentPrice) {
+    return <p className="text-zinc-500 text-center py-8">Loading price data...</p>;
+  }
+
+  // Apply filters
+  const filteredButterflies = butterflies.filter(ib => 
+    ib.net_credit >= minCredit && 
+    ib.risk_reward_ratio <= maxRiskReward
+  );
+
+  if (filteredButterflies.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-zinc-500">No Iron Butterflies match your filters</p>
+        <p className="text-zinc-600 text-sm mt-1">Try lowering min credit or increasing max risk/reward</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <div className="text-xs text-zinc-500 mb-2">
+        Showing {filteredButterflies.length} of {butterflies.length} Iron Butterflies
+      </div>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-zinc-800 text-zinc-400">
+            <th className="text-left py-3 px-2 font-medium">Center (Sell)</th>
+            <th className="text-left py-3 px-2 font-medium">Wings (Buy)</th>
+            <th className="text-right py-3 px-2 font-medium text-green-400">Credit</th>
+            <th className="text-right py-3 px-2 font-medium text-green-400">Max Profit</th>
+            <th className="text-right py-3 px-2 font-medium text-red-400">Max Loss</th>
+            <th className="text-right py-3 px-2 font-medium">Breakevens</th>
+            <th className="text-right py-3 px-2 font-medium">R/R</th>
+            <th className="text-right py-3 px-2 font-medium">From Spot</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredButterflies.map((ib, idx) => (
+            <tr 
+              key={idx} 
+              className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors"
+            >
+              <td className="py-2.5 px-2">
+                <div className="font-mono font-medium text-white">
+                  ${ib.center_strike.toLocaleString()}
+                </div>
+                <div className="text-xs text-zinc-500">
+                  C: <span className="text-green-400">+${ib.call_premium}</span>
+                  {' '}P: <span className="text-green-400">+${ib.put_premium}</span>
+                </div>
+              </td>
+              <td className="py-2.5 px-2">
+                <div className="font-mono text-zinc-400">
+                  ${ib.lower_strike.toLocaleString()} / ${ib.upper_strike.toLocaleString()}
+                </div>
+                <div className="text-xs text-zinc-500">
+                  <span className="text-red-400">-${ib.lower_cost}</span>
+                  {' / '}
+                  <span className="text-red-400">-${ib.upper_cost}</span>
+                </div>
+              </td>
+              <td className="text-right py-2.5 px-2 font-mono text-green-400 font-medium">
+                ${ib.net_credit.toFixed(2)}
+              </td>
+              <td className="text-right py-2.5 px-2 font-mono text-green-400">
+                ${ib.max_profit.toFixed(0)}
+              </td>
+              <td className="text-right py-2.5 px-2 font-mono text-red-400">
+                ${ib.max_loss.toFixed(0)}
+              </td>
+              <td className="text-right py-2.5 px-2">
+                <div className="font-mono text-white text-xs">
+                  ${ib.lower_breakeven.toFixed(0)} - ${ib.upper_breakeven.toFixed(0)}
+                </div>
+              </td>
+              <td className="text-right py-2.5 px-2 font-mono text-zinc-400">
+                {ib.risk_reward_ratio.toFixed(1)}:1
+              </td>
+              <td className={`text-right py-2.5 px-2 font-mono ${Math.abs(ib.distance_from_spot) < 1 ? 'text-green-400' : 'text-zinc-400'}`}>
+                {ib.distance_from_spot >= 0 ? '+' : ''}{ib.distance_from_spot.toFixed(1)}%
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
 function App() {
   const [quote, setQuote] = useState(null);
   const [history, setHistory] = useState([]);
