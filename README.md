@@ -32,8 +32,8 @@ A real-time options analysis application that displays stock quotes, historical 
 docker-compose up --build
 
 # Or build manually
-docker build -t options-scanner .
-docker run -p 8000:8000 options-scanner
+docker build -t option-scanner .
+docker run -p 8000:8000 option-scanner
 ```
 
 The application will be available at `http://localhost:8000`
