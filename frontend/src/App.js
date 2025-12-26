@@ -201,6 +201,10 @@ const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskRewa
     return <p className="text-zinc-500 text-center py-8">No {type} spreads available</p>;
   }
 
+  if (!currentPrice) {
+    return <p className="text-zinc-500 text-center py-8">Loading price data...</p>;
+  }
+
   // Apply filters
   const filteredSpreads = spreads.filter(spread => 
     spread.net_credit >= minCredit && 
