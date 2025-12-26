@@ -1783,6 +1783,24 @@ function App() {
                   </SelectContent>
                 </Select>
                 {isLoadingSpreads && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
+                <button
+                  onClick={() => exportCreditSpreads(creditSpreads?.bull_put_spreads, 'BullPut', selectedExpiration)}
+                  disabled={!creditSpreads?.bull_put_spreads?.length}
+                  className="flex items-center gap-1 px-2 py-1 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Export Bull Put Spreads to CSV"
+                >
+                  <Download className="w-3 h-3" />
+                  Bull Put
+                </button>
+                <button
+                  onClick={() => exportCreditSpreads(creditSpreads?.bear_call_spreads, 'BearCall', selectedExpiration)}
+                  disabled={!creditSpreads?.bear_call_spreads?.length}
+                  className="flex items-center gap-1 px-2 py-1 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Export Bear Call Spreads to CSV"
+                >
+                  <Download className="w-3 h-3" />
+                  Bear Call
+                </button>
               </div>
             </div>
 
