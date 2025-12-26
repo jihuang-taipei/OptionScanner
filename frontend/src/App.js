@@ -265,6 +265,8 @@ function App() {
   const [creditSpreads, setCreditSpreads] = useState(null);
   const [isLoadingSpreads, setIsLoadingSpreads] = useState(false);
   const [spreadWidth, setSpreadWidth] = useState(5);
+  const [minCredit, setMinCredit] = useState(0);
+  const [maxRiskReward, setMaxRiskReward] = useState(100);
 
   const fetchQuote = useCallback(async () => {
     try {
