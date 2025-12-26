@@ -106,8 +106,8 @@ class SPXAPITester:
         """Validate SPX quote response structure - backwards compatibility"""
         return self.validate_quote(data, '^GSPC')
 
-    def validate_spx_history(self, data):
-        """Validate SPX history response structure"""
+    def validate_history(self, data, expected_symbol=None):
+        """Validate history response structure for any symbol"""
         required_fields = ['symbol', 'period', 'data']
         
         for field in required_fields:
@@ -115,8 +115,8 @@ class SPXAPITester:
                 print(f"   Missing required field: {field}")
                 return False
         
-        if data['symbol'] != '^GSPC':
-            print(f"   Expected symbol '^GSPC', got '{data['symbol']}'")
+        if expected_symbol and data['symbol'] != expected_symbol:
+            print(f"   Expected symbol '{expected_symbol}', got '{data['symbol']}'")
             return False
         
         if not isinstance(data['data'], list):
@@ -136,8 +136,12 @@ class SPXAPITester:
                 print(f"   Missing field in data point: {field}")
                 return False
         
-        print(f"   History validation passed - {len(data['data'])} data points for period {data['period']}")
+        print(f"   History validation passed - Symbol: {data['symbol']}, {len(data['data'])} data points for period {data['period']}")
         return True
+
+    def validate_spx_history(self, data):
+        """Validate SPX history response structure - backwards compatibility"""
+        return self.validate_history(data, '^GSPC')
 
     def test_basic_connectivity(self):
         """Test basic API connectivity"""
