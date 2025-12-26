@@ -90,6 +90,9 @@ const OptionsTable = ({ options, type, currentPrice }) => {
   const maxStrike = currentPrice * 1.15;
   const filteredOptions = options.filter(opt => opt.strike >= minStrike && opt.strike <= maxStrike);
 
+  // Check if Greeks are available
+  const hasGreeks = filteredOptions.some(opt => opt.delta !== null);
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -99,9 +102,16 @@ const OptionsTable = ({ options, type, currentPrice }) => {
             <th className="text-right py-3 px-2 font-medium">Last</th>
             <th className="text-right py-3 px-2 font-medium">Bid</th>
             <th className="text-right py-3 px-2 font-medium">Ask</th>
-            <th className="text-right py-3 px-2 font-medium">Change</th>
             <th className="text-right py-3 px-2 font-medium">IV%</th>
-            <th className="text-right py-3 px-2 font-medium">Volume</th>
+            {hasGreeks && (
+              <>
+                <th className="text-right py-3 px-2 font-medium text-blue-400">Δ</th>
+                <th className="text-right py-3 px-2 font-medium text-purple-400">Γ</th>
+                <th className="text-right py-3 px-2 font-medium text-amber-400">Θ</th>
+                <th className="text-right py-3 px-2 font-medium text-emerald-400">V</th>
+              </>
+            )}
+            <th className="text-right py-3 px-2 font-medium">Vol</th>
             <th className="text-right py-3 px-2 font-medium">OI</th>
           </tr>
         </thead>
@@ -122,10 +132,23 @@ const OptionsTable = ({ options, type, currentPrice }) => {
               <td className="text-right py-2.5 px-2 font-mono text-white">${opt.lastPrice.toFixed(2)}</td>
               <td className="text-right py-2.5 px-2 font-mono text-zinc-400">${opt.bid.toFixed(2)}</td>
               <td className="text-right py-2.5 px-2 font-mono text-zinc-400">${opt.ask.toFixed(2)}</td>
-              <td className={`text-right py-2.5 px-2 font-mono ${opt.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                {opt.change >= 0 ? '+' : ''}{opt.change.toFixed(2)}
-              </td>
               <td className="text-right py-2.5 px-2 font-mono text-zinc-400">{opt.impliedVolatility.toFixed(1)}%</td>
+              {hasGreeks && (
+                <>
+                  <td className="text-right py-2.5 px-2 font-mono text-blue-400">
+                    {opt.delta !== null ? opt.delta.toFixed(3) : '-'}
+                  </td>
+                  <td className="text-right py-2.5 px-2 font-mono text-purple-400">
+                    {opt.gamma !== null ? opt.gamma.toFixed(4) : '-'}
+                  </td>
+                  <td className="text-right py-2.5 px-2 font-mono text-amber-400">
+                    {opt.theta !== null ? opt.theta.toFixed(3) : '-'}
+                  </td>
+                  <td className="text-right py-2.5 px-2 font-mono text-emerald-400">
+                    {opt.vega !== null ? opt.vega.toFixed(3) : '-'}
+                  </td>
+                </>
+              )}
               <td className="text-right py-2.5 px-2 font-mono text-zinc-400">{opt.volume?.toLocaleString() || '-'}</td>
               <td className="text-right py-2.5 px-2 font-mono text-zinc-400">{opt.openInterest?.toLocaleString() || '-'}</td>
             </tr>
@@ -134,6 +157,14 @@ const OptionsTable = ({ options, type, currentPrice }) => {
       </table>
       {filteredOptions.length === 0 && (
         <p className="text-zinc-500 text-center py-4">No options near current price</p>
+      )}
+      {hasGreeks && (
+        <div className="flex gap-4 mt-3 text-xs text-zinc-500 justify-end">
+          <span><span className="text-blue-400">Δ</span> Delta</span>
+          <span><span className="text-purple-400">Γ</span> Gamma</span>
+          <span><span className="text-amber-400">Θ</span> Theta</span>
+          <span><span className="text-emerald-400">V</span> Vega</span>
+        </div>
       )}
     </div>
   );
