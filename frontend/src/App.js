@@ -1387,6 +1387,67 @@ function App() {
               )}
             </div>
           </div>
+
+          {/* Straddle/Strangle Section */}
+          <div className="lg:col-span-3 glass-card p-6" data-testid="straddle-strangle">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-white flex items-center gap-2">
+                <ArrowLeftRight className="w-5 h-5 text-zinc-400" />
+                Straddles & Strangles
+              </h2>
+              {(isLoadingStraddles || isLoadingStrangles) && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
+            </div>
+
+            <p className="text-zinc-500 text-xs mb-4">
+              Volatility plays: Profit from large moves in either direction. Max loss = premium paid. Unlimited profit potential.
+            </p>
+
+            {straddles && (
+              <div className="mb-4 flex gap-4 text-sm">
+                <span className="text-zinc-400">^SPX: <span className="text-white font-mono">${straddles.current_price?.toLocaleString()}</span></span>
+                <span className="text-zinc-400">Exp: <span className="text-white">{new Date(straddles.expiration).toLocaleDateString()}</span></span>
+              </div>
+            )}
+
+            <Tabs defaultValue="straddles" className="w-full">
+              <TabsList className="bg-zinc-900/50 mb-4">
+                <TabsTrigger value="straddles" className="data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400" data-testid="straddles-tab">
+                  Straddles ({straddles?.straddles?.length || 0})
+                </TabsTrigger>
+                <TabsTrigger value="strangles" className="data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-400" data-testid="strangles-tab">
+                  Strangles ({strangles?.strangles?.length || 0})
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="straddles" className="max-h-96 overflow-y-auto">
+                {isLoadingStraddles ? (
+                  <div className="flex items-center justify-center py-12">
+                    <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-zinc-500 text-xs mb-3">
+                      Buy call + put at same strike. Profit if ^SPX moves more than the total premium paid.
+                    </p>
+                    <StraddleTable straddles={straddles?.straddles} currentPrice={straddles?.current_price} />
+                  </>
+                )}
+              </TabsContent>
+              <TabsContent value="strangles" className="max-h-96 overflow-y-auto">
+                {isLoadingStrangles ? (
+                  <div className="flex items-center justify-center py-12">
+                    <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-zinc-500 text-xs mb-3">
+                      Buy OTM call + OTM put. Cheaper than straddles but needs larger move to profit.
+                    </p>
+                    <StrangleTable strangles={strangles?.strangles} currentPrice={strangles?.current_price} />
+                  </>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
 
         {/* Footer */}
