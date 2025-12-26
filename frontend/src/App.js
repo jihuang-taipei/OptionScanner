@@ -89,21 +89,33 @@ const PeriodButton = ({ period, currentPeriod, onClick, label }) => (
 );
 
 // Options Table Component
-const OptionsTable = ({ options, type, currentPrice }) => {
+const OptionsTable = ({ options, type, currentPrice, minStrike, maxStrike }) => {
   if (!options || options.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No {type} data available</p>;
   }
 
-  // Filter to show strikes around current price (±20%)
-  const minStrike = currentPrice * 0.85;
-  const maxStrike = currentPrice * 1.15;
-  const filteredOptions = options.filter(opt => opt.strike >= minStrike && opt.strike <= maxStrike);
+  // Apply strike range filters
+  const minS = minStrike ? parseFloat(minStrike) : currentPrice * 0.85;
+  const maxS = maxStrike ? parseFloat(maxStrike) : currentPrice * 1.15;
+  const filteredOptions = options.filter(opt => opt.strike >= minS && opt.strike <= maxS);
 
   // Check if Greeks are available
   const hasGreeks = filteredOptions.some(opt => opt.delta !== null);
 
+  if (filteredOptions.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-zinc-500">No options in selected strike range</p>
+        <p className="text-zinc-600 text-sm mt-1">Adjust min/max strike filters</p>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-x-auto">
+      <div className="text-xs text-zinc-500 mb-2">
+        Showing {filteredOptions.length} of {options.length} options
+      </div>
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-zinc-800 text-zinc-400">
