@@ -594,6 +594,168 @@ async def get_credit_spreads(expiration: str, spread: int = 5):
         raise HTTPException(status_code=500, detail=f"Failed to fetch credit spreads: {str(e)}")
 
 
+@api_router.get("/spx/iron-condors", response_model=IronCondorsResponse)
+async def get_iron_condors(expiration: str, spread: int = 5):
+    """Get Iron Condor opportunities for a specific expiration date
+    
+    An Iron Condor combines a Bull Put Spread (below price) with a Bear Call Spread (above price)
+    spread: Width of each spread leg in dollars (default 5)
+    """
+    try:
+        ticker = yf.Ticker("^SPX")
+        
+        if expiration not in ticker.options:
+            raise HTTPException(status_code=400, detail=f"Invalid expiration date")
+        
+        opt_chain = ticker.option_chain(expiration)
+        
+        # Get current SPX price
+        spx_ticker = yf.Ticker("^GSPC")
+        spx_hist = spx_ticker.history(period="1d")
+        current_price = float(spx_hist['Close'].iloc[-1]) if not spx_hist.empty else 5900.0
+        
+        # Calculate time to expiration
+        exp_date = datetime.strptime(expiration, "%Y-%m-%d")
+        today = datetime.now()
+        days_to_exp = (exp_date - today).days
+        T = max(days_to_exp / 365.0, 1/365.0)
+        r = 0.045
+        
+        # Process puts for Bull Put Spreads (below current price)
+        puts_df = opt_chain.puts.copy()
+        puts_df = puts_df.sort_values('strike')
+        
+        bull_puts = []
+        for _, sell_row in puts_df.iterrows():
+            sell_strike = float(sell_row['strike'])
+            buy_strike = sell_strike - spread
+            
+            buy_rows = puts_df[puts_df['strike'] == buy_strike]
+            if buy_rows.empty:
+                continue
+            
+            # Only OTM puts (sell strike below current price)
+            if sell_strike >= current_price * 0.98:  # At least 2% below
+                continue
+                
+            buy_row = buy_rows.iloc[0]
+            sell_bid = float(sell_row['bid']) if not pd.isna(sell_row['bid']) else 0
+            buy_ask = float(buy_row['ask']) if not pd.isna(buy_row['ask']) else 0
+            
+            if sell_bid <= 0 or buy_ask <= 0:
+                continue
+            
+            net_credit = sell_bid - buy_ask
+            if net_credit <= 0:
+                continue
+            
+            sell_iv = float(sell_row['impliedVolatility']) if not pd.isna(sell_row['impliedVolatility']) else 0.3
+            sell_delta, _, _, _ = calculate_greeks(current_price, sell_strike, T, r, sell_iv, 'put')
+            
+            bull_puts.append({
+                'sell_strike': sell_strike,
+                'buy_strike': buy_strike,
+                'credit': net_credit,
+                'sell_delta': sell_delta
+            })
+        
+        # Process calls for Bear Call Spreads (above current price)
+        calls_df = opt_chain.calls.copy()
+        calls_df = calls_df.sort_values('strike')
+        
+        bear_calls = []
+        for _, sell_row in calls_df.iterrows():
+            sell_strike = float(sell_row['strike'])
+            buy_strike = sell_strike + spread
+            
+            buy_rows = calls_df[calls_df['strike'] == buy_strike]
+            if buy_rows.empty:
+                continue
+            
+            # Only OTM calls (sell strike above current price)
+            if sell_strike <= current_price * 1.02:  # At least 2% above
+                continue
+                
+            buy_row = buy_rows.iloc[0]
+            sell_bid = float(sell_row['bid']) if not pd.isna(sell_row['bid']) else 0
+            buy_ask = float(buy_row['ask']) if not pd.isna(buy_row['ask']) else 0
+            
+            if sell_bid <= 0 or buy_ask <= 0:
+                continue
+            
+            net_credit = sell_bid - buy_ask
+            if net_credit <= 0:
+                continue
+            
+            sell_iv = float(sell_row['impliedVolatility']) if not pd.isna(sell_row['impliedVolatility']) else 0.3
+            sell_delta, _, _, _ = calculate_greeks(current_price, sell_strike, T, r, sell_iv, 'call')
+            
+            bear_calls.append({
+                'sell_strike': sell_strike,
+                'buy_strike': buy_strike,
+                'credit': net_credit,
+                'sell_delta': sell_delta
+            })
+        
+        # Combine into Iron Condors
+        iron_condors = []
+        for bp in bull_puts:
+            for bc in bear_calls:
+                net_credit = bp['credit'] + bc['credit']
+                max_profit = net_credit * 100
+                max_loss = (spread - net_credit) * 100
+                
+                lower_breakeven = bp['sell_strike'] - net_credit
+                upper_breakeven = bc['sell_strike'] + net_credit
+                profit_zone_width = upper_breakeven - lower_breakeven
+                profit_zone_pct = (profit_zone_width / current_price) * 100
+                
+                risk_reward = max_loss / max_profit if max_profit > 0 else 999
+                
+                # Probability of profit (roughly based on delta of short strikes)
+                put_prob = (1 - abs(bp['sell_delta'])) if bp['sell_delta'] else 0.5
+                call_prob = (1 - abs(bc['sell_delta'])) if bc['sell_delta'] else 0.5
+                # Simplified: probability both expire OTM
+                prob_profit = put_prob * call_prob * 100
+                
+                iron_condors.append(IronCondor(
+                    put_sell_strike=bp['sell_strike'],
+                    put_buy_strike=bp['buy_strike'],
+                    put_credit=round(bp['credit'], 2),
+                    call_sell_strike=bc['sell_strike'],
+                    call_buy_strike=bc['buy_strike'],
+                    call_credit=round(bc['credit'], 2),
+                    net_credit=round(net_credit, 2),
+                    max_profit=round(max_profit, 2),
+                    max_loss=round(max_loss, 2),
+                    lower_breakeven=round(lower_breakeven, 2),
+                    upper_breakeven=round(upper_breakeven, 2),
+                    profit_zone_width=round(profit_zone_width, 2),
+                    profit_zone_pct=round(profit_zone_pct, 2),
+                    risk_reward_ratio=round(risk_reward, 2),
+                    probability_profit=round(prob_profit, 1)
+                ))
+        
+        # Sort by probability of profit and limit
+        iron_condors.sort(key=lambda x: x.probability_profit or 0, reverse=True)
+        
+        logger.info(f"Iron Condors fetched: {len(iron_condors)} combinations")
+        
+        return IronCondorsResponse(
+            symbol="^SPX",
+            expiration=expiration,
+            current_price=round(current_price, 2),
+            spread_width=spread,
+            iron_condors=iron_condors[:20]  # Top 20
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching iron condors: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch iron condors: {str(e)}")
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
