@@ -1261,79 +1261,109 @@ function App() {
     if (!expiration) return;
     setIsLoadingSpreads(true);
     try {
-      const response = await axios.get(`${API}/spx/credit-spreads?expiration=${expiration}&spread=${width}`);
+      const response = await axios.get(`${API}/credit-spreads?symbol=${symbol}&expiration=${expiration}&spread=${width}`);
       setCreditSpreads(response.data);
     } catch (e) {
-      console.error("Error fetching credit spreads:", e);
+      console.error(`Error fetching ${symbol} credit spreads:`, e);
     } finally {
       setIsLoadingSpreads(false);
     }
-  }, []);
+  }, [symbol]);
 
   const fetchIronCondors = useCallback(async (expiration, width) => {
     if (!expiration) return;
     setIsLoadingCondors(true);
     try {
-      const response = await axios.get(`${API}/spx/iron-condors?expiration=${expiration}&spread=${width}`);
+      const response = await axios.get(`${API}/iron-condors?symbol=${symbol}&expiration=${expiration}&spread=${width}`);
       setIronCondors(response.data);
     } catch (e) {
-      console.error("Error fetching iron condors:", e);
+      console.error(`Error fetching ${symbol} iron condors:`, e);
     } finally {
       setIsLoadingCondors(false);
     }
-  }, []);
+  }, [symbol]);
 
   const fetchIronButterflies = useCallback(async (expiration, wing) => {
     if (!expiration) return;
     setIsLoadingButterflies(true);
     try {
-      const response = await axios.get(`${API}/spx/iron-butterflies?expiration=${expiration}&wing=${wing}`);
+      const response = await axios.get(`${API}/iron-butterflies?symbol=${symbol}&expiration=${expiration}&wing=${wing}`);
       setIronButterflies(response.data);
     } catch (e) {
-      console.error("Error fetching iron butterflies:", e);
+      console.error(`Error fetching ${symbol} iron butterflies:`, e);
     } finally {
       setIsLoadingButterflies(false);
     }
-  }, []);
+  }, [symbol]);
 
   const fetchStraddles = useCallback(async (expiration) => {
     if (!expiration) return;
     setIsLoadingStraddles(true);
     try {
-      const response = await axios.get(`${API}/spx/straddles?expiration=${expiration}`);
+      const response = await axios.get(`${API}/straddles?symbol=${symbol}&expiration=${expiration}`);
       setStraddles(response.data);
     } catch (e) {
-      console.error("Error fetching straddles:", e);
+      console.error(`Error fetching ${symbol} straddles:`, e);
     } finally {
       setIsLoadingStraddles(false);
     }
-  }, []);
+  }, [symbol]);
 
   const fetchStrangles = useCallback(async (expiration) => {
     if (!expiration) return;
     setIsLoadingStrangles(true);
     try {
-      const response = await axios.get(`${API}/spx/strangles?expiration=${expiration}`);
+      const response = await axios.get(`${API}/strangles?symbol=${symbol}&expiration=${expiration}`);
       setStrangles(response.data);
     } catch (e) {
-      console.error("Error fetching strangles:", e);
+      console.error(`Error fetching ${symbol} strangles:`, e);
     } finally {
       setIsLoadingStrangles(false);
     }
-  }, []);
+  }, [symbol]);
 
   const fetchCalendarSpreads = useCallback(async (nearExp, farExp) => {
     if (!nearExp || !farExp) return;
     setIsLoadingCalendars(true);
     try {
-      const response = await axios.get(`${API}/spx/calendar-spreads?near_exp=${nearExp}&far_exp=${farExp}`);
+      const response = await axios.get(`${API}/calendar-spreads?symbol=${symbol}&near_exp=${nearExp}&far_exp=${farExp}`);
       setCalendarSpreads(response.data);
     } catch (e) {
-      console.error("Error fetching calendar spreads:", e);
+      console.error(`Error fetching ${symbol} calendar spreads:`, e);
     } finally {
       setIsLoadingCalendars(false);
     }
+  }, [symbol]);
+
+  // Function to change symbol
+  const handleSymbolChange = useCallback((newSymbol) => {
+    setSymbol(newSymbol);
+    setSymbolInput(newSymbol);
+    // Reset data when symbol changes
+    setQuote(null);
+    setHistory([]);
+    setExpirations([]);
+    setSelectedExpiration("");
+    setFarExpiration("");
+    setOptionsChain(null);
+    setCreditSpreads(null);
+    setIronCondors(null);
+    setIronButterflies(null);
+    setStraddles(null);
+    setStrangles(null);
+    setCalendarSpreads(null);
+    setIsLoadingQuote(true);
+    setIsLoadingHistory(true);
+    setError(null);
   }, []);
+
+  const handleSymbolInputSubmit = useCallback((e) => {
+    e.preventDefault();
+    const trimmed = symbolInput.trim().toUpperCase();
+    if (trimmed && trimmed !== symbol) {
+      handleSymbolChange(trimmed);
+    }
+  }, [symbolInput, symbol, handleSymbolChange]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
