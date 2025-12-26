@@ -401,6 +401,10 @@ function App() {
   const [spreadWidth, setSpreadWidth] = useState(5);
   const [minCredit, setMinCredit] = useState(0);
   const [maxRiskReward, setMaxRiskReward] = useState(100);
+  
+  // Iron Condors state
+  const [ironCondors, setIronCondors] = useState(null);
+  const [isLoadingCondors, setIsLoadingCondors] = useState(false);
 
   const fetchQuote = useCallback(async () => {
     try {
