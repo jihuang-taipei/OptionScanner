@@ -785,6 +785,143 @@ async def get_iron_condors(expiration: str, spread: int = 5):
         raise HTTPException(status_code=500, detail=f"Failed to fetch iron condors: {str(e)}")
 
 
+@api_router.get("/spx/iron-butterflies", response_model=IronButterfliesResponse)
+async def get_iron_butterflies(expiration: str, wing: int = 25):
+    """Get Iron Butterfly opportunities for a specific expiration date
+    
+    An Iron Butterfly sells ATM call + put at same strike, buys OTM wings
+    wing: Width of wings from center strike in dollars (default 25)
+    """
+    try:
+        ticker = yf.Ticker("^SPX")
+        
+        if expiration not in ticker.options:
+            raise HTTPException(status_code=400, detail=f"Invalid expiration date")
+        
+        opt_chain = ticker.option_chain(expiration)
+        
+        # Get current SPX price
+        spx_ticker = yf.Ticker("^GSPC")
+        spx_hist = spx_ticker.history(period="1d")
+        current_price = float(spx_hist['Close'].iloc[-1]) if not spx_hist.empty else 5900.0
+        
+        # Calculate time to expiration
+        exp_date = datetime.strptime(expiration, "%Y-%m-%d")
+        today = datetime.now()
+        days_to_exp = (exp_date - today).days
+        T = max(days_to_exp / 365.0, 1/365.0)
+        r = 0.045
+        
+        calls_df = opt_chain.calls.copy()
+        puts_df = opt_chain.puts.copy()
+        
+        # Find potential center strikes (near ATM)
+        # Look for strikes within 5% of current price
+        min_center = current_price * 0.95
+        max_center = current_price * 1.05
+        
+        iron_butterflies = []
+        
+        for _, call_row in calls_df.iterrows():
+            center_strike = float(call_row['strike'])
+            
+            # Skip if too far from ATM
+            if center_strike < min_center or center_strike > max_center:
+                continue
+            
+            upper_strike = center_strike + wing
+            lower_strike = center_strike - wing
+            
+            # Find matching put at center strike
+            center_puts = puts_df[puts_df['strike'] == center_strike]
+            if center_puts.empty:
+                continue
+            put_row = center_puts.iloc[0]
+            
+            # Find wing options
+            upper_calls = calls_df[calls_df['strike'] == upper_strike]
+            lower_puts = puts_df[puts_df['strike'] == lower_strike]
+            
+            if upper_calls.empty or lower_puts.empty:
+                continue
+            
+            upper_call = upper_calls.iloc[0]
+            lower_put = lower_puts.iloc[0]
+            
+            # Get premiums (sell center, buy wings)
+            center_call_bid = float(call_row['bid']) if not pd.isna(call_row['bid']) else 0
+            center_put_bid = float(put_row['bid']) if not pd.isna(put_row['bid']) else 0
+            upper_call_ask = float(upper_call['ask']) if not pd.isna(upper_call['ask']) else 0
+            lower_put_ask = float(lower_put['ask']) if not pd.isna(lower_put['ask']) else 0
+            
+            if center_call_bid <= 0 or center_put_bid <= 0 or upper_call_ask <= 0 or lower_put_ask <= 0:
+                continue
+            
+            # Net credit = sell center call + sell center put - buy upper call - buy lower put
+            net_credit = center_call_bid + center_put_bid - upper_call_ask - lower_put_ask
+            
+            if net_credit <= 0:
+                continue
+            
+            max_profit = net_credit * 100  # If expires exactly at center strike
+            max_loss = (wing - net_credit) * 100  # If expires beyond wings
+            
+            lower_breakeven = center_strike - net_credit
+            upper_breakeven = center_strike + net_credit
+            
+            risk_reward = max_loss / max_profit if max_profit > 0 else 999
+            
+            # Distance from current price
+            distance_from_spot = ((center_strike - current_price) / current_price) * 100
+            
+            # Probability of profit (simplified - based on breakeven range)
+            # Using center strike delta as rough estimate
+            center_iv = float(call_row['impliedVolatility']) if not pd.isna(call_row['impliedVolatility']) else 0.3
+            center_delta, _, _, _ = calculate_greeks(current_price, center_strike, T, r, center_iv, 'call')
+            
+            # Rough probability - butterfly profits when price stays near center
+            # This is simplified; real calculation would use probability distribution
+            breakeven_range = upper_breakeven - lower_breakeven
+            prob_profit = min(90, max(20, (breakeven_range / current_price) * 1000))
+            
+            iron_butterflies.append(IronButterfly(
+                center_strike=center_strike,
+                call_premium=round(center_call_bid, 2),
+                put_premium=round(center_put_bid, 2),
+                upper_strike=upper_strike,
+                lower_strike=lower_strike,
+                upper_cost=round(upper_call_ask, 2),
+                lower_cost=round(lower_put_ask, 2),
+                net_credit=round(net_credit, 2),
+                max_profit=round(max_profit, 2),
+                max_loss=round(max_loss, 2),
+                lower_breakeven=round(lower_breakeven, 2),
+                upper_breakeven=round(upper_breakeven, 2),
+                risk_reward_ratio=round(risk_reward, 2),
+                probability_profit=round(prob_profit, 1),
+                distance_from_spot=round(distance_from_spot, 2)
+            ))
+        
+        # Sort by distance from spot (closest to ATM first)
+        iron_butterflies.sort(key=lambda x: abs(x.distance_from_spot))
+        
+        logger.info(f"Iron Butterflies fetched: {len(iron_butterflies)} combinations")
+        
+        return IronButterfliesResponse(
+            symbol="^SPX",
+            expiration=expiration,
+            current_price=round(current_price, 2),
+            wing_width=wing,
+            iron_butterflies=iron_butterflies[:15]  # Top 15
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching iron butterflies: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch iron butterflies: {str(e)}")
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
