@@ -21,6 +21,7 @@ Build an app to retrieve SPX quote from Yahoo Finance
 - [x] 52-Week Range indicator with visual progress bar
 - [x] Refresh button with loading state
 - [x] Dark theme "Midnight Trader" design with glassmorphism cards
+- [x] **Auto-refresh at configurable intervals** (Off, 10s, 30s, 1min, 5min) with live countdown
 
 ## API Endpoints
 - `GET /api/spx/quote` - Current SPX quote with all metrics
@@ -32,7 +33,6 @@ Build an app to retrieve SPX quote from Yahoo Finance
 
 ## Backlog / Future Enhancements
 - P1: Add multiple stock/index tracking
-- P1: Auto-refresh at configurable intervals
 - P2: Price alerts/notifications
 - P2: Save favorite watchlist to MongoDB
 - P3: Technical indicators (MA, RSI, MACD)
