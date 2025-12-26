@@ -724,7 +724,7 @@ function App() {
 
           {/* Credit Spreads Section */}
           <div className="lg:col-span-3 glass-card p-6" data-testid="credit-spreads">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-white flex items-center gap-2">
                 <Calculator className="w-5 h-5 text-zinc-400" />
                 Credit Spreads (${spreadWidth} wide)
@@ -732,7 +732,7 @@ function App() {
               <div className="flex items-center gap-3">
                 <span className="text-zinc-500 text-sm">Width:</span>
                 <Select value={spreadWidth.toString()} onValueChange={(v) => setSpreadWidth(parseInt(v))}>
-                  <SelectTrigger className="w-24 bg-zinc-900 border-zinc-800 text-white" data-testid="spread-width-select">
+                  <SelectTrigger className="w-20 bg-zinc-900 border-zinc-800 text-white" data-testid="spread-width-select">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-900 border-zinc-800">
@@ -745,6 +745,46 @@ function App() {
                 </Select>
                 {isLoadingSpreads && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
               </div>
+            </div>
+
+            {/* Filter Controls */}
+            <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-zinc-900/50 rounded-lg border border-zinc-800">
+              <div className="flex items-center gap-2">
+                <label className="text-zinc-400 text-sm">Min Credit:</label>
+                <Select value={minCredit.toString()} onValueChange={(v) => setMinCredit(parseFloat(v))}>
+                  <SelectTrigger className="w-24 bg-zinc-800 border-zinc-700 text-white text-sm h-8" data-testid="min-credit-filter">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800">
+                    {[0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.50, 0.75, 1.00, 1.50, 2.00].map((c) => (
+                      <SelectItem key={c} value={c.toString()} className="text-white hover:bg-zinc-800">
+                        ${c.toFixed(2)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-zinc-400 text-sm">Max Risk/Reward:</label>
+                <Select value={maxRiskReward.toString()} onValueChange={(v) => setMaxRiskReward(parseFloat(v))}>
+                  <SelectTrigger className="w-24 bg-zinc-800 border-zinc-700 text-white text-sm h-8" data-testid="max-rr-filter">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800">
+                    {[5, 10, 15, 20, 25, 50, 100].map((rr) => (
+                      <SelectItem key={rr} value={rr.toString()} className="text-white hover:bg-zinc-800">
+                        {rr}:1
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <button 
+                onClick={() => { setMinCredit(0); setMaxRiskReward(100); }}
+                className="text-zinc-500 hover:text-white text-sm underline transition-colors"
+              >
+                Reset filters
+              </button>
             </div>
 
             {creditSpreads && (
@@ -773,7 +813,13 @@ function App() {
                     <p className="text-zinc-500 text-xs mb-3">
                       Bullish strategy: Sell higher strike put, buy lower strike put. Profit if SPY stays above sell strike.
                     </p>
-                    <CreditSpreadTable spreads={creditSpreads?.bull_put_spreads} type="Bull Put" currentPrice={creditSpreads?.current_price} />
+                    <CreditSpreadTable 
+                      spreads={creditSpreads?.bull_put_spreads} 
+                      type="Bull Put" 
+                      currentPrice={creditSpreads?.current_price}
+                      minCredit={minCredit}
+                      maxRiskReward={maxRiskReward}
+                    />
                   </>
                 )}
               </TabsContent>
@@ -787,7 +833,13 @@ function App() {
                     <p className="text-zinc-500 text-xs mb-3">
                       Bearish strategy: Sell lower strike call, buy higher strike call. Profit if SPY stays below sell strike.
                     </p>
-                    <CreditSpreadTable spreads={creditSpreads?.bear_call_spreads} type="Bear Call" currentPrice={creditSpreads?.current_price} />
+                    <CreditSpreadTable 
+                      spreads={creditSpreads?.bear_call_spreads} 
+                      type="Bear Call" 
+                      currentPrice={creditSpreads?.current_price}
+                      minCredit={minCredit}
+                      maxRiskReward={maxRiskReward}
+                    />
                   </>
                 )}
               </TabsContent>
