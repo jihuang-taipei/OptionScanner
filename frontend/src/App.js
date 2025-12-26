@@ -29,6 +29,209 @@ import {
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// P/L calculation functions for different strategies
+const calculatePLData = (strategy, currentPrice) => {
+  if (!strategy || !currentPrice) return [];
+  
+  const points = [];
+  const range = currentPrice * 0.15; // ±15% range
+  const minPrice = currentPrice - range;
+  const maxPrice = currentPrice + range;
+  const step = range / 50;
+  
+  for (let price = minPrice; price <= maxPrice; price += step) {
+    let pl = 0;
+    
+    switch (strategy.type) {
+      case 'bull_put':
+        // Bull Put Spread: sell higher put, buy lower put
+        pl = calculateBullPutPL(price, strategy.sell_strike, strategy.buy_strike, strategy.net_credit);
+        break;
+      case 'bear_call':
+        // Bear Call Spread: sell lower call, buy higher call
+        pl = calculateBearCallPL(price, strategy.sell_strike, strategy.buy_strike, strategy.net_credit);
+        break;
+      case 'iron_condor':
+        pl = calculateIronCondorPL(price, strategy);
+        break;
+      case 'iron_butterfly':
+        pl = calculateIronButterflyPL(price, strategy);
+        break;
+      case 'straddle':
+        pl = calculateStraddlePL(price, strategy.strike, strategy.total_cost);
+        break;
+      case 'strangle':
+        pl = calculateStranglePL(price, strategy.call_strike, strategy.put_strike, strategy.total_cost);
+        break;
+      default:
+        pl = 0;
+    }
+    
+    points.push({
+      price: Math.round(price),
+      pl: Math.round(pl),
+      breakeven: pl === 0
+    });
+  }
+  
+  return points;
+};
+
+const calculateBullPutPL = (price, sellStrike, buyStrike, credit) => {
+  const creditPer = credit * 100;
+  if (price >= sellStrike) return creditPer;
+  if (price <= buyStrike) return creditPer - (sellStrike - buyStrike) * 100;
+  return creditPer - (sellStrike - price) * 100;
+};
+
+const calculateBearCallPL = (price, sellStrike, buyStrike, credit) => {
+  const creditPer = credit * 100;
+  if (price <= sellStrike) return creditPer;
+  if (price >= buyStrike) return creditPer - (buyStrike - sellStrike) * 100;
+  return creditPer - (price - sellStrike) * 100;
+};
+
+const calculateIronCondorPL = (price, strategy) => {
+  const putPL = calculateBullPutPL(price, strategy.put_sell_strike, strategy.put_buy_strike, strategy.put_credit);
+  const callPL = calculateBearCallPL(price, strategy.call_sell_strike, strategy.call_buy_strike, strategy.call_credit);
+  return putPL + callPL;
+};
+
+const calculateIronButterflyPL = (price, strategy) => {
+  const credit = strategy.net_credit * 100;
+  const wing = strategy.upper_strike - strategy.center_strike;
+  
+  if (price === strategy.center_strike) return credit;
+  if (price <= strategy.lower_strike || price >= strategy.upper_strike) {
+    return credit - wing * 100;
+  }
+  
+  const distanceFromCenter = Math.abs(price - strategy.center_strike);
+  return credit - distanceFromCenter * 100;
+};
+
+const calculateStraddlePL = (price, strike, cost) => {
+  const costPer = cost * 100;
+  const intrinsicValue = Math.abs(price - strike) * 100;
+  return intrinsicValue - costPer;
+};
+
+const calculateStranglePL = (price, callStrike, putStrike, cost) => {
+  const costPer = cost * 100;
+  let intrinsicValue = 0;
+  if (price > callStrike) intrinsicValue = (price - callStrike) * 100;
+  else if (price < putStrike) intrinsicValue = (putStrike - price) * 100;
+  return intrinsicValue - costPer;
+};
+
+// P/L Chart Tooltip
+const PLTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    const pl = payload[0].value;
+    return (
+      <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-3 shadow-lg">
+        <p className="text-zinc-400 text-sm">Price: <span className="text-white font-mono">${label}</span></p>
+        <p className={`text-sm font-mono font-medium ${pl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+          P/L: {pl >= 0 ? '+' : ''}${pl.toLocaleString()}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
+// P/L Chart Component
+const PLChart = ({ strategy, currentPrice, onClose }) => {
+  if (!strategy) return null;
+  
+  const plData = calculatePLData(strategy, currentPrice);
+  const maxProfit = Math.max(...plData.map(d => d.pl));
+  const maxLoss = Math.min(...plData.map(d => d.pl));
+  
+  // Find breakeven points
+  const breakevenPoints = [];
+  for (let i = 1; i < plData.length; i++) {
+    if ((plData[i-1].pl < 0 && plData[i].pl >= 0) || (plData[i-1].pl >= 0 && plData[i].pl < 0)) {
+      breakevenPoints.push(plData[i].price);
+    }
+  }
+  
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-3 gap-4 text-sm">
+        <div className="bg-zinc-800/50 rounded-lg p-3">
+          <p className="text-zinc-500 text-xs">Max Profit</p>
+          <p className="text-green-400 font-mono font-medium">${maxProfit.toLocaleString()}</p>
+        </div>
+        <div className="bg-zinc-800/50 rounded-lg p-3">
+          <p className="text-zinc-500 text-xs">Max Loss</p>
+          <p className="text-red-400 font-mono font-medium">${Math.abs(maxLoss).toLocaleString()}</p>
+        </div>
+        <div className="bg-zinc-800/50 rounded-lg p-3">
+          <p className="text-zinc-500 text-xs">Breakeven(s)</p>
+          <p className="text-white font-mono text-xs">
+            {breakevenPoints.length > 0 ? breakevenPoints.map(b => `$${b}`).join(', ') : 'N/A'}
+          </p>
+        </div>
+      </div>
+      
+      <div className="h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <ComposedChart data={plData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+            <defs>
+              <linearGradient id="plGradientPositive" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+              </linearGradient>
+              <linearGradient id="plGradientNegative" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <XAxis 
+              dataKey="price" 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#71717a', fontSize: 11 }}
+              tickFormatter={(v) => `$${v}`}
+            />
+            <YAxis 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#71717a', fontSize: 11 }}
+              tickFormatter={(v) => `$${v}`}
+              domain={[maxLoss * 1.1, maxProfit * 1.1]}
+            />
+            <Tooltip content={<PLTooltip />} />
+            <ReferenceLine y={0} stroke="#52525b" strokeDasharray="3 3" />
+            <ReferenceLine x={currentPrice} stroke="#3b82f6" strokeDasharray="3 3" label={{ value: 'Current', fill: '#3b82f6', fontSize: 10 }} />
+            <Area 
+              type="monotone" 
+              dataKey="pl" 
+              stroke="none"
+              fill="url(#plGradientPositive)"
+              fillOpacity={1}
+              isAnimationActive={false}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="pl" 
+              stroke="#a855f7"
+              strokeWidth={2}
+              dot={false}
+              isAnimationActive={false}
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </div>
+      
+      <div className="text-xs text-zinc-500 text-center">
+        P/L at expiration based on ^SPX price. Current price: ${currentPrice?.toLocaleString()}
+      </div>
+    </div>
+  );
+};
+
 // Auto-refresh interval options
 const REFRESH_INTERVALS = [
   { value: 0, label: "Off" },
