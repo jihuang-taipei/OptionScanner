@@ -229,6 +229,31 @@ class StranglesResponse(BaseModel):
     strangles: List[Strangle]
 
 
+class CalendarSpread(BaseModel):
+    strike: float
+    option_type: str  # 'call' or 'put'
+    near_expiration: str
+    far_expiration: str
+    near_price: float  # sell (collect)
+    far_price: float  # buy (pay)
+    net_debit: float
+    near_iv: float
+    far_iv: float
+    iv_difference: float
+    near_theta: Optional[float] = None
+    far_theta: Optional[float] = None
+    theta_edge: Optional[float] = None
+    distance_from_spot: float
+
+
+class CalendarSpreadsResponse(BaseModel):
+    symbol: str
+    near_expiration: str
+    far_expiration: str
+    current_price: float
+    calendar_spreads: List[CalendarSpread]
+
+
 def calculate_greeks(S: float, K: float, T: float, r: float, sigma: float, option_type: str = 'call'):
     """
     Calculate option Greeks using Black-Scholes model
