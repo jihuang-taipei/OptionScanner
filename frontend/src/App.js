@@ -781,7 +781,7 @@ const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, onSe
 };
 
 // Iron Butterfly Table Component
-const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskReward }) => {
+const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskReward, onSelectStrategy }) => {
   if (!butterflies || butterflies.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Iron Butterflies available</p>;
   }
@@ -821,6 +821,7 @@ const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskRewar
             <th className="text-right py-3 px-2 font-medium">Breakevens</th>
             <th className="text-right py-3 px-2 font-medium">R/R</th>
             <th className="text-right py-3 px-2 font-medium">From Spot</th>
+            <th className="text-center py-3 px-2 font-medium">P/L</th>
           </tr>
         </thead>
         <tbody>
@@ -867,6 +868,22 @@ const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskRewar
               </td>
               <td className={`text-right py-2.5 px-2 font-mono ${Math.abs(ib.distance_from_spot) < 1 ? 'text-green-400' : 'text-zinc-400'}`}>
                 {ib.distance_from_spot >= 0 ? '+' : ''}{ib.distance_from_spot.toFixed(1)}%
+              </td>
+              <td className="text-center py-2.5 px-2">
+                <button
+                  onClick={() => onSelectStrategy({
+                    type: 'iron_butterfly',
+                    name: `IB ${ib.lower_strike}/${ib.center_strike}/${ib.upper_strike}`,
+                    center_strike: ib.center_strike,
+                    lower_strike: ib.lower_strike,
+                    upper_strike: ib.upper_strike,
+                    net_credit: ib.net_credit
+                  })}
+                  className="text-purple-400 hover:text-purple-300 transition-colors"
+                  title="View P/L Chart"
+                >
+                  <LineChartIcon className="w-4 h-4" />
+                </button>
               </td>
             </tr>
           ))}
