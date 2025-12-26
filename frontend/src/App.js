@@ -701,6 +701,78 @@ function App() {
               </TabsContent>
             </Tabs>
           </div>
+
+          {/* Credit Spreads Section */}
+          <div className="lg:col-span-3 glass-card p-6" data-testid="credit-spreads">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-medium text-white flex items-center gap-2">
+                <Calculator className="w-5 h-5 text-zinc-400" />
+                Credit Spreads (${spreadWidth} wide)
+              </h2>
+              <div className="flex items-center gap-3">
+                <span className="text-zinc-500 text-sm">Width:</span>
+                <Select value={spreadWidth.toString()} onValueChange={(v) => setSpreadWidth(parseInt(v))}>
+                  <SelectTrigger className="w-24 bg-zinc-900 border-zinc-800 text-white" data-testid="spread-width-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800">
+                    {[1, 2, 5, 10, 15, 20].map((w) => (
+                      <SelectItem key={w} value={w.toString()} className="text-white hover:bg-zinc-800">
+                        ${w}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {isLoadingSpreads && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
+              </div>
+            </div>
+
+            {creditSpreads && (
+              <div className="mb-4 flex gap-4 text-sm">
+                <span className="text-zinc-400">SPY: <span className="text-white font-mono">${creditSpreads.current_price}</span></span>
+                <span className="text-zinc-400">Exp: <span className="text-white">{new Date(creditSpreads.expiration).toLocaleDateString()}</span></span>
+              </div>
+            )}
+
+            <Tabs defaultValue="bull-put" className="w-full">
+              <TabsList className="bg-zinc-900/50 mb-4">
+                <TabsTrigger value="bull-put" className="data-[state=active]:bg-green-500/20 data-[state=active]:text-green-500" data-testid="bull-put-tab">
+                  Bull Put Spreads ({creditSpreads?.bull_put_spreads?.length || 0})
+                </TabsTrigger>
+                <TabsTrigger value="bear-call" className="data-[state=active]:bg-red-500/20 data-[state=active]:text-red-500" data-testid="bear-call-tab">
+                  Bear Call Spreads ({creditSpreads?.bear_call_spreads?.length || 0})
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="bull-put" className="max-h-96 overflow-y-auto">
+                {isLoadingSpreads ? (
+                  <div className="flex items-center justify-center py-12">
+                    <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-zinc-500 text-xs mb-3">
+                      Bullish strategy: Sell higher strike put, buy lower strike put. Profit if SPY stays above sell strike.
+                    </p>
+                    <CreditSpreadTable spreads={creditSpreads?.bull_put_spreads} type="Bull Put" currentPrice={creditSpreads?.current_price} />
+                  </>
+                )}
+              </TabsContent>
+              <TabsContent value="bear-call" className="max-h-96 overflow-y-auto">
+                {isLoadingSpreads ? (
+                  <div className="flex items-center justify-center py-12">
+                    <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-zinc-500 text-xs mb-3">
+                      Bearish strategy: Sell lower strike call, buy higher strike call. Profit if SPY stays below sell strike.
+                    </p>
+                    <CreditSpreadTable spreads={creditSpreads?.bear_call_spreads} type="Bear Call" currentPrice={creditSpreads?.current_price} />
+                  </>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
 
         {/* Footer */}
