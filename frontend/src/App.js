@@ -388,8 +388,9 @@ function App() {
   useEffect(() => {
     if (selectedExpiration) {
       fetchOptionsChain(selectedExpiration);
+      fetchCreditSpreads(selectedExpiration, spreadWidth);
     }
-  }, [selectedExpiration, fetchOptionsChain]);
+  }, [selectedExpiration, fetchOptionsChain, fetchCreditSpreads, spreadWidth]);
 
   const isPositive = quote?.change >= 0;
   const priceColor = isPositive ? 'text-green-500' : 'text-red-500';
