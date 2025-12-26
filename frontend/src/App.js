@@ -260,6 +260,11 @@ function App() {
   const [optionsChain, setOptionsChain] = useState(null);
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
   const [spyPrice, setSpyPrice] = useState(null);
+  
+  // Credit spreads state
+  const [creditSpreads, setCreditSpreads] = useState(null);
+  const [isLoadingSpreads, setIsLoadingSpreads] = useState(false);
+  const [spreadWidth, setSpreadWidth] = useState(5);
 
   const fetchQuote = useCallback(async () => {
     try {
