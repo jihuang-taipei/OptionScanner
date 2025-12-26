@@ -180,15 +180,33 @@ const OptionsTable = ({ options, type, currentPrice }) => {
 };
 
 // Credit Spread Table Component
-const CreditSpreadTable = ({ spreads, type, currentPrice }) => {
+const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskReward }) => {
   if (!spreads || spreads.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No {type} spreads available</p>;
   }
 
+  // Apply filters
+  const filteredSpreads = spreads.filter(spread => 
+    spread.net_credit >= minCredit && 
+    spread.risk_reward_ratio <= maxRiskReward
+  );
+
   const isBullPut = type === "Bull Put";
+
+  if (filteredSpreads.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-zinc-500">No spreads match your filters</p>
+        <p className="text-zinc-600 text-sm mt-1">Try lowering min credit or increasing max risk/reward</p>
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-x-auto">
+      <div className="text-xs text-zinc-500 mb-2">
+        Showing {filteredSpreads.length} of {spreads.length} spreads
+      </div>
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-zinc-800 text-zinc-400">
@@ -204,7 +222,7 @@ const CreditSpreadTable = ({ spreads, type, currentPrice }) => {
           </tr>
         </thead>
         <tbody>
-          {spreads.map((spread, idx) => {
+          {filteredSpreads.map((spread, idx) => {
             const distanceFromPrice = isBullPut 
               ? ((currentPrice - spread.sell_strike) / currentPrice * 100).toFixed(1)
               : ((spread.sell_strike - currentPrice) / currentPrice * 100).toFixed(1);
