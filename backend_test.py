@@ -411,6 +411,218 @@ class SPXAPITester:
             params={"expiration": expiration}
         )
 
+    # New tests for configurable symbol feature
+    def test_configurable_quote(self):
+        """Test quote endpoint with different symbols"""
+        results = []
+        for symbol in self.test_symbols:
+            success, data = self.run_test(
+                f"Quote for {symbol}",
+                "GET",
+                "api/quote",
+                200,
+                params={"symbol": symbol},
+                validate_response=lambda d: self.validate_quote(d, symbol)
+            )
+            results.append((symbol, success, data.get('price', 0) if data else 0))
+        return results
+
+    def test_configurable_history(self):
+        """Test history endpoint with different symbols"""
+        results = []
+        for symbol in self.test_symbols:
+            success, data = self.run_test(
+                f"History for {symbol}",
+                "GET",
+                "api/history",
+                200,
+                params={"symbol": symbol, "period": "1mo"},
+                validate_response=lambda d: self.validate_history(d, symbol)
+            )
+            results.append((symbol, success))
+        return results
+
+    def test_configurable_options_expirations(self):
+        """Test options expirations with different symbols"""
+        results = []
+        for symbol in self.test_symbols:
+            success, data = self.run_test(
+                f"Options Expirations for {symbol}",
+                "GET",
+                "api/options/expirations",
+                200,
+                params={"symbol": symbol},
+                validate_response=lambda d: self.validate_options_expirations_symbol(d, symbol)
+            )
+            results.append((symbol, success, len(data.get('expirations', [])) if data else 0))
+        return results
+
+    def test_configurable_options_chain(self):
+        """Test options chain with different symbols"""
+        results = []
+        for symbol in self.test_symbols:
+            # Get expirations first
+            exp_success, exp_data = self.run_test(
+                f"Get expirations for {symbol}",
+                "GET",
+                "api/options/expirations",
+                200,
+                params={"symbol": symbol}
+            )
+            
+            if exp_success and exp_data.get('expirations'):
+                expiration = exp_data['expirations'][0]
+                success, data = self.run_test(
+                    f"Options Chain for {symbol} ({expiration})",
+                    "GET",
+                    "api/options/chain",
+                    200,
+                    params={"symbol": symbol, "expiration": expiration},
+                    validate_response=lambda d: self.validate_options_chain_symbol(d, symbol)
+                )
+                results.append((symbol, success, len(data.get('calls', [])) if data else 0))
+            else:
+                results.append((symbol, False, 0))
+        return results
+
+    def test_configurable_credit_spreads(self):
+        """Test credit spreads with different symbols"""
+        results = []
+        for symbol in self.test_symbols:
+            # Get expirations first
+            exp_success, exp_data = self.run_test(
+                f"Get expirations for {symbol}",
+                "GET",
+                "api/options/expirations",
+                200,
+                params={"symbol": symbol}
+            )
+            
+            if exp_success and exp_data.get('expirations'):
+                expiration = exp_data['expirations'][0]
+                success, data = self.run_test(
+                    f"Credit Spreads for {symbol} ({expiration})",
+                    "GET",
+                    "api/credit-spreads",
+                    200,
+                    params={"symbol": symbol, "expiration": expiration, "spread": 5}
+                )
+                results.append((symbol, success))
+            else:
+                results.append((symbol, False))
+        return results
+
+    def test_configurable_iron_condors(self):
+        """Test iron condors with different symbols"""
+        results = []
+        for symbol in self.test_symbols:
+            # Get expirations first
+            exp_success, exp_data = self.run_test(
+                f"Get expirations for {symbol}",
+                "GET",
+                "api/options/expirations",
+                200,
+                params={"symbol": symbol}
+            )
+            
+            if exp_success and exp_data.get('expirations'):
+                expiration = exp_data['expirations'][0]
+                success, data = self.run_test(
+                    f"Iron Condors for {symbol} ({expiration})",
+                    "GET",
+                    "api/iron-condors",
+                    200,
+                    params={"symbol": symbol, "expiration": expiration, "spread": 5}
+                )
+                results.append((symbol, success))
+            else:
+                results.append((symbol, False))
+        return results
+
+    def test_configurable_straddles(self):
+        """Test straddles with different symbols"""
+        results = []
+        for symbol in self.test_symbols:
+            # Get expirations first
+            exp_success, exp_data = self.run_test(
+                f"Get expirations for {symbol}",
+                "GET",
+                "api/options/expirations",
+                200,
+                params={"symbol": symbol}
+            )
+            
+            if exp_success and exp_data.get('expirations'):
+                expiration = exp_data['expirations'][0]
+                success, data = self.run_test(
+                    f"Straddles for {symbol} ({expiration})",
+                    "GET",
+                    "api/straddles",
+                    200,
+                    params={"symbol": symbol, "expiration": expiration}
+                )
+                results.append((symbol, success))
+            else:
+                results.append((symbol, False))
+        return results
+
+    def validate_options_expirations_symbol(self, data, expected_symbol):
+        """Validate options expirations response for specific symbol"""
+        required_fields = ['symbol', 'expirations']
+        
+        for field in required_fields:
+            if field not in data:
+                print(f"   Missing required field: {field}")
+                return False
+        
+        if data['symbol'] != expected_symbol:
+            print(f"   Expected symbol '{expected_symbol}', got '{data['symbol']}'")
+            return False
+        
+        if not isinstance(data['expirations'], list):
+            print(f"   Expirations should be a list, got {type(data['expirations'])}")
+            return False
+        
+        if len(data['expirations']) == 0:
+            print(f"   Expirations list is empty")
+            return False
+        
+        print(f"   Expirations validation passed - Symbol: {data['symbol']}, {len(data['expirations'])} expiration dates")
+        return True
+
+    def validate_options_chain_symbol(self, data, expected_symbol):
+        """Validate options chain response for specific symbol"""
+        required_fields = ['symbol', 'expirationDate', 'calls', 'puts']
+        
+        for field in required_fields:
+            if field not in data:
+                print(f"   Missing required field: {field}")
+                return False
+        
+        if data['symbol'] != expected_symbol:
+            print(f"   Expected symbol '{expected_symbol}', got '{data['symbol']}'")
+            return False
+        
+        if not isinstance(data['calls'], list) or not isinstance(data['puts'], list):
+            print(f"   Calls and puts should be lists")
+            return False
+        
+        if len(data['calls']) == 0 or len(data['puts']) == 0:
+            print(f"   Empty calls or puts list")
+            return False
+        
+        # Validate first call option structure
+        first_call = data['calls'][0]
+        required_option_fields = ['strike', 'lastPrice', 'bid', 'ask', 'impliedVolatility', 'inTheMoney']
+        
+        for field in required_option_fields:
+            if field not in first_call:
+                print(f"   Missing field in option: {field}")
+                return False
+        
+        print(f"   Options chain validation passed - Symbol: {data['symbol']}, {len(data['calls'])} calls, {len(data['puts'])} puts")
+        return True
+
 def main():
     print("🚀 Starting SPX Finance API Tests")
     print("=" * 50)
