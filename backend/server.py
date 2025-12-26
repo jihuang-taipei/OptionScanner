@@ -260,7 +260,11 @@ async def get_options_chain(expiration: str):
                 volume=int(row['volume']) if not pd.isna(row['volume']) else None,
                 openInterest=int(row['openInterest']) if not pd.isna(row['openInterest']) else None,
                 impliedVolatility=round(float(row['impliedVolatility']) * 100, 2),
-                inTheMoney=bool(row['inTheMoney'])
+                inTheMoney=bool(row['inTheMoney']),
+                delta=round(float(row['delta']), 4) if 'delta' in row and not pd.isna(row.get('delta')) else None,
+                gamma=round(float(row['gamma']), 4) if 'gamma' in row and not pd.isna(row.get('gamma')) else None,
+                theta=round(float(row['theta']), 4) if 'theta' in row and not pd.isna(row.get('theta')) else None,
+                vega=round(float(row['vega']), 4) if 'vega' in row and not pd.isna(row.get('vega')) else None
             ))
         
         # Process puts
@@ -276,7 +280,11 @@ async def get_options_chain(expiration: str):
                 volume=int(row['volume']) if not pd.isna(row['volume']) else None,
                 openInterest=int(row['openInterest']) if not pd.isna(row['openInterest']) else None,
                 impliedVolatility=round(float(row['impliedVolatility']) * 100, 2),
-                inTheMoney=bool(row['inTheMoney'])
+                inTheMoney=bool(row['inTheMoney']),
+                delta=round(float(row['delta']), 4) if 'delta' in row and not pd.isna(row.get('delta')) else None,
+                gamma=round(float(row['gamma']), 4) if 'gamma' in row and not pd.isna(row.get('gamma')) else None,
+                theta=round(float(row['theta']), 4) if 'theta' in row and not pd.isna(row.get('theta')) else None,
+                vega=round(float(row['vega']), 4) if 'vega' in row and not pd.isna(row.get('vega')) else None
             ))
         
         logger.info(f"Options chain fetched: {len(calls)} calls, {len(puts)} puts for {expiration}")
