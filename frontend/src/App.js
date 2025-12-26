@@ -151,6 +151,13 @@ function App() {
   const [countdown, setCountdown] = useState(0);
   const intervalRef = useRef(null);
   const countdownRef = useRef(null);
+  
+  // Options chain state
+  const [expirations, setExpirations] = useState([]);
+  const [selectedExpiration, setSelectedExpiration] = useState("");
+  const [optionsChain, setOptionsChain] = useState(null);
+  const [isLoadingOptions, setIsLoadingOptions] = useState(false);
+  const [spyPrice, setSpyPrice] = useState(null);
 
   const fetchQuote = useCallback(async () => {
     try {
