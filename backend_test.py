@@ -624,8 +624,8 @@ class SPXAPITester:
         return True
 
 def main():
-    print("🚀 Starting SPX Finance API Tests")
-    print("=" * 50)
+    print("🚀 Starting SPX Finance API Tests - Configurable Symbol Feature")
+    print("=" * 60)
     
     # Setup
     tester = SPXAPITester()
@@ -634,12 +634,12 @@ def main():
     print("\n📡 Testing Basic Connectivity...")
     tester.test_basic_connectivity()
     
-    # Test SPX quote endpoint
-    print("\n💰 Testing SPX Quote Endpoint...")
+    # Test SPX quote endpoint (backwards compatibility)
+    print("\n💰 Testing SPX Quote Endpoint (Legacy)...")
     tester.test_spx_quote()
     
-    # Test SPX history endpoints
-    print("\n📈 Testing SPX History Endpoints...")
+    # Test SPX history endpoints (backwards compatibility)
+    print("\n📈 Testing SPX History Endpoints (Legacy)...")
     tester.test_spx_history_default()
     
     print("\n📊 Testing Different Time Periods...")
@@ -648,39 +648,113 @@ def main():
     print("\n🚫 Testing Error Handling...")
     tester.test_invalid_period()
     
-    # Test Options endpoints
-    print("\n📅 Testing Options Expirations...")
+    # NEW: Test configurable symbol feature
+    print("\n🔄 Testing Configurable Symbol Feature...")
+    print("\n💰 Testing Quote with Different Symbols...")
+    quote_results = tester.test_configurable_quote()
+    for symbol, success, price in quote_results:
+        if success:
+            print(f"   ✅ {symbol}: ${price}")
+        else:
+            print(f"   ❌ {symbol}: Failed")
+    
+    print("\n📈 Testing History with Different Symbols...")
+    history_results = tester.test_configurable_history()
+    for symbol, success in history_results:
+        if success:
+            print(f"   ✅ {symbol}: History data retrieved")
+        else:
+            print(f"   ❌ {symbol}: Failed")
+    
+    print("\n📅 Testing Options Expirations with Different Symbols...")
+    exp_results = tester.test_configurable_options_expirations()
+    for symbol, success, exp_count in exp_results:
+        if success:
+            print(f"   ✅ {symbol}: {exp_count} expirations")
+        else:
+            print(f"   ❌ {symbol}: Failed")
+    
+    print("\n⛓️ Testing Options Chain with Different Symbols...")
+    chain_results = tester.test_configurable_options_chain()
+    for symbol, success, call_count in chain_results:
+        if success:
+            print(f"   ✅ {symbol}: {call_count} call options")
+        else:
+            print(f"   ❌ {symbol}: Failed")
+    
+    print("\n📊 Testing Credit Spreads with Different Symbols...")
+    spread_results = tester.test_configurable_credit_spreads()
+    for symbol, success in spread_results:
+        if success:
+            print(f"   ✅ {symbol}: Credit spreads data retrieved")
+        else:
+            print(f"   ❌ {symbol}: Failed")
+    
+    print("\n🦋 Testing Iron Condors with Different Symbols...")
+    condor_results = tester.test_configurable_iron_condors()
+    for symbol, success in condor_results:
+        if success:
+            print(f"   ✅ {symbol}: Iron condors data retrieved")
+        else:
+            print(f"   ❌ {symbol}: Failed")
+    
+    print("\n📈 Testing Straddles with Different Symbols...")
+    straddle_results = tester.test_configurable_straddles()
+    for symbol, success in straddle_results:
+        if success:
+            print(f"   ✅ {symbol}: Straddles data retrieved")
+        else:
+            print(f"   ❌ {symbol}: Failed")
+    
+    # Test legacy Options endpoints (backwards compatibility)
+    print("\n📅 Testing Legacy Options Expirations...")
     exp_success, exp_data = tester.test_options_expirations()
     
     if exp_success and exp_data.get('expirations'):
         expiration = exp_data['expirations'][0]
         
-        print("\n⛓️ Testing Options Chain...")
+        print("\n⛓️ Testing Legacy Options Chain...")
         tester.test_options_chain(expiration)
         
-        print("\n📊 Testing Credit Spreads...")
+        print("\n📊 Testing Legacy Credit Spreads...")
         tester.test_credit_spreads(expiration)
         
-        print("\n🦋 Testing Iron Condors...")
+        print("\n🦋 Testing Legacy Iron Condors...")
         tester.test_iron_condors(expiration)
         
-        print("\n🦋 Testing Iron Butterflies...")
+        print("\n🦋 Testing Legacy Iron Butterflies...")
         tester.test_iron_butterflies(expiration)
         
-        print("\n📈 Testing Straddles...")
+        print("\n📈 Testing Legacy Straddles...")
         tester.test_straddles(expiration)
         
-        print("\n📉 Testing Strangles...")
+        print("\n📉 Testing Legacy Strangles...")
         tester.test_strangles(expiration)
         
-        print("\n📅 Testing Calendar Spreads...")
+        print("\n📅 Testing Legacy Calendar Spreads...")
         tester.test_calendar_spreads()
     else:
-        print("⚠️ Skipping options tests due to expiration fetch failure")
+        print("⚠️ Skipping legacy options tests due to expiration fetch failure")
     
     # Print final results
-    print("\n" + "=" * 50)
+    print("\n" + "=" * 60)
     print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+    
+    # Summary of configurable symbol feature
+    print("\n🔄 Configurable Symbol Feature Summary:")
+    successful_symbols = []
+    failed_symbols = []
+    
+    for symbol, success, _ in quote_results:
+        if success:
+            successful_symbols.append(symbol)
+        else:
+            failed_symbols.append(symbol)
+    
+    if successful_symbols:
+        print(f"   ✅ Working symbols: {', '.join(successful_symbols)}")
+    if failed_symbols:
+        print(f"   ❌ Failed symbols: {', '.join(failed_symbols)}")
     
     if tester.tests_passed == tester.tests_run:
         print("🎉 All tests passed!")
