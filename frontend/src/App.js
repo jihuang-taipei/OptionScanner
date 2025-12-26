@@ -1670,6 +1670,24 @@ function App() {
                   </SelectContent>
                 </Select>
                 {isLoadingOptions && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
+                <button
+                  onClick={() => exportOptionsChain(optionsChain?.calls, 'Calls', selectedExpiration)}
+                  disabled={!optionsChain?.calls?.length}
+                  className="flex items-center gap-1 px-2 py-1 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Export Calls to CSV"
+                >
+                  <Download className="w-3 h-3" />
+                  Calls
+                </button>
+                <button
+                  onClick={() => exportOptionsChain(optionsChain?.puts, 'Puts', selectedExpiration)}
+                  disabled={!optionsChain?.puts?.length}
+                  className="flex items-center gap-1 px-2 py-1 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  title="Export Puts to CSV"
+                >
+                  <Download className="w-3 h-3" />
+                  Puts
+                </button>
               </div>
             </div>
 
