@@ -1467,15 +1467,50 @@ function App() {
 
       <div className="max-w-7xl mx-auto px-6 py-8 md:px-12 md:py-12 relative z-10">
         {/* Header */}
-        <header className="flex items-center justify-between mb-8">
+        <header className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
             <h1 className="text-2xl font-semibold text-white flex items-center gap-2">
               <Activity className="w-6 h-6 text-zinc-400" />
-              S&P 500 Tracker
+              Options Scanner
             </h1>
             <p className="text-zinc-500 text-sm mt-1">Real-time market data from Yahoo Finance</p>
           </div>
-          <div className="flex items-center gap-3">
+          
+          {/* Symbol Selector */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <form onSubmit={handleSymbolInputSubmit} className="flex items-center gap-2">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={symbolInput}
+                  onChange={(e) => setSymbolInput(e.target.value.toUpperCase())}
+                  placeholder="Enter symbol"
+                  className="bg-zinc-900 border border-zinc-800 text-white px-4 py-2 rounded-lg font-mono text-sm w-28 focus:border-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-700"
+                  data-testid="symbol-input"
+                />
+              </div>
+              <button
+                type="submit"
+                className="bg-zinc-800 text-zinc-300 px-3 py-2 rounded-lg hover:bg-zinc-700 transition-colors text-sm"
+                data-testid="symbol-submit"
+              >
+                Go
+              </button>
+            </form>
+            
+            <Select value={symbol} onValueChange={handleSymbolChange}>
+              <SelectTrigger className="w-48 bg-zinc-900 border-zinc-800 text-white" data-testid="symbol-select">
+                <SelectValue placeholder="Select symbol" />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-zinc-800 max-h-64">
+                {POPULAR_SYMBOLS.map((s) => (
+                  <SelectItem key={s.value} value={s.value} className="text-white hover:bg-zinc-800">
+                    {s.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
             {/* Auto-refresh dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
