@@ -1149,10 +1149,10 @@ async def get_straddles(symbol: str = "^SPX", expiration: str = None):
         # Sort by distance from spot
         straddles.sort(key=lambda x: abs(x.distance_from_spot))
         
-        logger.info(f"Straddles fetched: {len(straddles)}")
+        logger.info(f"Straddles fetched for {symbol}: {len(straddles)}")
         
         return StraddlesResponse(
-            symbol="^SPX",
+            symbol=symbol,
             expiration=expiration,
             current_price=round(current_price, 2),
             straddles=straddles[:15]
@@ -1161,29 +1161,40 @@ async def get_straddles(symbol: str = "^SPX", expiration: str = None):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching straddles: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch straddles: {str(e)}")
+        logger.error(f"Error fetching straddles for {symbol}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch straddles for {symbol}: {str(e)}")
 
 
-@api_router.get("/spx/strangles", response_model=StranglesResponse)
-async def get_strangles(expiration: str, width: int = 50):
+# Keep old endpoint for backwards compatibility
+@api_router.get("/spx/straddles", response_model=StraddlesResponse)
+async def get_spx_straddles(expiration: str):
+    """Get SPX Straddles - backwards compatible endpoint"""
+    return await get_straddles("^SPX", expiration)
+
+
+@api_router.get("/strangles", response_model=StranglesResponse)
+async def get_strangles(symbol: str = "^SPX", expiration: str = None, width: int = 50):
     """Get Strangle opportunities - buy OTM call + OTM put at different strikes
     
     A strangle is cheaper than a straddle but needs a larger move to profit
+    symbol: Yahoo Finance ticker symbol
+    expiration: Options expiration date (YYYY-MM-DD)
     width: Distance between call and put strikes (default 50)
     """
+    if not expiration:
+        raise HTTPException(status_code=400, detail="Expiration date is required")
+    
     try:
-        ticker = yf.Ticker("^SPX")
+        ticker = yf.Ticker(symbol)
         
         if expiration not in ticker.options:
-            raise HTTPException(status_code=400, detail=f"Invalid expiration date")
+            raise HTTPException(status_code=400, detail=f"Invalid expiration date for {symbol}")
         
         opt_chain = ticker.option_chain(expiration)
         
-        # Get current SPX price
-        spx_ticker = yf.Ticker("^GSPC")
-        spx_hist = spx_ticker.history(period="1d")
-        current_price = float(spx_hist['Close'].iloc[-1]) if not spx_hist.empty else 5900.0
+        # Get current price
+        hist = ticker.history(period="1d")
+        current_price = float(hist['Close'].iloc[-1]) if not hist.empty else 100.0
         
         calls_df = opt_chain.calls.copy()
         puts_df = opt_chain.puts.copy()
