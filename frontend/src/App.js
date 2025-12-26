@@ -297,7 +297,6 @@ function App() {
   const [selectedExpiration, setSelectedExpiration] = useState("");
   const [optionsChain, setOptionsChain] = useState(null);
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
-  const [spyPrice, setSpyPrice] = useState(null);
   const [strikeRange, setStrikeRange] = useState(15); // ±15% default
   
   // Credit spreads state
