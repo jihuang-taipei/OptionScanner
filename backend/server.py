@@ -308,7 +308,7 @@ async def get_options_expirations():
 async def get_options_chain(expiration: str):
     """Get options chain for a specific expiration date"""
     try:
-        ticker = yf.Ticker("SPY")
+        ticker = yf.Ticker("^SPX")
         
         # Validate expiration date
         if expiration not in ticker.options:
@@ -316,9 +316,10 @@ async def get_options_chain(expiration: str):
         
         opt_chain = ticker.option_chain(expiration)
         
-        # Get current SPY price for Greeks calculation
-        spy_hist = ticker.history(period="1d")
-        current_price = float(spy_hist['Close'].iloc[-1]) if not spy_hist.empty else 590.0
+        # Get current SPX price for Greeks calculation
+        spx_ticker = yf.Ticker("^GSPC")
+        spx_hist = spx_ticker.history(period="1d")
+        current_price = float(spx_hist['Close'].iloc[-1]) if not spx_hist.empty else 5900.0
         
         # Calculate time to expiration in years
         exp_date = datetime.strptime(expiration, "%Y-%m-%d")
