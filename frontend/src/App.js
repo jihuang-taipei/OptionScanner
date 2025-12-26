@@ -320,6 +320,19 @@ function App() {
     }
   }, [quote?.price]);
 
+  const fetchCreditSpreads = useCallback(async (expiration, width) => {
+    if (!expiration) return;
+    setIsLoadingSpreads(true);
+    try {
+      const response = await axios.get(`${API}/spx/credit-spreads?expiration=${expiration}&spread=${width}`);
+      setCreditSpreads(response.data);
+    } catch (e) {
+      console.error("Error fetching credit spreads:", e);
+    } finally {
+      setIsLoadingSpreads(false);
+    }
+  }, []);
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await Promise.all([fetchQuote(), fetchHistory(period)]);
