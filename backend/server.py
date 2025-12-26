@@ -1280,10 +1280,10 @@ async def get_strangles(symbol: str = "^SPX", expiration: str = None, width: int
                 seen.add(key)
                 unique_strangles.append(s)
         
-        logger.info(f"Strangles fetched: {len(unique_strangles)}")
+        logger.info(f"Strangles fetched for {symbol}: {len(unique_strangles)}")
         
         return StranglesResponse(
-            symbol="^SPX",
+            symbol=symbol,
             expiration=expiration,
             current_price=round(current_price, 2),
             strangles=unique_strangles[:15]
@@ -1292,28 +1292,40 @@ async def get_strangles(symbol: str = "^SPX", expiration: str = None, width: int
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching strangles: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch strangles: {str(e)}")
+        logger.error(f"Error fetching strangles for {symbol}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch strangles for {symbol}: {str(e)}")
 
 
-@api_router.get("/spx/calendar-spreads", response_model=CalendarSpreadsResponse)
-async def get_calendar_spreads(near_exp: str, far_exp: str):
+# Keep old endpoint for backwards compatibility
+@api_router.get("/spx/strangles", response_model=StranglesResponse)
+async def get_spx_strangles(expiration: str, width: int = 50):
+    """Get SPX Strangles - backwards compatible endpoint"""
+    return await get_strangles("^SPX", expiration, width)
+
+
+@api_router.get("/calendar-spreads", response_model=CalendarSpreadsResponse)
+async def get_calendar_spreads(symbol: str = "^SPX", near_exp: str = None, far_exp: str = None):
     """Get Calendar Spread opportunities - sell near-term, buy far-term at same strike
     
     Calendar spreads profit from time decay differential between expirations
+    symbol: Yahoo Finance ticker symbol
+    near_exp: Near-term expiration date (YYYY-MM-DD)
+    far_exp: Far-term expiration date (YYYY-MM-DD)
     """
+    if not near_exp or not far_exp:
+        raise HTTPException(status_code=400, detail="Both near_exp and far_exp are required")
+    
     try:
-        ticker = yf.Ticker("^SPX")
+        ticker = yf.Ticker(symbol)
         
         if near_exp not in ticker.options:
-            raise HTTPException(status_code=400, detail=f"Invalid near expiration date")
+            raise HTTPException(status_code=400, detail=f"Invalid near expiration date for {symbol}")
         if far_exp not in ticker.options:
-            raise HTTPException(status_code=400, detail=f"Invalid far expiration date")
+            raise HTTPException(status_code=400, detail=f"Invalid far expiration date for {symbol}")
         
-        # Get current SPX price
-        spx_ticker = yf.Ticker("^GSPC")
-        spx_hist = spx_ticker.history(period="1d")
-        current_price = float(spx_hist['Close'].iloc[-1]) if not spx_hist.empty else 5900.0
+        # Get current price
+        hist = ticker.history(period="1d")
+        current_price = float(hist['Close'].iloc[-1]) if not hist.empty else 100.0
         
         # Get option chains for both expirations
         near_chain = ticker.option_chain(near_exp)
