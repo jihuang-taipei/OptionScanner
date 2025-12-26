@@ -1011,6 +1011,45 @@ function App() {
               </TabsContent>
             </Tabs>
           </div>
+
+          {/* Iron Condor Section */}
+          <div className="lg:col-span-3 glass-card p-6" data-testid="iron-condors">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium text-white flex items-center gap-2">
+                <Layers className="w-5 h-5 text-zinc-400" />
+                Iron Condors (${spreadWidth} wide legs)
+              </h2>
+              {isLoadingCondors && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
+            </div>
+
+            <p className="text-zinc-500 text-xs mb-4">
+              Neutral strategy: Combines Bull Put Spread (below price) + Bear Call Spread (above price). 
+              Profit if ^SPX stays within the profit zone at expiration.
+            </p>
+
+            {ironCondors && (
+              <div className="mb-4 flex gap-4 text-sm">
+                <span className="text-zinc-400">^SPX: <span className="text-white font-mono">${ironCondors.current_price?.toLocaleString()}</span></span>
+                <span className="text-zinc-400">Exp: <span className="text-white">{new Date(ironCondors.expiration).toLocaleDateString()}</span></span>
+                <span className="text-zinc-400">Found: <span className="text-white">{ironCondors.iron_condors?.length || 0}</span></span>
+              </div>
+            )}
+
+            <div className="max-h-96 overflow-y-auto">
+              {isLoadingCondors ? (
+                <div className="flex items-center justify-center py-12">
+                  <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                </div>
+              ) : (
+                <IronCondorTable 
+                  condors={ironCondors?.iron_condors} 
+                  currentPrice={ironCondors?.current_price}
+                  minCredit={minCredit}
+                  maxRiskReward={maxRiskReward}
+                />
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Footer */}
