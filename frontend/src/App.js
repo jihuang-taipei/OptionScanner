@@ -1300,6 +1300,19 @@ function App() {
     }
   }, []);
 
+  const fetchCalendarSpreads = useCallback(async (nearExp, farExp) => {
+    if (!nearExp || !farExp) return;
+    setIsLoadingCalendars(true);
+    try {
+      const response = await axios.get(`${API}/spx/calendar-spreads?near_exp=${nearExp}&far_exp=${farExp}`);
+      setCalendarSpreads(response.data);
+    } catch (e) {
+      console.error("Error fetching calendar spreads:", e);
+    } finally {
+      setIsLoadingCalendars(false);
+    }
+  }, []);
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await Promise.all([fetchQuote(), fetchHistory(period)]);
