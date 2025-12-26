@@ -766,7 +766,7 @@ function App() {
                   <OptionsTable 
                     options={optionsChain?.puts} 
                     type="puts" 
-                    currentPrice={spyPrice || quote?.price}
+                    currentPrice={quote?.price}
                     strikeRange={strikeRange}
                   />
                 )}
