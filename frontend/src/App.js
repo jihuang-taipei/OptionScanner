@@ -89,14 +89,15 @@ const PeriodButton = ({ period, currentPeriod, onClick, label }) => (
 );
 
 // Options Table Component
-const OptionsTable = ({ options, type, currentPrice, minStrike, maxStrike }) => {
+const OptionsTable = ({ options, type, currentPrice, strikeRange }) => {
   if (!options || options.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No {type} data available</p>;
   }
 
-  // Apply strike range filters
-  const minS = minStrike ? parseFloat(minStrike) : currentPrice * 0.85;
-  const maxS = maxStrike ? parseFloat(maxStrike) : currentPrice * 1.15;
+  // Apply strike range filter based on percentage
+  const rangePct = strikeRange / 100;
+  const minS = currentPrice * (1 - rangePct);
+  const maxS = currentPrice * (1 + rangePct);
   const filteredOptions = options.filter(opt => opt.strike >= minS && opt.strike <= maxS);
 
   // Check if Greeks are available
@@ -106,7 +107,7 @@ const OptionsTable = ({ options, type, currentPrice, minStrike, maxStrike }) => 
     return (
       <div className="text-center py-8">
         <p className="text-zinc-500">No options in selected strike range</p>
-        <p className="text-zinc-600 text-sm mt-1">Adjust min/max strike filters</p>
+        <p className="text-zinc-600 text-sm mt-1">Try increasing the ± range</p>
       </div>
     );
   }
@@ -114,7 +115,7 @@ const OptionsTable = ({ options, type, currentPrice, minStrike, maxStrike }) => 
   return (
     <div className="overflow-x-auto">
       <div className="text-xs text-zinc-500 mb-2">
-        Showing {filteredOptions.length} of {options.length} options
+        Showing {filteredOptions.length} of {options.length} options (${minS.toFixed(0)} - ${maxS.toFixed(0)})
       </div>
       <table className="w-full text-sm">
         <thead>
