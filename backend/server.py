@@ -207,6 +207,88 @@ async def get_spx_history(period: str = "1mo"):
         raise HTTPException(status_code=500, detail=f"Failed to fetch historical data: {str(e)}")
 
 
+@api_router.get("/spx/options/expirations", response_model=OptionsExpirations)
+async def get_options_expirations():
+    """Get available expiration dates for SPX options"""
+    try:
+        # Use SPY as proxy since ^GSPC doesn't have tradeable options
+        # SPX options trade under ^SPX but yfinance uses SPY for liquid options
+        ticker = yf.Ticker("SPY")
+        expirations = ticker.options
+        
+        if not expirations:
+            raise HTTPException(status_code=503, detail="No options data available")
+        
+        return OptionsExpirations(
+            symbol="SPY",
+            expirations=list(expirations)
+        )
+        
+    except Exception as e:
+        logger.error(f"Error fetching options expirations: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch options expirations: {str(e)}")
+
+
+@api_router.get("/spx/options/chain", response_model=OptionsChain)
+async def get_options_chain(expiration: str):
+    """Get options chain for a specific expiration date"""
+    try:
+        ticker = yf.Ticker("SPY")
+        
+        # Validate expiration date
+        if expiration not in ticker.options:
+            raise HTTPException(status_code=400, detail=f"Invalid expiration date. Available: {', '.join(ticker.options[:5])}...")
+        
+        opt_chain = ticker.option_chain(expiration)
+        
+        # Process calls
+        calls = []
+        for _, row in opt_chain.calls.iterrows():
+            calls.append(OptionContract(
+                strike=round(float(row['strike']), 2),
+                lastPrice=round(float(row['lastPrice']), 2),
+                bid=round(float(row['bid']), 2),
+                ask=round(float(row['ask']), 2),
+                change=round(float(row['change']) if not pd.isna(row['change']) else 0, 2),
+                percentChange=round(float(row['percentChange']) if not pd.isna(row['percentChange']) else 0, 2),
+                volume=int(row['volume']) if not pd.isna(row['volume']) else None,
+                openInterest=int(row['openInterest']) if not pd.isna(row['openInterest']) else None,
+                impliedVolatility=round(float(row['impliedVolatility']) * 100, 2),
+                inTheMoney=bool(row['inTheMoney'])
+            ))
+        
+        # Process puts
+        puts = []
+        for _, row in opt_chain.puts.iterrows():
+            puts.append(OptionContract(
+                strike=round(float(row['strike']), 2),
+                lastPrice=round(float(row['lastPrice']), 2),
+                bid=round(float(row['bid']), 2),
+                ask=round(float(row['ask']), 2),
+                change=round(float(row['change']) if not pd.isna(row['change']) else 0, 2),
+                percentChange=round(float(row['percentChange']) if not pd.isna(row['percentChange']) else 0, 2),
+                volume=int(row['volume']) if not pd.isna(row['volume']) else None,
+                openInterest=int(row['openInterest']) if not pd.isna(row['openInterest']) else None,
+                impliedVolatility=round(float(row['impliedVolatility']) * 100, 2),
+                inTheMoney=bool(row['inTheMoney'])
+            ))
+        
+        logger.info(f"Options chain fetched: {len(calls)} calls, {len(puts)} puts for {expiration}")
+        
+        return OptionsChain(
+            symbol="SPY",
+            expirationDate=expiration,
+            calls=calls,
+            puts=puts
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching options chain: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch options chain: {str(e)}")
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
