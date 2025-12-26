@@ -456,7 +456,7 @@ async def get_spx_options_expirations():
     return await get_options_expirations("^SPX")
 
 
-@api_router.get("/spx/options/chain", response_model=OptionsChain)
+@api_router.get("/options/chain", response_model=OptionsChain)
 async def get_options_chain(symbol: str = "^SPX", expiration: str = None):
     """Get options chain for a specific expiration date
     
