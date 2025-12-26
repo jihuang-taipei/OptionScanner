@@ -1456,10 +1456,10 @@ async def get_calendar_spreads(symbol: str = "^SPX", near_exp: str = None, far_e
         # Sort by distance from spot (ATM first)
         calendar_spreads.sort(key=lambda x: abs(x.distance_from_spot))
         
-        logger.info(f"Calendar spreads fetched: {len(calendar_spreads)}")
+        logger.info(f"Calendar spreads fetched for {symbol}: {len(calendar_spreads)}")
         
         return CalendarSpreadsResponse(
-            symbol="^SPX",
+            symbol=symbol,
             near_expiration=near_exp,
             far_expiration=far_exp,
             current_price=round(current_price, 2),
@@ -1469,8 +1469,15 @@ async def get_calendar_spreads(symbol: str = "^SPX", near_exp: str = None, far_e
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching calendar spreads: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch calendar spreads: {str(e)}")
+        logger.error(f"Error fetching calendar spreads for {symbol}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch calendar spreads for {symbol}: {str(e)}")
+
+
+# Keep old endpoint for backwards compatibility
+@api_router.get("/spx/calendar-spreads", response_model=CalendarSpreadsResponse)
+async def get_spx_calendar_spreads(near_exp: str, far_exp: str):
+    """Get SPX Calendar Spreads - backwards compatible endpoint"""
+    return await get_calendar_spreads("^SPX", near_exp, far_exp)
 
 
 # Include the router in the main app
