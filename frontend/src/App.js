@@ -977,7 +977,7 @@ const StraddleTable = ({ straddles, currentPrice, onSelectStrategy }) => {
 };
 
 // Strangle Table Component
-const StrangleTable = ({ strangles, currentPrice }) => {
+const StrangleTable = ({ strangles, currentPrice, onSelectStrategy }) => {
   if (!strangles || strangles.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Strangles available</p>;
   }
@@ -1001,6 +1001,7 @@ const StrangleTable = ({ strangles, currentPrice }) => {
             <th className="text-right py-3 px-2 font-medium">Breakevens</th>
             <th className="text-right py-3 px-2 font-medium text-amber-400">Move to B/E</th>
             <th className="text-right py-3 px-2 font-medium text-purple-400">Avg IV</th>
+            <th className="text-center py-3 px-2 font-medium">P/L</th>
           </tr>
         </thead>
         <tbody>
@@ -1033,6 +1034,21 @@ const StrangleTable = ({ strangles, currentPrice }) => {
               </td>
               <td className="text-right py-2.5 px-2 font-mono text-purple-400">
                 {s.avg_iv.toFixed(1)}%
+              </td>
+              <td className="text-center py-2.5 px-2">
+                <button
+                  onClick={() => onSelectStrategy({
+                    type: 'strangle',
+                    name: `Strangle ${s.put_strike}/${s.call_strike}`,
+                    call_strike: s.call_strike,
+                    put_strike: s.put_strike,
+                    total_cost: s.total_cost
+                  })}
+                  className="text-purple-400 hover:text-purple-300 transition-colors"
+                  title="View P/L Chart"
+                >
+                  <LineChartIcon className="w-4 h-4" />
+                </button>
               </td>
             </tr>
           ))}
