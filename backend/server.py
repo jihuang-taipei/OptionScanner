@@ -128,6 +128,35 @@ class CreditSpreadsResponse(BaseModel):
     bear_call_spreads: List[CreditSpread]
 
 
+class IronCondor(BaseModel):
+    # Bull Put Spread (lower side)
+    put_sell_strike: float
+    put_buy_strike: float
+    put_credit: float
+    # Bear Call Spread (upper side)
+    call_sell_strike: float
+    call_buy_strike: float
+    call_credit: float
+    # Combined metrics
+    net_credit: float
+    max_profit: float
+    max_loss: float
+    lower_breakeven: float
+    upper_breakeven: float
+    profit_zone_width: float
+    profit_zone_pct: float
+    risk_reward_ratio: float
+    probability_profit: Optional[float] = None
+
+
+class IronCondorsResponse(BaseModel):
+    symbol: str
+    expiration: str
+    current_price: float
+    spread_width: int
+    iron_condors: List[IronCondor]
+
+
 def calculate_greeks(S: float, K: float, T: float, r: float, sigma: float, option_type: str = 'call'):
     """
     Calculate option Greeks using Black-Scholes model
