@@ -896,10 +896,10 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
         # Sort by probability of profit and limit
         iron_condors.sort(key=lambda x: x.probability_profit or 0, reverse=True)
         
-        logger.info(f"Iron Condors fetched: {len(iron_condors)} combinations")
+        logger.info(f"Iron Condors fetched for {symbol}: {len(iron_condors)} combinations")
         
         return IronCondorsResponse(
-            symbol="^SPX",
+            symbol=symbol,
             expiration=expiration,
             current_price=round(current_price, 2),
             spread_width=spread,
@@ -909,29 +909,40 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching iron condors: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch iron condors: {str(e)}")
+        logger.error(f"Error fetching iron condors for {symbol}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch iron condors for {symbol}: {str(e)}")
 
 
-@api_router.get("/spx/iron-butterflies", response_model=IronButterfliesResponse)
-async def get_iron_butterflies(expiration: str, wing: int = 25):
+# Keep old endpoint for backwards compatibility
+@api_router.get("/spx/iron-condors", response_model=IronCondorsResponse)
+async def get_spx_iron_condors(expiration: str, spread: int = 5):
+    """Get SPX Iron Condors - backwards compatible endpoint"""
+    return await get_iron_condors("^SPX", expiration, spread)
+
+
+@api_router.get("/iron-butterflies", response_model=IronButterfliesResponse)
+async def get_iron_butterflies(symbol: str = "^SPX", expiration: str = None, wing: int = 25):
     """Get Iron Butterfly opportunities for a specific expiration date
     
     An Iron Butterfly sells ATM call + put at same strike, buys OTM wings
+    symbol: Yahoo Finance ticker symbol
+    expiration: Options expiration date (YYYY-MM-DD)
     wing: Width of wings from center strike in dollars (default 25)
     """
+    if not expiration:
+        raise HTTPException(status_code=400, detail="Expiration date is required")
+    
     try:
-        ticker = yf.Ticker("^SPX")
+        ticker = yf.Ticker(symbol)
         
         if expiration not in ticker.options:
-            raise HTTPException(status_code=400, detail=f"Invalid expiration date")
+            raise HTTPException(status_code=400, detail=f"Invalid expiration date for {symbol}")
         
         opt_chain = ticker.option_chain(expiration)
         
-        # Get current SPX price
-        spx_ticker = yf.Ticker("^GSPC")
-        spx_hist = spx_ticker.history(period="1d")
-        current_price = float(spx_hist['Close'].iloc[-1]) if not spx_hist.empty else 5900.0
+        # Get current price
+        hist = ticker.history(period="1d")
+        current_price = float(hist['Close'].iloc[-1]) if not hist.empty else 100.0
         
         # Calculate time to expiration
         exp_date = datetime.strptime(expiration, "%Y-%m-%d")
