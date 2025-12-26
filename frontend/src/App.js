@@ -1016,6 +1016,11 @@ function App() {
     fetchHistory(newPeriod);
   };
 
+  const handleSelectStrategy = (strategy) => {
+    setSelectedStrategy(strategy);
+    setShowPLChart(true);
+  };
+
   // Auto-refresh effect
   useEffect(() => {
     // Clear existing intervals
