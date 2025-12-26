@@ -562,23 +562,27 @@ async def get_spx_options_chain(expiration: str):
 
 
 @api_router.get("/spx/credit-spreads", response_model=CreditSpreadsResponse)
-async def get_credit_spreads(expiration: str, spread: int = 5):
+async def get_credit_spreads(symbol: str = "^SPX", expiration: str = None, spread: int = 5):
     """Get credit spread opportunities for a specific expiration date
     
+    symbol: Yahoo Finance ticker symbol
+    expiration: Options expiration date (YYYY-MM-DD)
     spread: Width of the spread in dollars (default 5)
     """
+    if not expiration:
+        raise HTTPException(status_code=400, detail="Expiration date is required")
+    
     try:
-        ticker = yf.Ticker("^SPX")
+        ticker = yf.Ticker(symbol)
         
         if expiration not in ticker.options:
-            raise HTTPException(status_code=400, detail=f"Invalid expiration date")
+            raise HTTPException(status_code=400, detail=f"Invalid expiration date for {symbol}")
         
         opt_chain = ticker.option_chain(expiration)
         
-        # Get current SPX price
-        spx_ticker = yf.Ticker("^GSPC")
-        spx_hist = spx_ticker.history(period="1d")
-        current_price = float(spx_hist['Close'].iloc[-1]) if not spx_hist.empty else 5900.0
+        # Get current price
+        hist = ticker.history(period="1d")
+        current_price = float(hist['Close'].iloc[-1]) if not hist.empty else 100.0
         
         # Calculate time to expiration
         exp_date = datetime.strptime(expiration, "%Y-%m-%d")
