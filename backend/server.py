@@ -186,6 +186,49 @@ class IronButterfliesResponse(BaseModel):
     iron_butterflies: List[IronButterfly]
 
 
+class Straddle(BaseModel):
+    strike: float
+    call_price: float
+    put_price: float
+    total_cost: float
+    lower_breakeven: float
+    upper_breakeven: float
+    breakeven_move_pct: float  # % move needed to breakeven
+    distance_from_spot: float
+    call_iv: float
+    put_iv: float
+    avg_iv: float
+
+
+class Strangle(BaseModel):
+    call_strike: float
+    put_strike: float
+    call_price: float
+    put_price: float
+    total_cost: float
+    lower_breakeven: float
+    upper_breakeven: float
+    breakeven_move_pct: float
+    width: float  # Distance between strikes
+    call_iv: float
+    put_iv: float
+    avg_iv: float
+
+
+class StraddlesResponse(BaseModel):
+    symbol: str
+    expiration: str
+    current_price: float
+    straddles: List[Straddle]
+
+
+class StranglesResponse(BaseModel):
+    symbol: str
+    expiration: str
+    current_price: float
+    strangles: List[Strangle]
+
+
 def calculate_greeks(S: float, K: float, T: float, r: float, sigma: float, option_type: str = 'call'):
     """
     Calculate option Greeks using Black-Scholes model
