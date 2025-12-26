@@ -79,6 +79,66 @@ const PeriodButton = ({ period, currentPeriod, onClick, label }) => (
   </button>
 );
 
+// Options Table Component
+const OptionsTable = ({ options, type, currentPrice }) => {
+  if (!options || options.length === 0) {
+    return <p className="text-zinc-500 text-center py-8">No {type} data available</p>;
+  }
+
+  // Filter to show strikes around current price (±20%)
+  const minStrike = currentPrice * 0.85;
+  const maxStrike = currentPrice * 1.15;
+  const filteredOptions = options.filter(opt => opt.strike >= minStrike && opt.strike <= maxStrike);
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="border-b border-zinc-800 text-zinc-400">
+            <th className="text-left py-3 px-2 font-medium">Strike</th>
+            <th className="text-right py-3 px-2 font-medium">Last</th>
+            <th className="text-right py-3 px-2 font-medium">Bid</th>
+            <th className="text-right py-3 px-2 font-medium">Ask</th>
+            <th className="text-right py-3 px-2 font-medium">Change</th>
+            <th className="text-right py-3 px-2 font-medium">IV%</th>
+            <th className="text-right py-3 px-2 font-medium">Volume</th>
+            <th className="text-right py-3 px-2 font-medium">OI</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredOptions.map((opt, idx) => (
+            <tr 
+              key={idx} 
+              className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors ${
+                opt.inTheMoney ? (type === 'calls' ? 'bg-green-500/5' : 'bg-red-500/5') : ''
+              }`}
+            >
+              <td className="py-2.5 px-2 font-mono font-medium text-white">
+                ${opt.strike.toFixed(2)}
+                {opt.inTheMoney && (
+                  <span className={`ml-2 text-xs ${type === 'calls' ? 'text-green-500' : 'text-red-500'}`}>ITM</span>
+                )}
+              </td>
+              <td className="text-right py-2.5 px-2 font-mono text-white">${opt.lastPrice.toFixed(2)}</td>
+              <td className="text-right py-2.5 px-2 font-mono text-zinc-400">${opt.bid.toFixed(2)}</td>
+              <td className="text-right py-2.5 px-2 font-mono text-zinc-400">${opt.ask.toFixed(2)}</td>
+              <td className={`text-right py-2.5 px-2 font-mono ${opt.change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                {opt.change >= 0 ? '+' : ''}{opt.change.toFixed(2)}
+              </td>
+              <td className="text-right py-2.5 px-2 font-mono text-zinc-400">{opt.impliedVolatility.toFixed(1)}%</td>
+              <td className="text-right py-2.5 px-2 font-mono text-zinc-400">{opt.volume?.toLocaleString() || '-'}</td>
+              <td className="text-right py-2.5 px-2 font-mono text-zinc-400">{opt.openInterest?.toLocaleString() || '-'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {filteredOptions.length === 0 && (
+        <p className="text-zinc-500 text-center py-4">No options near current price</p>
+      )}
+    </div>
+  );
+};
+
 function App() {
   const [quote, setQuote] = useState(null);
   const [history, setHistory] = useState([]);
