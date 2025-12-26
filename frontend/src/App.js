@@ -706,39 +706,28 @@ function App() {
               S&P 500 Index Options (^SPX). European-style, cash-settled.
             </p>
 
-            {/* Strike Range Filters */}
+            {/* Strike Range Filter */}
             <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-zinc-900/50 rounded-lg border border-zinc-800">
               <div className="flex items-center gap-2">
-                <label className="text-zinc-400 text-sm">Min Strike:</label>
-                <Input
-                  type="number"
-                  placeholder={quote ? Math.round(quote.price * 0.85).toString() : "5900"}
-                  value={minStrike}
-                  onChange={(e) => setMinStrike(e.target.value)}
-                  className="w-28 bg-zinc-800 border-zinc-700 text-white text-sm h-8"
-                  data-testid="min-strike-input"
-                />
+                <label className="text-zinc-400 text-sm">Strike Range:</label>
+                <Select value={strikeRange.toString()} onValueChange={(v) => setStrikeRange(parseInt(v))}>
+                  <SelectTrigger className="w-24 bg-zinc-800 border-zinc-700 text-white text-sm h-8" data-testid="strike-range-select">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800">
+                    {[2, 5, 10, 15, 20, 25, 30, 50].map((pct) => (
+                      <SelectItem key={pct} value={pct.toString()} className="text-white hover:bg-zinc-800">
+                        ±{pct}%
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="flex items-center gap-2">
-                <label className="text-zinc-400 text-sm">Max Strike:</label>
-                <Input
-                  type="number"
-                  placeholder={quote ? Math.round(quote.price * 1.15).toString() : "8000"}
-                  value={maxStrike}
-                  onChange={(e) => setMaxStrike(e.target.value)}
-                  className="w-28 bg-zinc-800 border-zinc-700 text-white text-sm h-8"
-                  data-testid="max-strike-input"
-                />
-              </div>
-              <button 
-                onClick={() => { setMinStrike(""); setMaxStrike(""); }}
-                className="text-zinc-500 hover:text-white text-sm underline transition-colors"
-              >
-                Reset range
-              </button>
               {quote && (
-                <span className="text-zinc-600 text-xs ml-auto">
-                  Current: ${quote.price.toLocaleString()} | Default range: ±15%
+                <span className="text-zinc-500 text-xs">
+                  Current: <span className="text-white font-mono">${quote.price.toLocaleString()}</span>
+                  <span className="text-zinc-600 mx-2">|</span>
+                  Range: <span className="text-white font-mono">${(quote.price * (1 - strikeRange/100)).toFixed(0)} - ${(quote.price * (1 + strikeRange/100)).toFixed(0)}</span>
                 </span>
               )}
             </div>
@@ -762,8 +751,7 @@ function App() {
                     options={optionsChain?.calls} 
                     type="calls" 
                     currentPrice={spyPrice || quote?.price}
-                    minStrike={minStrike}
-                    maxStrike={maxStrike}
+                    strikeRange={strikeRange}
                   />
                 )}
               </TabsContent>
@@ -777,8 +765,7 @@ function App() {
                     options={optionsChain?.puts} 
                     type="puts" 
                     currentPrice={spyPrice || quote?.price}
-                    minStrike={minStrike}
-                    maxStrike={maxStrike}
+                    strikeRange={strikeRange}
                   />
                 )}
               </TabsContent>
