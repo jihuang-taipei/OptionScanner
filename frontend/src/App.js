@@ -1208,46 +1208,47 @@ function App() {
 
   const fetchQuote = useCallback(async () => {
     try {
-      const response = await axios.get(`${API}/spx/quote`);
+      const response = await axios.get(`${API}/quote?symbol=${symbol}`);
       setQuote(response.data);
       setError(null);
     } catch (e) {
-      console.error("Error fetching SPX quote:", e);
-      setError("Failed to fetch SPX data");
+      console.error(`Error fetching ${symbol} quote:`, e);
+      setError(`Failed to fetch ${symbol} data. Make sure the symbol is valid.`);
     } finally {
       setIsLoadingQuote(false);
     }
-  }, []);
+  }, [symbol]);
 
   const fetchHistory = useCallback(async (selectedPeriod) => {
     setIsLoadingHistory(true);
     try {
-      const response = await axios.get(`${API}/spx/history?period=${selectedPeriod}`);
+      const response = await axios.get(`${API}/history?symbol=${symbol}&period=${selectedPeriod}`);
       setHistory(response.data.data);
     } catch (e) {
-      console.error("Error fetching SPX history:", e);
+      console.error(`Error fetching ${symbol} history:`, e);
     } finally {
       setIsLoadingHistory(false);
     }
-  }, []);
+  }, [symbol]);
 
   const fetchExpirations = useCallback(async () => {
     try {
-      const response = await axios.get(`${API}/spx/options/expirations`);
+      const response = await axios.get(`${API}/options/expirations?symbol=${symbol}`);
       setExpirations(response.data.expirations);
       if (response.data.expirations.length > 0 && !selectedExpiration) {
         setSelectedExpiration(response.data.expirations[0]);
       }
     } catch (e) {
-      console.error("Error fetching options expirations:", e);
+      console.error(`Error fetching ${symbol} options expirations:`, e);
+      setExpirations([]);
     }
-  }, [selectedExpiration]);
+  }, [symbol, selectedExpiration]);
 
   const fetchOptionsChain = useCallback(async (expiration) => {
     if (!expiration) return;
     setIsLoadingOptions(true);
     try {
-      const response = await axios.get(`${API}/spx/options/chain?expiration=${expiration}`);
+      const response = await axios.get(`${API}/options/chain?symbol=${symbol}&expiration=${expiration}`);
       setOptionsChain(response.data);
     } catch (e) {
       console.error("Error fetching options chain:", e);
