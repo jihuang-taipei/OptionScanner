@@ -9,6 +9,8 @@ class SPXAPITester:
         self.tests_run = 0
         self.tests_passed = 0
         self.test_results = []
+        # Test symbols for configurable symbol feature
+        self.test_symbols = ["^SPX", "SPY", "QQQ", "AAPL"]
 
     def run_test(self, name, method, endpoint, expected_status, params=None, validate_response=None):
         """Run a single API test"""
