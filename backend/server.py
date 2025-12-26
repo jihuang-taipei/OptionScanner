@@ -1501,4 +1501,29 @@ app.add_middleware(
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
-    client.close()
+    if client:
+        client.close()
+
+
+# Serve React static files in production (Docker)
+# Check if frontend build exists (for Docker deployment)
+FRONTEND_BUILD_DIR = ROOT_DIR.parent / "frontend" / "build"
+
+if FRONTEND_BUILD_DIR.exists():
+    # Serve static files (JS, CSS, images)
+    app.mount("/static", StaticFiles(directory=str(FRONTEND_BUILD_DIR / "static")), name="static")
+    
+    # Serve React app for all non-API routes
+    @app.get("/{full_path:path}")
+    async def serve_react_app(full_path: str):
+        # If path starts with 'api', let it pass through to API routes
+        if full_path.startswith("api"):
+            raise HTTPException(status_code=404, detail="Not found")
+        
+        # Check if it's a static file request
+        file_path = FRONTEND_BUILD_DIR / full_path
+        if file_path.exists() and file_path.is_file():
+            return FileResponse(str(file_path))
+        
+        # Return index.html for all other routes (SPA routing)
+        return FileResponse(str(FRONTEND_BUILD_DIR / "index.html"))
