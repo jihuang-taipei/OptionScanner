@@ -67,8 +67,8 @@ class SPXAPITester:
             self.test_results.append({"test": name, "status": "FAILED", "details": str(e)})
             return False, {}
 
-    def validate_spx_quote(self, data):
-        """Validate SPX quote response structure"""
+    def validate_quote(self, data, expected_symbol=None):
+        """Validate quote response structure for any symbol"""
         required_fields = [
             'symbol', 'price', 'change', 'change_percent', 'previous_close',
             'open', 'day_high', 'day_low', 'fifty_two_week_high', 
@@ -89,9 +89,9 @@ class SPXAPITester:
                 print(f"   Field {field} should be numeric, got {type(data[field])}")
                 return False
         
-        # Validate symbol
-        if data['symbol'] != '^GSPC':
-            print(f"   Expected symbol '^GSPC', got '{data['symbol']}'")
+        # Validate symbol if expected
+        if expected_symbol and data['symbol'] != expected_symbol:
+            print(f"   Expected symbol '{expected_symbol}', got '{data['symbol']}'")
             return False
         
         # Validate price is positive
@@ -99,8 +99,12 @@ class SPXAPITester:
             print(f"   Price should be positive, got {data['price']}")
             return False
             
-        print(f"   Quote validation passed - Price: ${data['price']}, Change: {data['change']} ({data['change_percent']}%)")
+        print(f"   Quote validation passed - Symbol: {data['symbol']}, Price: ${data['price']}, Change: {data['change']} ({data['change_percent']}%)")
         return True
+
+    def validate_spx_quote(self, data):
+        """Validate SPX quote response structure - backwards compatibility"""
+        return self.validate_quote(data, '^GSPC')
 
     def validate_spx_history(self, data):
         """Validate SPX history response structure"""
