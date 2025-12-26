@@ -583,6 +583,19 @@ function App() {
     }
   }, []);
 
+  const fetchIronButterflies = useCallback(async (expiration, wing) => {
+    if (!expiration) return;
+    setIsLoadingButterflies(true);
+    try {
+      const response = await axios.get(`${API}/spx/iron-butterflies?expiration=${expiration}&wing=${wing}`);
+      setIronButterflies(response.data);
+    } catch (e) {
+      console.error("Error fetching iron butterflies:", e);
+    } finally {
+      setIsLoadingButterflies(false);
+    }
+  }, []);
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await Promise.all([fetchQuote(), fetchHistory(period)]);
