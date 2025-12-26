@@ -71,6 +71,28 @@ class SPXHistory(BaseModel):
     period: str
     data: List[HistoricalDataPoint]
 
+class OptionContract(BaseModel):
+    strike: float
+    lastPrice: float
+    bid: float
+    ask: float
+    change: float
+    percentChange: float
+    volume: Optional[int] = None
+    openInterest: Optional[int] = None
+    impliedVolatility: float
+    inTheMoney: bool
+
+class OptionsChain(BaseModel):
+    symbol: str
+    expirationDate: str
+    calls: List[OptionContract]
+    puts: List[OptionContract]
+
+class OptionsExpirations(BaseModel):
+    symbol: str
+    expirations: List[str]
+
 
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
