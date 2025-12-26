@@ -1779,7 +1779,7 @@ function App() {
             </div>
 
             <p className="text-zinc-500 text-xs mb-3">
-              S&P 500 Index Options (^SPX). European-style, cash-settled.
+              {symbol} Options Chain. Includes Greeks calculation.
             </p>
 
             {/* Strike Range Filter */}
