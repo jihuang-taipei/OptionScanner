@@ -403,16 +403,17 @@ async def get_credit_spreads(expiration: str, spread: int = 5):
     spread: Width of the spread in dollars (default 5)
     """
     try:
-        ticker = yf.Ticker("SPY")
+        ticker = yf.Ticker("^SPX")
         
         if expiration not in ticker.options:
             raise HTTPException(status_code=400, detail=f"Invalid expiration date")
         
         opt_chain = ticker.option_chain(expiration)
         
-        # Get current SPY price
-        spy_hist = ticker.history(period="1d")
-        current_price = float(spy_hist['Close'].iloc[-1]) if not spy_hist.empty else 590.0
+        # Get current SPX price
+        spx_ticker = yf.Ticker("^GSPC")
+        spx_hist = spx_ticker.history(period="1d")
+        current_price = float(spx_hist['Close'].iloc[-1]) if not spx_hist.empty else 5900.0
         
         # Calculate time to expiration
         exp_date = datetime.strptime(expiration, "%Y-%m-%d")
