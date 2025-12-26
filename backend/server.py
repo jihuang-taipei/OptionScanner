@@ -457,21 +457,27 @@ async def get_spx_options_expirations():
 
 
 @api_router.get("/spx/options/chain", response_model=OptionsChain)
-async def get_options_chain(expiration: str):
-    """Get options chain for a specific expiration date"""
+async def get_options_chain(symbol: str = "^SPX", expiration: str = None):
+    """Get options chain for a specific expiration date
+    
+    symbol: Yahoo Finance ticker symbol
+    expiration: Options expiration date (YYYY-MM-DD)
+    """
+    if not expiration:
+        raise HTTPException(status_code=400, detail="Expiration date is required")
+    
     try:
-        ticker = yf.Ticker("^SPX")
+        ticker = yf.Ticker(symbol)
         
         # Validate expiration date
         if expiration not in ticker.options:
-            raise HTTPException(status_code=400, detail=f"Invalid expiration date. Available: {', '.join(ticker.options[:5])}...")
+            raise HTTPException(status_code=400, detail=f"Invalid expiration date for {symbol}. Available: {', '.join(ticker.options[:5])}...")
         
         opt_chain = ticker.option_chain(expiration)
         
-        # Get current SPX price for Greeks calculation
-        spx_ticker = yf.Ticker("^GSPC")
-        spx_hist = spx_ticker.history(period="1d")
-        current_price = float(spx_hist['Close'].iloc[-1]) if not spx_hist.empty else 5900.0
+        # Get current price for Greeks calculation
+        hist = ticker.history(period="1d")
+        current_price = float(hist['Close'].iloc[-1]) if not hist.empty else 100.0
         
         # Calculate time to expiration in years
         exp_date = datetime.strptime(expiration, "%Y-%m-%d")
@@ -532,10 +538,10 @@ async def get_options_chain(expiration: str):
                 vega=vega
             ))
         
-        logger.info(f"Options chain fetched: {len(calls)} calls, {len(puts)} puts for {expiration}")
+        logger.info(f"Options chain fetched for {symbol}: {len(calls)} calls, {len(puts)} puts for {expiration}")
         
         return OptionsChain(
-            symbol="^SPX",
+            symbol=symbol,
             expirationDate=expiration,
             calls=calls,
             puts=puts
@@ -544,8 +550,15 @@ async def get_options_chain(expiration: str):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching options chain: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch options chain: {str(e)}")
+        logger.error(f"Error fetching options chain for {symbol}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch options chain for {symbol}: {str(e)}")
+
+
+# Keep old endpoint for backwards compatibility
+@api_router.get("/spx/options/chain", response_model=OptionsChain)
+async def get_spx_options_chain(expiration: str):
+    """Get SPX options chain - backwards compatible endpoint"""
+    return await get_options_chain("^SPX", expiration)
 
 
 @api_router.get("/spx/credit-spreads", response_model=CreditSpreadsResponse)
