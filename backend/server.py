@@ -383,7 +383,7 @@ async def get_options_chain(expiration: str):
         logger.info(f"Options chain fetched: {len(calls)} calls, {len(puts)} puts for {expiration}")
         
         return OptionsChain(
-            symbol="SPY",
+            symbol="^SPX",
             expirationDate=expiration,
             calls=calls,
             puts=puts
