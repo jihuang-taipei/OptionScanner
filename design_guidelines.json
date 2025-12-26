@@ -1,0 +1,122 @@
+{
+  "identity": {
+    "name": "E1",
+    "role": "Anti-AI Creative Designer",
+    "principles": [
+      "Fusion over Imitation",
+      "Emotion First",
+      "Content is King",
+      "Zoom In",
+      "Negative Space",
+      "Contrast"
+    ]
+  },
+  "typography": {
+    "headings": {
+      "family": "Outfit, sans-serif",
+      "weights": ["400", "600", "700"],
+      "usage": "Main titles, card headers, big metrics"
+    },
+    "body": {
+      "family": "Inter, sans-serif",
+      "weights": ["400", "500"],
+      "usage": "General text, labels, descriptions"
+    },
+    "mono": {
+      "family": "JetBrains Mono, monospace",
+      "weights": ["400", "500"],
+      "usage": "Stock prices, percentages, tabular data, timestamps"
+    }
+  },
+  "colors": {
+    "theme": "Midnight Trader",
+    "mode": "dark",
+    "palette": {
+      "background": "#09090b",
+      "surface": "#18181b",
+      "surface_highlight": "#27272a",
+      "border": "#27272a",
+      "primary": "#fafafa",
+      "secondary": "#a1a1aa",
+      "accent_success": "#22c55e",
+      "accent_danger": "#ef4444",
+      "accent_neutral": "#3b82f6",
+      "glass_bg": "rgba(24, 24, 27, 0.6)",
+      "glass_border": "rgba(255, 255, 255, 0.08)"
+    },
+    "gradients": {
+      "chart_fill": "linear-gradient(180deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0) 100%)",
+      "glow": "radial-gradient(circle at center, rgba(34, 197, 94, 0.15) 0%, rgba(0, 0, 0, 0) 70%)"
+    }
+  },
+  "layout": {
+    "grid_system": "Bento Grid (Mode B: Control Room)",
+    "container": "max-w-7xl mx-auto p-6 md:p-12",
+    "spacing": {
+      "card_padding": "p-6 md:p-8",
+      "gap": "gap-4 md:gap-6",
+      "section_gap": "gap-8"
+    },
+    "structure": [
+      {
+        "area": "header",
+        "description": "Top bar with logo and refresh button. Minimal height."
+      },
+      {
+        "area": "hero_ticker",
+        "description": "Large card displaying current SPX price. Dominant visual. Uses 'glow' gradient background."
+      },
+      {
+        "area": "main_chart",
+        "description": "Wide card spanning 2-3 columns. Interactive historical chart."
+      },
+      {
+        "area": "stats_grid",
+        "description": "Grid of smaller square cards for Open, High, Low, Volume. Dense information."
+      }
+    ]
+  },
+  "components": {
+    "cards": {
+      "style": "Glassmorphism",
+      "classes": "bg-zinc-900/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl"
+    },
+    "buttons": {
+      "primary": "bg-white text-black hover:bg-zinc-200 rounded-full px-6 py-2 font-medium transition-all active:scale-95",
+      "icon": "p-2 rounded-full hover:bg-white/10 transition-colors text-zinc-400 hover:text-white"
+    },
+    "charts": {
+      "library": "Recharts",
+      "style": "Minimalist. Hide grid lines or make them very subtle (#333). Use gradient fills for area charts. Tooltips must be custom styled (dark bg, white text)."
+    }
+  },
+  "motion": {
+    "transitions": "transition-all duration-300 ease-out",
+    "hover_effects": "hover:border-white/20 hover:shadow-[0_0_30px_-10px_rgba(255,255,255,0.1)]",
+    "price_update": "Flash green/red background on price change (use framer-motion AnimatePresence)"
+  },
+  "visual_enhancers": {
+    "noise": "Add a fixed position div with a noise texture opacity-5 pointer-events-none z-50 mix-blend-overlay",
+    "glows": "Use absolute positioned divs with blur-3xl behind key elements to create atmospheric lighting"
+  },
+  "accessibility": {
+    "contrast": "Ensure text is #fafafa on dark backgrounds. Use #a1a1aa for secondary text, never darker.",
+    "focus_states": "focus:ring-2 focus:ring-white/50 focus:outline-none"
+  },
+  "instructions_to_main_agent": [
+    "Use the 'Outfit' font for all headings and 'JetBrains Mono' for all financial data.",
+    "Implement the 'Bento Grid' layout strictly. Do not just stack divs.",
+    "The 'Ticker Card' should feel like the heartbeat of the app. Make the price HUGE (text-6xl+).",
+    "Use 'Recharts' for the chart. Customize the X/Y axis to be minimal. No heavy grid lines.",
+    "Ensure the 'Refresh' button has a satisfying loading state (spin animation).",
+    "Do not use default Shadcn card styles. Override them with the 'Glassmorphism' styles defined in 'components.cards'.",
+    "Add a subtle noise texture overlay to the entire app for that 'film grain' premium feel.",
+    "Mock the Yahoo Finance API call if real data is not accessible, but structure the data exactly as the API would return it."
+  ],
+  "universal_guidelines": [
+    "Avoid 'AI Slop': No generic gradients, no centered text everywhere.",
+    "Dark Mode Only: This is a financial tool. Light mode is not an option for this MVP.",
+    "Micro-interactions: Buttons should scale down slightly on click. Hover states should be obvious.",
+    "Data-Test-IDs: Add 'data-testid' to the Price Display, Refresh Button, and Chart Container."
+  ]
+}
