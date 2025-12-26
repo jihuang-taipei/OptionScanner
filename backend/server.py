@@ -716,10 +716,10 @@ async def get_credit_spreads(symbol: str = "^SPX", expiration: str = None, sprea
         bull_put_spreads.sort(key=lambda x: x.probability_otm or 0, reverse=True)
         bear_call_spreads.sort(key=lambda x: x.probability_otm or 0, reverse=True)
         
-        logger.info(f"Credit spreads fetched: {len(bull_put_spreads)} bull puts, {len(bear_call_spreads)} bear calls")
+        logger.info(f"Credit spreads fetched for {symbol}: {len(bull_put_spreads)} bull puts, {len(bear_call_spreads)} bear calls")
         
         return CreditSpreadsResponse(
-            symbol="^SPX",
+            symbol=symbol,
             expiration=expiration,
             current_price=round(current_price, 2),
             spread_width=spread,
@@ -730,22 +730,40 @@ async def get_credit_spreads(symbol: str = "^SPX", expiration: str = None, sprea
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching credit spreads: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch credit spreads: {str(e)}")
+        logger.error(f"Error fetching credit spreads for {symbol}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch credit spreads for {symbol}: {str(e)}")
 
 
-@api_router.get("/spx/iron-condors", response_model=IronCondorsResponse)
-async def get_iron_condors(expiration: str, spread: int = 5):
+@api_router.get("/credit-spreads", response_model=CreditSpreadsResponse)
+async def get_credit_spreads_generic(symbol: str = "^SPX", expiration: str = None, spread: int = 5):
+    """Get credit spread opportunities - generic endpoint"""
+    return await get_credit_spreads(symbol, expiration, spread)
+
+
+# Keep the old /spx/ endpoint for backwards compatibility
+@api_router.get("/spx/credit-spreads-legacy", response_model=CreditSpreadsResponse)
+async def get_spx_credit_spreads_legacy(expiration: str, spread: int = 5):
+    """Get SPX credit spreads - backwards compatible endpoint"""
+    return await get_credit_spreads("^SPX", expiration, spread)
+
+
+@api_router.get("/iron-condors", response_model=IronCondorsResponse)
+async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread: int = 5):
     """Get Iron Condor opportunities for a specific expiration date
     
     An Iron Condor combines a Bull Put Spread (below price) with a Bear Call Spread (above price)
+    symbol: Yahoo Finance ticker symbol
+    expiration: Options expiration date (YYYY-MM-DD)
     spread: Width of each spread leg in dollars (default 5)
     """
+    if not expiration:
+        raise HTTPException(status_code=400, detail="Expiration date is required")
+    
     try:
-        ticker = yf.Ticker("^SPX")
+        ticker = yf.Ticker(symbol)
         
         if expiration not in ticker.options:
-            raise HTTPException(status_code=400, detail=f"Invalid expiration date")
+            raise HTTPException(status_code=400, detail=f"Invalid expiration date for {symbol}")
         
         opt_chain = ticker.option_chain(expiration)
         
