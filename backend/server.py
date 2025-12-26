@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,10 +6,10 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from typing import List, Optional
 import uuid
 from datetime import datetime, timezone
-
+import yfinance as yf
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -25,10 +25,16 @@ app = FastAPI()
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Define Models
 class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
+    model_config = ConfigDict(extra="ignore")
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     client_name: str
@@ -36,6 +42,35 @@ class StatusCheck(BaseModel):
 
 class StatusCheckCreate(BaseModel):
     client_name: str
+
+class SPXQuote(BaseModel):
+    symbol: str
+    price: float
+    change: float
+    change_percent: float
+    previous_close: float
+    open: float
+    day_high: float
+    day_low: float
+    volume: Optional[int] = None
+    market_cap: Optional[float] = None
+    fifty_two_week_high: float
+    fifty_two_week_low: float
+    timestamp: str
+
+class HistoricalDataPoint(BaseModel):
+    date: str
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: Optional[int] = None
+
+class SPXHistory(BaseModel):
+    symbol: str
+    period: str
+    data: List[HistoricalDataPoint]
+
 
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
@@ -47,7 +82,6 @@ async def create_status_check(input: StatusCheckCreate):
     status_dict = input.model_dump()
     status_obj = StatusCheck(**status_dict)
     
-    # Convert to dict and serialize datetime to ISO string for MongoDB
     doc = status_obj.model_dump()
     doc['timestamp'] = doc['timestamp'].isoformat()
     
@@ -56,15 +90,100 @@ async def create_status_check(input: StatusCheckCreate):
 
 @api_router.get("/status", response_model=List[StatusCheck])
 async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
     status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
     
-    # Convert ISO string timestamps back to datetime objects
     for check in status_checks:
         if isinstance(check['timestamp'], str):
             check['timestamp'] = datetime.fromisoformat(check['timestamp'])
     
     return status_checks
+
+
+@api_router.get("/spx/quote", response_model=SPXQuote)
+async def get_spx_quote():
+    """Get current SPX (S&P 500) quote from Yahoo Finance"""
+    try:
+        # ^GSPC is the Yahoo Finance ticker for S&P 500 Index
+        ticker = yf.Ticker("^GSPC")
+        info = ticker.info
+        
+        # Get current price data
+        hist = ticker.history(period="2d")
+        
+        if hist.empty:
+            raise HTTPException(status_code=503, detail="Unable to fetch market data")
+        
+        current_price = float(hist['Close'].iloc[-1])
+        previous_close = float(info.get('previousClose', hist['Close'].iloc[-2] if len(hist) > 1 else current_price))
+        
+        change = current_price - previous_close
+        change_percent = (change / previous_close) * 100 if previous_close else 0
+        
+        quote = SPXQuote(
+            symbol="^GSPC",
+            price=round(current_price, 2),
+            change=round(change, 2),
+            change_percent=round(change_percent, 2),
+            previous_close=round(previous_close, 2),
+            open=round(float(info.get('open', hist['Open'].iloc[-1])), 2),
+            day_high=round(float(info.get('dayHigh', hist['High'].iloc[-1])), 2),
+            day_low=round(float(info.get('dayLow', hist['Low'].iloc[-1])), 2),
+            volume=int(hist['Volume'].iloc[-1]) if hist['Volume'].iloc[-1] > 0 else None,
+            market_cap=None,  # Index doesn't have market cap
+            fifty_two_week_high=round(float(info.get('fiftyTwoWeekHigh', 0)), 2),
+            fifty_two_week_low=round(float(info.get('fiftyTwoWeekLow', 0)), 2),
+            timestamp=datetime.now(timezone.utc).isoformat()
+        )
+        
+        logger.info(f"SPX Quote fetched: {quote.price}")
+        return quote
+        
+    except Exception as e:
+        logger.error(f"Error fetching SPX quote: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch SPX data: {str(e)}")
+
+
+@api_router.get("/spx/history", response_model=SPXHistory)
+async def get_spx_history(period: str = "1mo"):
+    """Get historical SPX data for charting
+    
+    Valid periods: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max
+    """
+    valid_periods = ["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"]
+    
+    if period not in valid_periods:
+        raise HTTPException(status_code=400, detail=f"Invalid period. Valid options: {', '.join(valid_periods)}")
+    
+    try:
+        ticker = yf.Ticker("^GSPC")
+        hist = ticker.history(period=period)
+        
+        if hist.empty:
+            raise HTTPException(status_code=503, detail="Unable to fetch historical data")
+        
+        data_points = []
+        for date, row in hist.iterrows():
+            data_points.append(HistoricalDataPoint(
+                date=date.strftime("%Y-%m-%d"),
+                open=round(float(row['Open']), 2),
+                high=round(float(row['High']), 2),
+                low=round(float(row['Low']), 2),
+                close=round(float(row['Close']), 2),
+                volume=int(row['Volume']) if row['Volume'] > 0 else None
+            ))
+        
+        logger.info(f"SPX History fetched: {len(data_points)} data points for period {period}")
+        
+        return SPXHistory(
+            symbol="^GSPC",
+            period=period,
+            data=data_points
+        )
+        
+    except Exception as e:
+        logger.error(f"Error fetching SPX history: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch historical data: {str(e)}")
+
 
 # Include the router in the main app
 app.include_router(api_router)
@@ -76,13 +195,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
