@@ -469,6 +469,19 @@ function App() {
     }
   }, []);
 
+  const fetchIronCondors = useCallback(async (expiration, width) => {
+    if (!expiration) return;
+    setIsLoadingCondors(true);
+    try {
+      const response = await axios.get(`${API}/spx/iron-condors?expiration=${expiration}&spread=${width}`);
+      setIronCondors(response.data);
+    } catch (e) {
+      console.error("Error fetching iron condors:", e);
+    } finally {
+      setIsLoadingCondors(false);
+    }
+  }, []);
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await Promise.all([fetchQuote(), fetchHistory(period)]);
