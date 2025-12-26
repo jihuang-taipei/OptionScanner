@@ -1,0 +1,60 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv
+venv/
+ENV/
+env/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+.npm
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test files
+*.test.js
+*.spec.js
+test_reports/
+backend/tests/
+
+# Development files
+.env.local
+.env.development
+.env.test
+
+# Logs
+*.log
+logs/
+
+# Build artifacts (we build fresh in Docker)
+frontend/build/
+
+# Documentation
+*.md
+docs/
+
+# Emergent platform files
+.emergent/
+memory/
