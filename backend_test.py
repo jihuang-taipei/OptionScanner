@@ -426,6 +426,36 @@ def main():
     print("\n🚫 Testing Error Handling...")
     tester.test_invalid_period()
     
+    # Test Options endpoints
+    print("\n📅 Testing Options Expirations...")
+    exp_success, exp_data = tester.test_options_expirations()
+    
+    if exp_success and exp_data.get('expirations'):
+        expiration = exp_data['expirations'][0]
+        
+        print("\n⛓️ Testing Options Chain...")
+        tester.test_options_chain(expiration)
+        
+        print("\n📊 Testing Credit Spreads...")
+        tester.test_credit_spreads(expiration)
+        
+        print("\n🦋 Testing Iron Condors...")
+        tester.test_iron_condors(expiration)
+        
+        print("\n🦋 Testing Iron Butterflies...")
+        tester.test_iron_butterflies(expiration)
+        
+        print("\n📈 Testing Straddles...")
+        tester.test_straddles(expiration)
+        
+        print("\n📉 Testing Strangles...")
+        tester.test_strangles(expiration)
+        
+        print("\n📅 Testing Calendar Spreads...")
+        tester.test_calendar_spreads()
+    else:
+        print("⚠️ Skipping options tests due to expiration fetch failure")
+    
     # Print final results
     print("\n" + "=" * 50)
     print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
