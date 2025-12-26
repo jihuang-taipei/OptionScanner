@@ -679,7 +679,7 @@ function App() {
 
           {/* Options Chain Section */}
           <div className="lg:col-span-3 glass-card p-6" data-testid="options-chain">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-white flex items-center gap-2">
                 <Table2 className="w-5 h-5 text-zinc-400" />
                 Options Chain (^SPX)
@@ -702,9 +702,46 @@ function App() {
               </div>
             </div>
 
-            <p className="text-zinc-500 text-xs mb-4">
-              S&P 500 Index Options (^SPX). European-style, cash-settled. Showing strikes within ±15% of current price.
+            <p className="text-zinc-500 text-xs mb-3">
+              S&P 500 Index Options (^SPX). European-style, cash-settled.
             </p>
+
+            {/* Strike Range Filters */}
+            <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-zinc-900/50 rounded-lg border border-zinc-800">
+              <div className="flex items-center gap-2">
+                <label className="text-zinc-400 text-sm">Min Strike:</label>
+                <Input
+                  type="number"
+                  placeholder={quote ? Math.round(quote.price * 0.85).toString() : "5900"}
+                  value={minStrike}
+                  onChange={(e) => setMinStrike(e.target.value)}
+                  className="w-28 bg-zinc-800 border-zinc-700 text-white text-sm h-8"
+                  data-testid="min-strike-input"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-zinc-400 text-sm">Max Strike:</label>
+                <Input
+                  type="number"
+                  placeholder={quote ? Math.round(quote.price * 1.15).toString() : "8000"}
+                  value={maxStrike}
+                  onChange={(e) => setMaxStrike(e.target.value)}
+                  className="w-28 bg-zinc-800 border-zinc-700 text-white text-sm h-8"
+                  data-testid="max-strike-input"
+                />
+              </div>
+              <button 
+                onClick={() => { setMinStrike(""); setMaxStrike(""); }}
+                className="text-zinc-500 hover:text-white text-sm underline transition-colors"
+              >
+                Reset range
+              </button>
+              {quote && (
+                <span className="text-zinc-600 text-xs ml-auto">
+                  Current: ${quote.price.toLocaleString()} | Default range: ±15%
+                </span>
+              )}
+            </div>
 
             <Tabs defaultValue="calls" className="w-full">
               <TabsList className="bg-zinc-900/50 mb-4">
@@ -721,7 +758,13 @@ function App() {
                     <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
                   </div>
                 ) : (
-                  <OptionsTable options={optionsChain?.calls} type="calls" currentPrice={spyPrice || quote?.price} />
+                  <OptionsTable 
+                    options={optionsChain?.calls} 
+                    type="calls" 
+                    currentPrice={spyPrice || quote?.price}
+                    minStrike={minStrike}
+                    maxStrike={maxStrike}
+                  />
                 )}
               </TabsContent>
               <TabsContent value="puts" className="max-h-96 overflow-y-auto">
@@ -730,7 +773,13 @@ function App() {
                     <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
                   </div>
                 ) : (
-                  <OptionsTable options={optionsChain?.puts} type="puts" currentPrice={spyPrice || quote?.price} />
+                  <OptionsTable 
+                    options={optionsChain?.puts} 
+                    type="puts" 
+                    currentPrice={spyPrice || quote?.price}
+                    minStrike={minStrike}
+                    maxStrike={maxStrike}
+                  />
                 )}
               </TabsContent>
             </Tabs>
