@@ -707,7 +707,7 @@ function App() {
                     <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
                   </div>
                 ) : (
-                  <OptionsTable options={optionsChain?.calls} type="calls" currentPrice={spyPrice || (quote?.price / 10)} />
+                  <OptionsTable options={optionsChain?.calls} type="calls" currentPrice={spyPrice || quote?.price} />
                 )}
               </TabsContent>
               <TabsContent value="puts" className="max-h-96 overflow-y-auto">
@@ -716,7 +716,7 @@ function App() {
                     <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
                   </div>
                 ) : (
-                  <OptionsTable options={optionsChain?.puts} type="puts" currentPrice={spyPrice || (quote?.price / 10)} />
+                  <OptionsTable options={optionsChain?.puts} type="puts" currentPrice={spyPrice || quote?.price} />
                 )}
               </TabsContent>
             </Tabs>
