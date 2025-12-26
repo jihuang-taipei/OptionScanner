@@ -849,6 +849,10 @@ function App() {
   const [strangles, setStrangles] = useState(null);
   const [isLoadingStraddles, setIsLoadingStraddles] = useState(false);
   const [isLoadingStrangles, setIsLoadingStrangles] = useState(false);
+  
+  // P/L Chart state
+  const [selectedStrategy, setSelectedStrategy] = useState(null);
+  const [showPLChart, setShowPLChart] = useState(false);
 
   const fetchQuote = useCallback(async () => {
     try {
