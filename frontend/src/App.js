@@ -736,6 +736,32 @@ function App() {
     }
   }, []);
 
+  const fetchStraddles = useCallback(async (expiration) => {
+    if (!expiration) return;
+    setIsLoadingStraddles(true);
+    try {
+      const response = await axios.get(`${API}/spx/straddles?expiration=${expiration}`);
+      setStraddles(response.data);
+    } catch (e) {
+      console.error("Error fetching straddles:", e);
+    } finally {
+      setIsLoadingStraddles(false);
+    }
+  }, []);
+
+  const fetchStrangles = useCallback(async (expiration) => {
+    if (!expiration) return;
+    setIsLoadingStrangles(true);
+    try {
+      const response = await axios.get(`${API}/spx/strangles?expiration=${expiration}`);
+      setStrangles(response.data);
+    } catch (e) {
+      console.error("Error fetching strangles:", e);
+    } finally {
+      setIsLoadingStrangles(false);
+    }
+  }, []);
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await Promise.all([fetchQuote(), fetchHistory(period)]);
