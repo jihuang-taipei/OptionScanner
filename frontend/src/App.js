@@ -262,7 +262,14 @@ function App() {
   useEffect(() => {
     fetchQuote();
     fetchHistory(period);
-  }, [fetchQuote, fetchHistory, period]);
+    fetchExpirations();
+  }, [fetchQuote, fetchHistory, period, fetchExpirations]);
+
+  useEffect(() => {
+    if (selectedExpiration) {
+      fetchOptionsChain(selectedExpiration);
+    }
+  }, [selectedExpiration, fetchOptionsChain]);
 
   const isPositive = quote?.change >= 0;
   const priceColor = isPositive ? 'text-green-500' : 'text-red-500';
