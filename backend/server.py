@@ -323,19 +323,21 @@ async def get_status_checks():
     return status_checks
 
 
-@api_router.get("/spx/quote", response_model=SPXQuote)
-async def get_spx_quote():
-    """Get current SPX (S&P 500) quote from Yahoo Finance"""
+@api_router.get("/quote", response_model=SPXQuote)
+async def get_quote(symbol: str = "^GSPC"):
+    """Get current quote for any stock/index from Yahoo Finance
+    
+    symbol: Yahoo Finance ticker symbol (e.g., ^GSPC, SPY, AAPL, ^NDX)
+    """
     try:
-        # ^GSPC is the Yahoo Finance ticker for S&P 500 Index
-        ticker = yf.Ticker("^GSPC")
+        ticker = yf.Ticker(symbol)
         info = ticker.info
         
         # Get current price data
         hist = ticker.history(period="2d")
         
         if hist.empty:
-            raise HTTPException(status_code=503, detail="Unable to fetch market data")
+            raise HTTPException(status_code=503, detail=f"Unable to fetch market data for {symbol}")
         
         current_price = float(hist['Close'].iloc[-1])
         previous_close = float(info.get('previousClose', hist['Close'].iloc[-2] if len(hist) > 1 else current_price))
@@ -344,7 +346,7 @@ async def get_spx_quote():
         change_percent = (change / previous_close) * 100 if previous_close else 0
         
         quote = SPXQuote(
-            symbol="^GSPC",
+            symbol=symbol,
             price=round(current_price, 2),
             change=round(change, 2),
             change_percent=round(change_percent, 2),
@@ -353,18 +355,25 @@ async def get_spx_quote():
             day_high=round(float(info.get('dayHigh', hist['High'].iloc[-1])), 2),
             day_low=round(float(info.get('dayLow', hist['Low'].iloc[-1])), 2),
             volume=int(hist['Volume'].iloc[-1]) if hist['Volume'].iloc[-1] > 0 else None,
-            market_cap=None,  # Index doesn't have market cap
+            market_cap=info.get('marketCap'),
             fifty_two_week_high=round(float(info.get('fiftyTwoWeekHigh', 0)), 2),
             fifty_two_week_low=round(float(info.get('fiftyTwoWeekLow', 0)), 2),
             timestamp=datetime.now(timezone.utc).isoformat()
         )
         
-        logger.info(f"SPX Quote fetched: {quote.price}")
+        logger.info(f"Quote fetched for {symbol}: {quote.price}")
         return quote
         
     except Exception as e:
-        logger.error(f"Error fetching SPX quote: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Failed to fetch SPX data: {str(e)}")
+        logger.error(f"Error fetching quote for {symbol}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch data for {symbol}: {str(e)}")
+
+
+# Keep old endpoint for backwards compatibility
+@api_router.get("/spx/quote", response_model=SPXQuote)
+async def get_spx_quote():
+    """Get current SPX (S&P 500) quote - backwards compatible endpoint"""
+    return await get_quote("^GSPC")
 
 
 @api_router.get("/spx/history", response_model=SPXHistory)
