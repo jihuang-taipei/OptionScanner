@@ -226,7 +226,7 @@ const PLChart = ({ strategy, currentPrice, onClose }) => {
       </div>
       
       <div className="text-xs text-zinc-500 text-center">
-        P/L at expiration based on ^SPX price. Current price: ${currentPrice?.toLocaleString()}
+        P/L at expiration based on ${symbol} price. Current price: ${currentPrice?.toLocaleString()}
       </div>
     </div>
   );
@@ -1933,7 +1933,7 @@ function App() {
 
             {creditSpreads && (
               <div className="mb-4 flex gap-4 text-sm">
-                <span className="text-zinc-400">^SPX: <span className="text-white font-mono">${creditSpreads.current_price.toLocaleString()}</span></span>
+                <span className="text-zinc-400">{symbol}: <span className="text-white font-mono">${creditSpreads.current_price.toLocaleString()}</span></span>
                 <span className="text-zinc-400">Exp: <span className="text-white">{new Date(creditSpreads.expiration).toLocaleDateString()}</span></span>
               </div>
             )}
@@ -2015,12 +2015,12 @@ function App() {
 
             <p className="text-zinc-500 text-xs mb-4">
               Neutral strategy: Combines Bull Put Spread (below price) + Bear Call Spread (above price). 
-              Profit if ^SPX stays within the profit zone at expiration.
+              Profit if {symbol} stays within the profit zone at expiration.
             </p>
 
             {ironCondors && (
               <div className="mb-4 flex gap-4 text-sm">
-                <span className="text-zinc-400">^SPX: <span className="text-white font-mono">${ironCondors.current_price?.toLocaleString()}</span></span>
+                <span className="text-zinc-400">{symbol}: <span className="text-white font-mono">${ironCondors.current_price?.toLocaleString()}</span></span>
                 <span className="text-zinc-400">Exp: <span className="text-white">{new Date(ironCondors.expiration).toLocaleDateString()}</span></span>
                 <span className="text-zinc-400">Found: <span className="text-white">{ironCondors.iron_condors?.length || 0}</span></span>
               </div>
@@ -2079,12 +2079,12 @@ function App() {
 
             <p className="text-zinc-500 text-xs mb-4">
               Neutral strategy: Sell ATM call + put at same strike, buy OTM wings. 
-              Max profit if ^SPX expires exactly at center strike.
+              Max profit if {symbol} expires exactly at center strike.
             </p>
 
             {ironButterflies && (
               <div className="mb-4 flex gap-4 text-sm">
-                <span className="text-zinc-400">^SPX: <span className="text-white font-mono">${ironButterflies.current_price?.toLocaleString()}</span></span>
+                <span className="text-zinc-400">{symbol}: <span className="text-white font-mono">${ironButterflies.current_price?.toLocaleString()}</span></span>
                 <span className="text-zinc-400">Exp: <span className="text-white">{new Date(ironButterflies.expiration).toLocaleDateString()}</span></span>
                 <span className="text-zinc-400">Found: <span className="text-white">{ironButterflies.iron_butterflies?.length || 0}</span></span>
               </div>
@@ -2143,7 +2143,7 @@ function App() {
 
             {straddles && (
               <div className="mb-4 flex gap-4 text-sm">
-                <span className="text-zinc-400">^SPX: <span className="text-white font-mono">${straddles.current_price?.toLocaleString()}</span></span>
+                <span className="text-zinc-400">{symbol}: <span className="text-white font-mono">${straddles.current_price?.toLocaleString()}</span></span>
                 <span className="text-zinc-400">Exp: <span className="text-white">{new Date(straddles.expiration).toLocaleDateString()}</span></span>
               </div>
             )}
@@ -2165,7 +2165,7 @@ function App() {
                 ) : (
                   <>
                     <p className="text-zinc-500 text-xs mb-3">
-                      Buy call + put at same strike. Profit if ^SPX moves more than the total premium paid.
+                      Buy call + put at same strike. Profit if {symbol} moves more than the total premium paid.
                     </p>
                     <StraddleTable straddles={straddles?.straddles} currentPrice={straddles?.current_price} onSelectStrategy={handleSelectStrategy} />
                   </>
@@ -2234,7 +2234,7 @@ function App() {
 
             {calendarSpreads && (
               <div className="mb-4 flex flex-wrap gap-4 text-sm">
-                <span className="text-zinc-400">^SPX: <span className="text-white font-mono">${calendarSpreads.current_price?.toLocaleString()}</span></span>
+                <span className="text-zinc-400">{symbol}: <span className="text-white font-mono">${calendarSpreads.current_price?.toLocaleString()}</span></span>
                 <span className="text-zinc-400">Near: <span className="text-white">{new Date(calendarSpreads.near_expiration).toLocaleDateString()}</span></span>
                 <span className="text-zinc-400">Far: <span className="text-white">{new Date(calendarSpreads.far_expiration).toLocaleDateString()}</span></span>
                 <span className="text-zinc-400">Found: <span className="text-white">{calendarSpreads.calendar_spreads?.length || 0}</span></span>
