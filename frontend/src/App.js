@@ -499,7 +499,7 @@ const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskRewa
 };
 
 // Iron Condor Table Component
-const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward }) => {
+const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, onSelectStrategy }) => {
   if (!condors || condors.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Iron Condors available</p>;
   }
@@ -539,6 +539,7 @@ const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward }) =>
             <th className="text-right py-3 px-2 font-medium">Profit Zone</th>
             <th className="text-right py-3 px-2 font-medium">R/R</th>
             <th className="text-right py-3 px-2 font-medium text-cyan-400">P(Profit)</th>
+            <th className="text-center py-3 px-2 font-medium">P/L</th>
           </tr>
         </thead>
         <tbody>
@@ -585,6 +586,25 @@ const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward }) =>
               </td>
               <td className="text-right py-2.5 px-2 font-mono text-cyan-400 font-medium">
                 {ic.probability_profit ? `${ic.probability_profit.toFixed(0)}%` : '-'}
+              </td>
+              <td className="text-center py-2.5 px-2">
+                <button
+                  onClick={() => onSelectStrategy({
+                    type: 'iron_condor',
+                    name: `IC ${ic.put_sell_strike}/${ic.put_buy_strike} - ${ic.call_sell_strike}/${ic.call_buy_strike}`,
+                    put_sell_strike: ic.put_sell_strike,
+                    put_buy_strike: ic.put_buy_strike,
+                    put_credit: ic.put_credit,
+                    call_sell_strike: ic.call_sell_strike,
+                    call_buy_strike: ic.call_buy_strike,
+                    call_credit: ic.call_credit,
+                    net_credit: ic.net_credit
+                  })}
+                  className="text-purple-400 hover:text-purple-300 transition-colors"
+                  title="View P/L Chart"
+                >
+                  <LineChartIcon className="w-4 h-4" />
+                </button>
               </td>
             </tr>
           ))}
