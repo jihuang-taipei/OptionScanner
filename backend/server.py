@@ -1757,10 +1757,11 @@ async def shutdown_db_client():
 # Serve React static files in production (Docker)
 # Check if frontend build exists (for Docker deployment)
 FRONTEND_BUILD_DIR = ROOT_DIR.parent / "frontend" / "build"
+FRONTEND_STATIC_DIR = FRONTEND_BUILD_DIR / "static"
 
-if FRONTEND_BUILD_DIR.exists():
+if FRONTEND_BUILD_DIR.exists() and FRONTEND_STATIC_DIR.exists():
     # Serve static files (JS, CSS, images)
-    app.mount("/static", StaticFiles(directory=str(FRONTEND_BUILD_DIR / "static")), name="static")
+    app.mount("/static", StaticFiles(directory=str(FRONTEND_STATIC_DIR)), name="static")
     
     # Serve React app for all non-API routes
     @app.get("/{full_path:path}")
@@ -1776,3 +1777,4 @@ if FRONTEND_BUILD_DIR.exists():
         
         # Return index.html for all other routes (SPA routing)
         return FileResponse(str(FRONTEND_BUILD_DIR / "index.html"))
+
