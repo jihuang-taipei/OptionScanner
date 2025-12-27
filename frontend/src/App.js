@@ -2339,22 +2339,24 @@ function App() {
               </div>
             )}
 
-            <div className="max-h-96 overflow-y-auto">
-              {isLoadingCondors ? (
-                <div className="flex items-center justify-center py-12">
-                  <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                <div className="max-h-96 overflow-y-auto">
+                  {isLoadingCondors ? (
+                    <div className="flex items-center justify-center py-12">
+                      <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                    </div>
+                  ) : (
+                    <IronCondorTable 
+                      condors={ironCondors?.iron_condors} 
+                      currentPrice={ironCondors?.current_price}
+                      minCredit={minCredit}
+                      maxRiskReward={maxRiskReward}
+                      onSelectStrategy={handleSelectStrategy}
+                      onTrade={handleTrade}
+                    />
+                  )}
                 </div>
-              ) : (
-                <IronCondorTable 
-                  condors={ironCondors?.iron_condors} 
-                  currentPrice={ironCondors?.current_price}
-                  minCredit={minCredit}
-                  maxRiskReward={maxRiskReward}
-                  onSelectStrategy={handleSelectStrategy}
-                  onTrade={handleTrade}
-                />
-              )}
-            </div>
+              </>
+            )}
           </div>
 
           {/* Iron Butterfly Section */}
