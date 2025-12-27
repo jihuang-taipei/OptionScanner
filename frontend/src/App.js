@@ -2055,86 +2055,101 @@ function App() {
               </div>
             </div>
 
-            <p className="text-zinc-500 text-xs mb-3">
-              {symbol} Options Chain. Includes Greeks calculation.
-            </p>
+            {!collapsedSections.optionsChain && (
+              <>
+                <p className="text-zinc-500 text-xs mb-3">
+                  {symbol} Options Chain. Includes Greeks calculation.
+                </p>
 
-            {/* Strike Range Filter */}
-            <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-zinc-900/50 rounded-lg border border-zinc-800">
-              <div className="flex items-center gap-2">
-                <label className="text-zinc-400 text-sm">Strike Range:</label>
-                <Select value={strikeRange.toString()} onValueChange={(v) => setStrikeRange(parseInt(v))}>
-                  <SelectTrigger className="w-24 bg-zinc-800 border-zinc-700 text-white text-sm h-8" data-testid="strike-range-select">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-zinc-800">
-                    {[2, 5, 10, 15, 20, 25, 30, 50].map((pct) => (
-                      <SelectItem key={pct} value={pct.toString()} className="text-white hover:bg-zinc-800">
-                        ±{pct}%
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {quote && (
-                <span className="text-zinc-500 text-xs">
-                  Current: <span className="text-white font-mono">${quote.price.toLocaleString()}</span>
-                  <span className="text-zinc-600 mx-2">|</span>
-                  Range: <span className="text-white font-mono">${(quote.price * (1 - strikeRange/100)).toFixed(0)} - ${(quote.price * (1 + strikeRange/100)).toFixed(0)}</span>
-                </span>
-              )}
-            </div>
+                {/* Strike Range Filter */}
+                <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-zinc-900/50 rounded-lg border border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <label className="text-zinc-400 text-sm">Strike Range:</label>
+                    <Select value={strikeRange.toString()} onValueChange={(v) => setStrikeRange(parseInt(v))}>
+                      <SelectTrigger className="w-24 bg-zinc-800 border-zinc-700 text-white text-sm h-8" data-testid="strike-range-select">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900 border-zinc-800">
+                        {[2, 5, 10, 15, 20, 25, 30, 50].map((pct) => (
+                          <SelectItem key={pct} value={pct.toString()} className="text-white hover:bg-zinc-800">
+                            ±{pct}%
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {quote && (
+                    <span className="text-zinc-500 text-xs">
+                      Current: <span className="text-white font-mono">${quote.price.toLocaleString()}</span>
+                      <span className="text-zinc-600 mx-2">|</span>
+                      Range: <span className="text-white font-mono">${(quote.price * (1 - strikeRange/100)).toFixed(0)} - ${(quote.price * (1 + strikeRange/100)).toFixed(0)}</span>
+                    </span>
+                  )}
+                </div>
 
-            <Tabs defaultValue="calls" className="w-full">
-              <TabsList className="bg-zinc-900/50 mb-4">
-                <TabsTrigger value="calls" className="data-[state=active]:bg-green-500/20 data-[state=active]:text-green-500" data-testid="calls-tab">
-                  Calls
-                </TabsTrigger>
-                <TabsTrigger value="puts" className="data-[state=active]:bg-red-500/20 data-[state=active]:text-red-500" data-testid="puts-tab">
-                  Puts
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="calls" className="max-h-96 overflow-y-auto">
-                {isLoadingOptions ? (
-                  <div className="flex items-center justify-center py-12">
-                    <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
-                  </div>
-                ) : (
-                  <OptionsTable 
-                    options={optionsChain?.calls} 
-                    type="calls" 
-                    currentPrice={quote?.price}
-                    strikeRange={strikeRange}
-                    onTrade={handleTrade}
-                  />
-                )}
-              </TabsContent>
-              <TabsContent value="puts" className="max-h-96 overflow-y-auto">
-                {isLoadingOptions ? (
-                  <div className="flex items-center justify-center py-12">
-                    <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
-                  </div>
-                ) : (
-                  <OptionsTable 
-                    options={optionsChain?.puts} 
-                    type="puts" 
-                    currentPrice={quote?.price}
-                    strikeRange={strikeRange}
-                    onTrade={handleTrade}
-                  />
-                )}
-              </TabsContent>
-            </Tabs>
+                <Tabs defaultValue="calls" className="w-full">
+                  <TabsList className="bg-zinc-900/50 mb-4">
+                    <TabsTrigger value="calls" className="data-[state=active]:bg-green-500/20 data-[state=active]:text-green-500" data-testid="calls-tab">
+                      Calls
+                    </TabsTrigger>
+                    <TabsTrigger value="puts" className="data-[state=active]:bg-red-500/20 data-[state=active]:text-red-500" data-testid="puts-tab">
+                      Puts
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="calls" className="max-h-96 overflow-y-auto">
+                    {isLoadingOptions ? (
+                      <div className="flex items-center justify-center py-12">
+                        <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                      </div>
+                    ) : (
+                      <OptionsTable 
+                        options={optionsChain?.calls} 
+                        type="calls" 
+                        currentPrice={quote?.price}
+                        strikeRange={strikeRange}
+                        onTrade={handleTrade}
+                      />
+                    )}
+                  </TabsContent>
+                  <TabsContent value="puts" className="max-h-96 overflow-y-auto">
+                    {isLoadingOptions ? (
+                      <div className="flex items-center justify-center py-12">
+                        <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                      </div>
+                    ) : (
+                      <OptionsTable 
+                        options={optionsChain?.puts} 
+                        type="puts" 
+                        currentPrice={quote?.price}
+                        strikeRange={strikeRange}
+                        onTrade={handleTrade}
+                      />
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </>
+            )}
           </div>
 
           {/* Credit Spreads Section */}
           <div className="lg:col-span-3 glass-card p-6" data-testid="credit-spreads">
-            <div className="flex items-center justify-between mb-4">
+            <div 
+              className="flex items-center justify-between mb-4 cursor-pointer"
+              onClick={() => toggleSection('creditSpreads')}
+            >
               <h2 className="text-lg font-medium text-white flex items-center gap-2">
+                {collapsedSections.creditSpreads ? (
+                  <ChevronRight className="w-5 h-5 text-zinc-400" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-zinc-400" />
+                )}
                 <Calculator className="w-5 h-5 text-zinc-400" />
                 Credit Spreads (${spreadWidth} wide)
+                <span className="text-xs text-zinc-500 font-normal ml-2">
+                  {creditSpreads ? `${creditSpreads.bull_put_spreads?.length || 0} bull put, ${creditSpreads.bear_call_spreads?.length || 0} bear call` : ''}
+                </span>
               </h2>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                 <span className="text-zinc-500 text-sm">Width:</span>
                 <Select value={spreadWidth.toString()} onValueChange={(v) => setSpreadWidth(parseInt(v))}>
                   <SelectTrigger className="w-20 bg-zinc-900 border-zinc-800 text-white" data-testid="spread-width-select">
