@@ -1502,7 +1502,8 @@ function App() {
     fetchQuote();
     fetchHistory(period);
     fetchExpirations();
-  }, [fetchQuote, fetchHistory, period, fetchExpirations]);
+    fetchPositions();  // Fetch portfolio positions
+  }, [fetchQuote, fetchHistory, period, fetchExpirations, fetchPositions]);
 
   useEffect(() => {
     if (selectedExpiration) {
