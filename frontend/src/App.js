@@ -1134,6 +1134,24 @@ const StrangleTable = ({ strangles, currentPrice, onSelectStrategy, onTrade }) =
                   <LineChartIcon className="w-4 h-4" />
                 </button>
               </td>
+              <td className="text-center py-2.5 px-2">
+                <button
+                  onClick={() => onTrade && onTrade(
+                    s,
+                    'strangle',
+                    `Strangle ${s.put_strike}/${s.call_strike}`,
+                    [
+                      { option_type: 'call', action: 'buy', strike: s.call_strike, price: s.call_price, quantity: 1 },
+                      { option_type: 'put', action: 'buy', strike: s.put_strike, price: s.put_price, quantity: 1 }
+                    ],
+                    -s.total_cost  // Negative because it's a debit
+                  )}
+                  className="text-green-400 hover:text-green-300 transition-colors"
+                  title="Paper Trade"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
