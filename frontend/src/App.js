@@ -2382,7 +2382,7 @@ function App() {
                     <p className="text-zinc-500 text-xs mb-3">
                       Buy OTM call + OTM put. Cheaper than straddles but needs larger move to profit.
                     </p>
-                    <StrangleTable strangles={strangles?.strangles} currentPrice={strangles?.current_price} onSelectStrategy={handleSelectStrategy} />
+                    <StrangleTable strangles={strangles?.strangles} currentPrice={strangles?.current_price} onSelectStrategy={handleSelectStrategy} onTrade={handleTrade} />
                   </>
                 )}
               </TabsContent>
