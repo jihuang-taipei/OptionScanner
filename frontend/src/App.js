@@ -29,8 +29,27 @@ import {
 } from "./components/ui/dialog";
 import { Input } from "./components/ui/input";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+// Import utilities and constants from modular structure
+import { API, REFRESH_INTERVALS, POPULAR_SYMBOLS } from "./utils/constants";
+import {
+  calculatePLData,
+  calculateBullPutPL,
+  calculateBearCallPL,
+  calculateIronCondorPL,
+  calculateIronButterflyPL,
+  calculateStraddlePL,
+  calculateStranglePL,
+} from "./utils/calculations";
+import {
+  downloadCSV,
+  exportOptionsChain,
+  exportCreditSpreads,
+  exportIronCondors,
+  exportStraddles,
+  exportStrangles,
+  exportIronButterflies,
+  exportCalendarSpreads,
+} from "./utils/exportUtils";
 
 // P/L calculation functions for different strategies
 const calculatePLData = (strategy, currentPrice) => {
