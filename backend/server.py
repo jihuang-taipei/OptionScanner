@@ -1541,7 +1541,7 @@ async def get_spx_calendar_spreads(near_exp: str, far_exp: str):
 @api_router.post("/positions", response_model=Position)
 async def create_position(position: PositionCreate):
     """Create a new paper trading position"""
-    if not db:
+    if db is None:
         raise HTTPException(status_code=503, detail="Database not available")
     
     try:
@@ -1568,7 +1568,7 @@ async def create_position(position: PositionCreate):
 @api_router.get("/positions", response_model=List[PositionWithPnL])
 async def get_positions(symbol: str = None, status: str = None):
     """Get all positions with current P/L calculations"""
-    if not db:
+    if db is None:
         raise HTTPException(status_code=503, detail="Database not available")
     
     try:
@@ -1623,7 +1623,7 @@ async def get_positions(symbol: str = None, status: str = None):
 @api_router.get("/positions/{position_id}", response_model=PositionWithPnL)
 async def get_position(position_id: str):
     """Get a specific position by ID"""
-    if not db:
+    if db is None:
         raise HTTPException(status_code=503, detail="Database not available")
     
     try:
@@ -1641,7 +1641,7 @@ async def get_position(position_id: str):
 @api_router.put("/positions/{position_id}/close")
 async def close_position(position_id: str, exit_price: float):
     """Close a position and calculate realized P/L"""
-    if not db:
+    if db is None:
         raise HTTPException(status_code=503, detail="Database not available")
     
     try:
@@ -1690,7 +1690,7 @@ async def close_position(position_id: str, exit_price: float):
 @api_router.delete("/positions/{position_id}")
 async def delete_position(position_id: str):
     """Delete a position"""
-    if not db:
+    if db is None:
         raise HTTPException(status_code=503, detail="Database not available")
     
     try:
@@ -1711,7 +1711,7 @@ async def delete_position(position_id: str):
 @api_router.get("/portfolio/summary", response_model=PortfolioSummary)
 async def get_portfolio_summary():
     """Get portfolio summary with all positions and P/L"""
-    if not db:
+    if db is None:
         raise HTTPException(status_code=503, detail="Database not available")
     
     try:
