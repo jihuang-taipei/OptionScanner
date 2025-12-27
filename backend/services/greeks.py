@@ -48,5 +48,5 @@ def calculate_greeks(
         vega = S * norm.pdf(d1) * math.sqrt(T) / 100
         
         return round(delta, 4), round(gamma, 6), round(theta, 4), round(vega, 4)
-    except:
+    except Exception:
         return None, None, None, None

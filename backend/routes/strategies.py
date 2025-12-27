@@ -183,8 +183,6 @@ async def get_iron_butterflies(symbol: str = "^SPX", expiration: str = None, win
         
         opt_chain = ticker.option_chain(expiration)
         current_price = YahooFinanceService.get_current_price(symbol)
-        T = YahooFinanceService.calculate_time_to_expiration(expiration)
-        r = YahooFinanceService.RISK_FREE_RATE
         
         calls_df = opt_chain.calls.copy()
         puts_df = opt_chain.puts.copy()
