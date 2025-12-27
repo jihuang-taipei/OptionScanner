@@ -2395,6 +2395,261 @@ function App() {
           </div>
         )}
 
+        {/* Portfolio Modal */}
+        {showPortfolio && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={() => setShowPortfolio(false)}>
+            <div className="glass-card p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-medium text-white flex items-center gap-2">
+                  <Briefcase className="w-6 h-6 text-emerald-400" />
+                  Paper Trading Portfolio
+                </h3>
+                <button 
+                  onClick={() => setShowPortfolio(false)}
+                  className="text-zinc-400 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Portfolio Summary */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-zinc-800/50 rounded-lg p-4">
+                  <div className="text-zinc-500 text-sm">Open Positions</div>
+                  <div className="text-2xl font-bold text-white">{positions.filter(p => p.status === 'open').length}</div>
+                </div>
+                <div className="bg-zinc-800/50 rounded-lg p-4">
+                  <div className="text-zinc-500 text-sm">Closed Positions</div>
+                  <div className="text-2xl font-bold text-white">{positions.filter(p => p.status === 'closed').length}</div>
+                </div>
+                <div className="bg-zinc-800/50 rounded-lg p-4">
+                  <div className="text-zinc-500 text-sm">Unrealized P/L</div>
+                  <div className={`text-2xl font-bold ${positions.filter(p => p.status === 'open').reduce((sum, p) => sum + (p.unrealized_pnl || 0), 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    ${positions.filter(p => p.status === 'open').reduce((sum, p) => sum + (p.unrealized_pnl || 0), 0).toFixed(2)}
+                  </div>
+                </div>
+                <div className="bg-zinc-800/50 rounded-lg p-4">
+                  <div className="text-zinc-500 text-sm">Realized P/L</div>
+                  <div className={`text-2xl font-bold ${positions.filter(p => p.status === 'closed').reduce((sum, p) => sum + (p.realized_pnl || 0), 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    ${positions.filter(p => p.status === 'closed').reduce((sum, p) => sum + (p.realized_pnl || 0), 0).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Positions Table */}
+              {isLoadingPositions ? (
+                <div className="flex items-center justify-center py-12">
+                  <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                </div>
+              ) : positions.length === 0 ? (
+                <div className="text-center py-12 text-zinc-500">
+                  <Briefcase className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>No positions yet</p>
+                  <p className="text-sm mt-1">Click the <Plus className="w-4 h-4 inline" /> button on any strategy to add a paper trade</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-zinc-800 text-zinc-400">
+                        <th className="text-left py-3 px-2">Symbol</th>
+                        <th className="text-left py-3 px-2">Strategy</th>
+                        <th className="text-left py-3 px-2">Expiration</th>
+                        <th className="text-right py-3 px-2">Entry</th>
+                        <th className="text-right py-3 px-2">Qty</th>
+                        <th className="text-right py-3 px-2">P/L</th>
+                        <th className="text-center py-3 px-2">Status</th>
+                        <th className="text-center py-3 px-2">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {positions.map((pos) => (
+                        <tr key={pos.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
+                          <td className="py-3 px-2 font-mono text-white">{pos.symbol}</td>
+                          <td className="py-3 px-2">
+                            <div className="font-medium text-white">{pos.strategy_name}</div>
+                            <div className="text-xs text-zinc-500">{pos.strategy_type}</div>
+                          </td>
+                          <td className="py-3 px-2 text-zinc-400">{new Date(pos.expiration).toLocaleDateString()}</td>
+                          <td className="py-3 px-2 text-right font-mono text-green-400">${pos.entry_price.toFixed(2)}</td>
+                          <td className="py-3 px-2 text-right text-white">{pos.quantity}</td>
+                          <td className={`py-3 px-2 text-right font-mono ${pos.status === 'closed' ? (pos.realized_pnl >= 0 ? 'text-green-400' : 'text-red-400') : 'text-zinc-400'}`}>
+                            {pos.status === 'closed' 
+                              ? `$${pos.realized_pnl?.toFixed(2) || '0.00'}`
+                              : '-'
+                            }
+                          </td>
+                          <td className="py-3 px-2 text-center">
+                            {pos.status === 'open' ? (
+                              <span className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-xs">Open</span>
+                            ) : (
+                              <span className="px-2 py-1 bg-zinc-500/20 text-zinc-400 rounded text-xs">Closed</span>
+                            )}
+                          </td>
+                          <td className="py-3 px-2 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              {pos.status === 'open' && (
+                                <button
+                                  onClick={() => {
+                                    setCloseDialog({ open: true, position: pos });
+                                    setClosePrice(pos.entry_price.toString());
+                                  }}
+                                  className="text-amber-400 hover:text-amber-300"
+                                  title="Close Position"
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                </button>
+                              )}
+                              <button
+                                onClick={() => deletePosition(pos.id)}
+                                className="text-red-400 hover:text-red-300"
+                                title="Delete Position"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Trade Dialog */}
+        {tradeDialog.open && tradeDialog.strategy && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={() => setTradeDialog({ open: false, strategy: null })}>
+            <div className="glass-card p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-white flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-green-400" />
+                  Paper Trade
+                </h3>
+                <button onClick={() => setTradeDialog({ open: false, strategy: null })} className="text-zinc-400 hover:text-white">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <div className="text-zinc-400 text-sm mb-1">Strategy</div>
+                  <div className="text-white font-medium">{tradeDialog.strategy.strategyName}</div>
+                </div>
+                
+                <div>
+                  <div className="text-zinc-400 text-sm mb-1">Symbol</div>
+                  <div className="text-white font-mono">{symbol}</div>
+                </div>
+                
+                <div>
+                  <div className="text-zinc-400 text-sm mb-1">Expiration</div>
+                  <div className="text-white">{selectedExpiration}</div>
+                </div>
+                
+                <div>
+                  <div className="text-zinc-400 text-sm mb-1">Entry Credit/Debit</div>
+                  <div className="text-green-400 font-mono">${tradeDialog.strategy.entryPrice.toFixed(2)}</div>
+                </div>
+                
+                <div>
+                  <label className="text-zinc-400 text-sm mb-1 block">Number of Contracts</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={tradeQuantity}
+                    onChange={(e) => setTradeQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                    className="w-full bg-zinc-800 border border-zinc-700 text-white px-3 py-2 rounded-lg"
+                  />
+                </div>
+                
+                <div className="pt-2">
+                  <div className="text-zinc-400 text-sm">Total Premium</div>
+                  <div className="text-xl font-bold text-white">
+                    ${(tradeDialog.strategy.entryPrice * tradeQuantity * 100).toFixed(2)}
+                  </div>
+                </div>
+                
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => setTradeDialog({ open: false, strategy: null })}
+                    className="flex-1 px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => createPosition(
+                      tradeDialog.strategy.strategy,
+                      tradeDialog.strategy.strategyType,
+                      tradeDialog.strategy.strategyName,
+                      tradeDialog.strategy.legs,
+                      tradeDialog.strategy.entryPrice
+                    )}
+                    className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500"
+                  >
+                    Execute Trade
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Close Position Dialog */}
+        {closeDialog.open && closeDialog.position && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={() => setCloseDialog({ open: false, position: null })}>
+            <div className="glass-card p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-white">Close Position</h3>
+                <button onClick={() => setCloseDialog({ open: false, position: null })} className="text-zinc-400 hover:text-white">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <div className="text-zinc-400 text-sm mb-1">Position</div>
+                  <div className="text-white font-medium">{closeDialog.position.strategy_name}</div>
+                </div>
+                
+                <div>
+                  <div className="text-zinc-400 text-sm mb-1">Entry Price</div>
+                  <div className="text-green-400 font-mono">${closeDialog.position.entry_price.toFixed(2)}</div>
+                </div>
+                
+                <div>
+                  <label className="text-zinc-400 text-sm mb-1 block">Exit Price (per contract)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={closePrice}
+                    onChange={(e) => setClosePrice(e.target.value)}
+                    className="w-full bg-zinc-800 border border-zinc-700 text-white px-3 py-2 rounded-lg"
+                    placeholder="0.00"
+                  />
+                </div>
+                
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => setCloseDialog({ open: false, position: null })}
+                    className="flex-1 px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => closePosition(closeDialog.position.id, parseFloat(closePrice) || 0)}
+                    className="flex-1 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-500"
+                  >
+                    Close Position
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Footer */}
         <footer className="mt-12 text-center text-zinc-600 text-sm">
           <p>Data provided by Yahoo Finance. Prices may be delayed.</p>
