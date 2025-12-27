@@ -1369,6 +1369,23 @@ function App() {
   const [closeDialog, setCloseDialog] = useState({ open: false, position: null });
   const [closePrice, setClosePrice] = useState("");
 
+  // Collapsed sections state
+  const [collapsedSections, setCollapsedSections] = useState({
+    optionsChain: false,
+    creditSpreads: false,
+    ironCondors: true,  // Start collapsed
+    ironButterflies: true,  // Start collapsed
+    straddlesStrangles: true,  // Start collapsed
+    calendarSpreads: true,  // Start collapsed
+  });
+
+  const toggleSection = (section) => {
+    setCollapsedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   // Fetch positions
   const fetchPositions = useCallback(async () => {
     setIsLoadingPositions(true);
