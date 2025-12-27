@@ -2081,6 +2081,7 @@ function App() {
                       minCredit={minCredit}
                       maxRiskReward={maxRiskReward}
                       onSelectStrategy={handleSelectStrategy}
+                      onTrade={handleTrade}
                     />
                   </>
                 )}
