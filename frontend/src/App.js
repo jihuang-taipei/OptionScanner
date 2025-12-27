@@ -2185,117 +2185,132 @@ function App() {
               </div>
             </div>
 
-            {/* Filter Controls */}
-            <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-zinc-900/50 rounded-lg border border-zinc-800">
-              <div className="flex items-center gap-2">
-                <label className="text-zinc-400 text-sm">Min Credit:</label>
-                <Select value={minCredit.toString()} onValueChange={(v) => setMinCredit(parseFloat(v))}>
-                  <SelectTrigger className="w-24 bg-zinc-800 border-zinc-700 text-white text-sm h-8" data-testid="min-credit-filter">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-zinc-800">
-                    {[0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.50, 0.75, 1.00, 1.50, 2.00].map((c) => (
-                      <SelectItem key={c} value={c.toString()} className="text-white hover:bg-zinc-800">
-                        ${c.toFixed(2)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="text-zinc-400 text-sm">Max Risk/Reward:</label>
-                <Select value={maxRiskReward.toString()} onValueChange={(v) => setMaxRiskReward(parseFloat(v))}>
-                  <SelectTrigger className="w-24 bg-zinc-800 border-zinc-700 text-white text-sm h-8" data-testid="max-rr-filter">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-zinc-800">
-                    {[5, 10, 15, 20, 25, 50, 100].map((rr) => (
-                      <SelectItem key={rr} value={rr.toString()} className="text-white hover:bg-zinc-800">
-                        {rr}:1
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <button 
-                onClick={() => { setMinCredit(0); setMaxRiskReward(100); }}
-                className="text-zinc-500 hover:text-white text-sm underline transition-colors"
-              >
-                Reset filters
-              </button>
-            </div>
+            {!collapsedSections.creditSpreads && (
+              <>
+                {/* Filter Controls */}
+                <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-zinc-900/50 rounded-lg border border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <label className="text-zinc-400 text-sm">Min Credit:</label>
+                    <Select value={minCredit.toString()} onValueChange={(v) => setMinCredit(parseFloat(v))}>
+                      <SelectTrigger className="w-24 bg-zinc-800 border-zinc-700 text-white text-sm h-8" data-testid="min-credit-filter">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900 border-zinc-800">
+                        {[0, 0.05, 0.10, 0.15, 0.20, 0.25, 0.50, 0.75, 1.00, 1.50, 2.00].map((c) => (
+                          <SelectItem key={c} value={c.toString()} className="text-white hover:bg-zinc-800">
+                            ${c.toFixed(2)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="text-zinc-400 text-sm">Max Risk/Reward:</label>
+                    <Select value={maxRiskReward.toString()} onValueChange={(v) => setMaxRiskReward(parseFloat(v))}>
+                      <SelectTrigger className="w-24 bg-zinc-800 border-zinc-700 text-white text-sm h-8" data-testid="max-rr-filter">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900 border-zinc-800">
+                        {[5, 10, 15, 20, 25, 50, 100].map((rr) => (
+                          <SelectItem key={rr} value={rr.toString()} className="text-white hover:bg-zinc-800">
+                            {rr}:1
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <button 
+                    onClick={() => { setMinCredit(0); setMaxRiskReward(100); }}
+                    className="text-zinc-500 hover:text-white text-sm underline transition-colors"
+                  >
+                    Reset filters
+                  </button>
+                </div>
 
-            {creditSpreads && (
-              <div className="mb-4 flex gap-4 text-sm">
-                <span className="text-zinc-400">{symbol}: <span className="text-white font-mono">${creditSpreads.current_price.toLocaleString()}</span></span>
-                <span className="text-zinc-400">Exp: <span className="text-white">{new Date(creditSpreads.expiration).toLocaleDateString()}</span></span>
-              </div>
+                {creditSpreads && (
+                  <div className="mb-4 flex gap-4 text-sm">
+                    <span className="text-zinc-400">{symbol}: <span className="text-white font-mono">${creditSpreads.current_price.toLocaleString()}</span></span>
+                    <span className="text-zinc-400">Exp: <span className="text-white">{new Date(creditSpreads.expiration).toLocaleDateString()}</span></span>
+                  </div>
+                )}
+
+                <Tabs defaultValue="bull-put" className="w-full">
+                  <TabsList className="bg-zinc-900/50 mb-4">
+                    <TabsTrigger value="bull-put" className="data-[state=active]:bg-green-500/20 data-[state=active]:text-green-500" data-testid="bull-put-tab">
+                      Bull Put Spreads ({creditSpreads?.bull_put_spreads?.length || 0})
+                    </TabsTrigger>
+                    <TabsTrigger value="bear-call" className="data-[state=active]:bg-red-500/20 data-[state=active]:text-red-500" data-testid="bear-call-tab">
+                      Bear Call Spreads ({creditSpreads?.bear_call_spreads?.length || 0})
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="bull-put" className="max-h-96 overflow-y-auto">
+                    {isLoadingSpreads ? (
+                      <div className="flex items-center justify-center py-12">
+                        <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-zinc-500 text-xs mb-3">
+                          Bullish strategy: Sell higher strike put, buy lower strike put. Profit if SPY stays above sell strike.
+                        </p>
+                        <CreditSpreadTable 
+                          spreads={creditSpreads?.bull_put_spreads} 
+                          type="Bull Put" 
+                          currentPrice={creditSpreads?.current_price}
+                          minCredit={minCredit}
+                          maxRiskReward={maxRiskReward}
+                          onSelectStrategy={handleSelectStrategy}
+                          onTrade={handleTrade}
+                        />
+                      </>
+                    )}
+                  </TabsContent>
+                  <TabsContent value="bear-call" className="max-h-96 overflow-y-auto">
+                    {isLoadingSpreads ? (
+                      <div className="flex items-center justify-center py-12">
+                        <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-zinc-500 text-xs mb-3">
+                          Bearish strategy: Sell lower strike call, buy higher strike call. Profit if SPY stays below sell strike.
+                        </p>
+                        <CreditSpreadTable 
+                          spreads={creditSpreads?.bear_call_spreads} 
+                          type="Bear Call" 
+                          currentPrice={creditSpreads?.current_price}
+                          minCredit={minCredit}
+                          maxRiskReward={maxRiskReward}
+                          onSelectStrategy={handleSelectStrategy}
+                          onTrade={handleTrade}
+                        />
+                      </>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </>
             )}
-
-            <Tabs defaultValue="bull-put" className="w-full">
-              <TabsList className="bg-zinc-900/50 mb-4">
-                <TabsTrigger value="bull-put" className="data-[state=active]:bg-green-500/20 data-[state=active]:text-green-500" data-testid="bull-put-tab">
-                  Bull Put Spreads ({creditSpreads?.bull_put_spreads?.length || 0})
-                </TabsTrigger>
-                <TabsTrigger value="bear-call" className="data-[state=active]:bg-red-500/20 data-[state=active]:text-red-500" data-testid="bear-call-tab">
-                  Bear Call Spreads ({creditSpreads?.bear_call_spreads?.length || 0})
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="bull-put" className="max-h-96 overflow-y-auto">
-                {isLoadingSpreads ? (
-                  <div className="flex items-center justify-center py-12">
-                    <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
-                  </div>
-                ) : (
-                  <>
-                    <p className="text-zinc-500 text-xs mb-3">
-                      Bullish strategy: Sell higher strike put, buy lower strike put. Profit if SPY stays above sell strike.
-                    </p>
-                    <CreditSpreadTable 
-                      spreads={creditSpreads?.bull_put_spreads} 
-                      type="Bull Put" 
-                      currentPrice={creditSpreads?.current_price}
-                      minCredit={minCredit}
-                      maxRiskReward={maxRiskReward}
-                      onSelectStrategy={handleSelectStrategy}
-                      onTrade={handleTrade}
-                    />
-                  </>
-                )}
-              </TabsContent>
-              <TabsContent value="bear-call" className="max-h-96 overflow-y-auto">
-                {isLoadingSpreads ? (
-                  <div className="flex items-center justify-center py-12">
-                    <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
-                  </div>
-                ) : (
-                  <>
-                    <p className="text-zinc-500 text-xs mb-3">
-                      Bearish strategy: Sell lower strike call, buy higher strike call. Profit if SPY stays below sell strike.
-                    </p>
-                    <CreditSpreadTable 
-                      spreads={creditSpreads?.bear_call_spreads} 
-                      type="Bear Call" 
-                      currentPrice={creditSpreads?.current_price}
-                      minCredit={minCredit}
-                      maxRiskReward={maxRiskReward}
-                      onSelectStrategy={handleSelectStrategy}
-                      onTrade={handleTrade}
-                    />
-                  </>
-                )}
-              </TabsContent>
-            </Tabs>
           </div>
 
           {/* Iron Condor Section */}
           <div className="lg:col-span-3 glass-card p-6" data-testid="iron-condors">
-            <div className="flex items-center justify-between mb-4">
+            <div 
+              className="flex items-center justify-between mb-4 cursor-pointer"
+              onClick={() => toggleSection('ironCondors')}
+            >
               <h2 className="text-lg font-medium text-white flex items-center gap-2">
+                {collapsedSections.ironCondors ? (
+                  <ChevronRight className="w-5 h-5 text-zinc-400" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-zinc-400" />
+                )}
                 <Layers className="w-5 h-5 text-zinc-400" />
                 Iron Condors (${spreadWidth} wide legs)
+                <span className="text-xs text-zinc-500 font-normal ml-2">
+                  {ironCondors?.iron_condors?.length || 0} found
+                </span>
               </h2>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                 {isLoadingCondors && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
                 <button
                   onClick={() => exportIronCondors(ironCondors?.iron_condors, selectedExpiration)}
@@ -2309,10 +2324,12 @@ function App() {
               </div>
             </div>
 
-            <p className="text-zinc-500 text-xs mb-4">
-              Neutral strategy: Combines Bull Put Spread (below price) + Bear Call Spread (above price). 
-              Profit if {symbol} stays within the profit zone at expiration.
-            </p>
+            {!collapsedSections.ironCondors && (
+              <>
+                <p className="text-zinc-500 text-xs mb-4">
+                  Neutral strategy: Combines Bull Put Spread (below price) + Bear Call Spread (above price). 
+                  Profit if {symbol} stays within the profit zone at expiration.
+                </p>
 
             {ironCondors && (
               <div className="mb-4 flex gap-4 text-sm">
