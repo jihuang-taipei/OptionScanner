@@ -984,6 +984,7 @@ const StraddleTable = ({ straddles, currentPrice, onSelectStrategy, onTrade }) =
             <th className="text-right py-3 px-2 font-medium text-purple-400">Avg IV</th>
             <th className="text-right py-3 px-2 font-medium">From Spot</th>
             <th className="text-center py-3 px-2 font-medium">P/L</th>
+            <th className="text-center py-3 px-2 font-medium">Trade</th>
           </tr>
         </thead>
         <tbody>
