@@ -460,7 +460,7 @@ const PeriodButton = ({ period, currentPeriod, onClick, label }) => (
 );
 
 // Options Table Component
-const OptionsTable = ({ options, type, currentPrice, strikeRange }) => {
+const OptionsTable = ({ options, type, currentPrice, strikeRange, onTrade }) => {
   if (!options || options.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No {type} data available</p>;
   }
@@ -477,6 +477,7 @@ const OptionsTable = ({ options, type, currentPrice, strikeRange }) => {
 
   // Check if Greeks are available
   const hasGreeks = filteredOptions.some(opt => opt.delta !== null);
+  const optionType = type === 'calls' ? 'call' : 'put';
 
   if (filteredOptions.length === 0) {
     return (
@@ -510,6 +511,7 @@ const OptionsTable = ({ options, type, currentPrice, strikeRange }) => {
             )}
             <th className="text-right py-3 px-2 font-medium">Vol</th>
             <th className="text-right py-3 px-2 font-medium">OI</th>
+            <th className="text-center py-3 px-2 font-medium">Trade</th>
           </tr>
         </thead>
         <tbody>
@@ -548,6 +550,37 @@ const OptionsTable = ({ options, type, currentPrice, strikeRange }) => {
               )}
               <td className="text-right py-2.5 px-2 font-mono text-zinc-400">{opt.volume?.toLocaleString() || '-'}</td>
               <td className="text-right py-2.5 px-2 font-mono text-zinc-400">{opt.openInterest?.toLocaleString() || '-'}</td>
+              <td className="text-center py-2.5 px-2">
+                <div className="flex items-center justify-center gap-1">
+                  <button
+                    onClick={() => onTrade && onTrade(
+                      opt,
+                      `long_${optionType}`,
+                      `Buy ${optionType.toUpperCase()} ${opt.strike}`,
+                      [{ option_type: optionType, action: 'buy', strike: opt.strike, price: opt.ask, quantity: 1 }],
+                      -opt.ask  // Negative because buying is a debit
+                    )}
+                    className="text-green-400 hover:text-green-300 transition-colors text-xs px-1"
+                    title={`Buy ${optionType.toUpperCase()}`}
+                  >
+                    BUY
+                  </button>
+                  <span className="text-zinc-600">|</span>
+                  <button
+                    onClick={() => onTrade && onTrade(
+                      opt,
+                      `short_${optionType}`,
+                      `Sell ${optionType.toUpperCase()} ${opt.strike}`,
+                      [{ option_type: optionType, action: 'sell', strike: opt.strike, price: opt.bid, quantity: 1 }],
+                      opt.bid  // Positive because selling is a credit
+                    )}
+                    className="text-red-400 hover:text-red-300 transition-colors text-xs px-1"
+                    title={`Sell ${optionType.toUpperCase()}`}
+                  >
+                    SELL
+                  </button>
+                </div>
+              </td>
             </tr>
           ))}
         </tbody>
