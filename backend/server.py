@@ -1536,6 +1536,207 @@ async def get_spx_calendar_spreads(near_exp: str, far_exp: str):
     return await get_calendar_spreads("^SPX", near_exp, far_exp)
 
 
+# ================== PORTFOLIO / PAPER TRADING ENDPOINTS ==================
+
+@api_router.post("/positions", response_model=Position)
+async def create_position(position: PositionCreate):
+    """Create a new paper trading position"""
+    if not db:
+        raise HTTPException(status_code=503, detail="Database not available")
+    
+    try:
+        new_position = Position(
+            symbol=position.symbol,
+            strategy_type=position.strategy_type,
+            strategy_name=position.strategy_name,
+            expiration=position.expiration,
+            legs=[leg.model_dump() for leg in position.legs],
+            entry_price=position.entry_price,
+            quantity=position.quantity,
+            notes=position.notes
+        )
+        
+        await db.positions.insert_one(new_position.model_dump())
+        logger.info(f"Position created: {new_position.strategy_name} for {new_position.symbol}")
+        return new_position
+        
+    except Exception as e:
+        logger.error(f"Error creating position: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create position: {str(e)}")
+
+
+@api_router.get("/positions", response_model=List[PositionWithPnL])
+async def get_positions(symbol: str = None, status: str = None):
+    """Get all positions with current P/L calculations"""
+    if not db:
+        raise HTTPException(status_code=503, detail="Database not available")
+    
+    try:
+        query = {}
+        if symbol:
+            query["symbol"] = symbol
+        if status:
+            query["status"] = status
+            
+        positions = await db.positions.find(query, {"_id": 0}).to_list(1000)
+        
+        # Calculate current P/L for open positions
+        positions_with_pnl = []
+        for pos in positions:
+            pos_with_pnl = PositionWithPnL(**pos)
+            
+            if pos["status"] == "open":
+                # Get current price for the symbol
+                try:
+                    ticker = yf.Ticker(pos["symbol"])
+                    hist = ticker.history(period="1d")
+                    if not hist.empty:
+                        current_underlying = float(hist['Close'].iloc[-1])
+                        
+                        # Calculate theoretical current value based on strategy type
+                        # For simplicity, estimate based on intrinsic value
+                        entry_value = pos["entry_price"] * pos["quantity"] * 100
+                        
+                        # For credit strategies, positive entry = credit received
+                        if pos["strategy_type"] in ['bull_put', 'bear_call', 'iron_condor', 'iron_butterfly']:
+                            # Simplified P/L calculation
+                            pos_with_pnl.current_price = current_underlying
+                            pos_with_pnl.unrealized_pnl = entry_value * 0.5  # Placeholder - would need real option prices
+                        else:
+                            pos_with_pnl.current_price = current_underlying
+                            pos_with_pnl.unrealized_pnl = 0  # Placeholder
+                            
+                        if entry_value != 0:
+                            pos_with_pnl.pnl_percent = (pos_with_pnl.unrealized_pnl / abs(entry_value)) * 100
+                except Exception as e:
+                    logger.warning(f"Could not calculate P/L for position: {e}")
+            
+            positions_with_pnl.append(pos_with_pnl)
+        
+        return positions_with_pnl
+        
+    except Exception as e:
+        logger.error(f"Error fetching positions: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch positions: {str(e)}")
+
+
+@api_router.get("/positions/{position_id}", response_model=PositionWithPnL)
+async def get_position(position_id: str):
+    """Get a specific position by ID"""
+    if not db:
+        raise HTTPException(status_code=503, detail="Database not available")
+    
+    try:
+        position = await db.positions.find_one({"id": position_id}, {"_id": 0})
+        if not position:
+            raise HTTPException(status_code=404, detail="Position not found")
+        return PositionWithPnL(**position)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching position: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch position: {str(e)}")
+
+
+@api_router.put("/positions/{position_id}/close")
+async def close_position(position_id: str, exit_price: float):
+    """Close a position and calculate realized P/L"""
+    if not db:
+        raise HTTPException(status_code=503, detail="Database not available")
+    
+    try:
+        position = await db.positions.find_one({"id": position_id}, {"_id": 0})
+        if not position:
+            raise HTTPException(status_code=404, detail="Position not found")
+        
+        if position["status"] == "closed":
+            raise HTTPException(status_code=400, detail="Position is already closed")
+        
+        # Calculate realized P/L
+        # For credit strategies: P/L = (entry_price - exit_price) * quantity * 100
+        # For debit strategies: P/L = (exit_price - entry_price) * quantity * 100
+        entry_value = position["entry_price"] * position["quantity"] * 100
+        exit_value = exit_price * position["quantity"] * 100
+        
+        if position["strategy_type"] in ['bull_put', 'bear_call', 'iron_condor', 'iron_butterfly']:
+            # Credit strategies: entry is positive (credit received)
+            realized_pnl = entry_value - exit_value
+        else:
+            # Debit strategies: entry is negative (debit paid)
+            realized_pnl = exit_value - entry_value
+        
+        await db.positions.update_one(
+            {"id": position_id},
+            {"$set": {
+                "status": "closed",
+                "closed_at": datetime.now(timezone.utc).isoformat(),
+                "exit_price": exit_price,
+                "realized_pnl": round(realized_pnl, 2)
+            }}
+        )
+        
+        logger.info(f"Position closed: {position_id}, P/L: ${realized_pnl:.2f}")
+        
+        updated_position = await db.positions.find_one({"id": position_id}, {"_id": 0})
+        return PositionWithPnL(**updated_position)
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error closing position: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to close position: {str(e)}")
+
+
+@api_router.delete("/positions/{position_id}")
+async def delete_position(position_id: str):
+    """Delete a position"""
+    if not db:
+        raise HTTPException(status_code=503, detail="Database not available")
+    
+    try:
+        result = await db.positions.delete_one({"id": position_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Position not found")
+        
+        logger.info(f"Position deleted: {position_id}")
+        return {"message": "Position deleted successfully"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting position: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete position: {str(e)}")
+
+
+@api_router.get("/portfolio/summary", response_model=PortfolioSummary)
+async def get_portfolio_summary():
+    """Get portfolio summary with all positions and P/L"""
+    if not db:
+        raise HTTPException(status_code=503, detail="Database not available")
+    
+    try:
+        positions = await get_positions()
+        
+        open_positions = [p for p in positions if p.status == "open"]
+        closed_positions = [p for p in positions if p.status == "closed"]
+        
+        total_unrealized = sum(p.unrealized_pnl or 0 for p in open_positions)
+        total_realized = sum(p.realized_pnl or 0 for p in closed_positions)
+        
+        return PortfolioSummary(
+            total_positions=len(positions),
+            open_positions=len(open_positions),
+            closed_positions=len(closed_positions),
+            total_unrealized_pnl=round(total_unrealized, 2),
+            total_realized_pnl=round(total_realized, 2),
+            positions=positions
+        )
+        
+    except Exception as e:
+        logger.error(f"Error fetching portfolio summary: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch portfolio summary: {str(e)}")
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
