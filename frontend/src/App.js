@@ -659,6 +659,24 @@ const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskRewa
                     <LineChartIcon className="w-4 h-4" />
                   </button>
                 </td>
+                <td className="text-center py-2.5 px-2">
+                  <button
+                    onClick={() => onTrade && onTrade(
+                      spread,
+                      isBullPut ? 'bull_put' : 'bear_call',
+                      `${type} ${spread.sell_strike}/${spread.buy_strike}`,
+                      [
+                        { option_type: 'put', action: 'sell', strike: spread.sell_strike, price: spread.sell_premium, quantity: 1 },
+                        { option_type: 'put', action: 'buy', strike: spread.buy_strike, price: spread.buy_premium, quantity: 1 }
+                      ],
+                      spread.net_credit
+                    )}
+                    className="text-green-400 hover:text-green-300 transition-colors"
+                    title="Paper Trade"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </td>
               </tr>
             );
           })}
