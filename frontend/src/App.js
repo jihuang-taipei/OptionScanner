@@ -929,6 +929,26 @@ const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskRewar
                   <LineChartIcon className="w-4 h-4" />
                 </button>
               </td>
+              <td className="text-center py-2.5 px-2">
+                <button
+                  onClick={() => onTrade && onTrade(
+                    ib,
+                    'iron_butterfly',
+                    `IB ${ib.lower_strike}/${ib.center_strike}/${ib.upper_strike}`,
+                    [
+                      { option_type: 'call', action: 'sell', strike: ib.center_strike, price: ib.call_premium, quantity: 1 },
+                      { option_type: 'put', action: 'sell', strike: ib.center_strike, price: ib.put_premium, quantity: 1 },
+                      { option_type: 'call', action: 'buy', strike: ib.upper_strike, price: ib.upper_cost, quantity: 1 },
+                      { option_type: 'put', action: 'buy', strike: ib.lower_strike, price: ib.lower_cost, quantity: 1 }
+                    ],
+                    ib.net_credit
+                  )}
+                  className="text-green-400 hover:text-green-300 transition-colors"
+                  title="Paper Trade"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
