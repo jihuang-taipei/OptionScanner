@@ -2003,12 +2003,23 @@ function App() {
 
           {/* Options Chain Section */}
           <div className="lg:col-span-3 glass-card p-6" data-testid="options-chain">
-            <div className="flex items-center justify-between mb-4">
+            <div 
+              className="flex items-center justify-between mb-4 cursor-pointer"
+              onClick={() => toggleSection('optionsChain')}
+            >
               <h2 className="text-lg font-medium text-white flex items-center gap-2">
+                {collapsedSections.optionsChain ? (
+                  <ChevronRight className="w-5 h-5 text-zinc-400" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-zinc-400" />
+                )}
                 <Table2 className="w-5 h-5 text-zinc-400" />
                 Options Chain ({symbol})
+                <span className="text-xs text-zinc-500 font-normal ml-2">
+                  {optionsChain ? `${optionsChain.calls?.length || 0} calls, ${optionsChain.puts?.length || 0} puts` : ''}
+                </span>
               </h2>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                 <span className="text-zinc-500 text-sm">Expiration:</span>
                 <Select value={selectedExpiration} onValueChange={setSelectedExpiration}>
                   <SelectTrigger className="w-40 bg-zinc-900 border-zinc-800 text-white" data-testid="expiration-select">
