@@ -1161,7 +1161,7 @@ const StrangleTable = ({ strangles, currentPrice, onSelectStrategy, onTrade }) =
 };
 
 // Calendar Spread Table Component
-const CalendarSpreadTable = ({ spreads, currentPrice }) => {
+const CalendarSpreadTable = ({ spreads, currentPrice, onTrade, nearExpiration, farExpiration }) => {
   if (!spreads || spreads.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Calendar Spreads available</p>;
   }
@@ -1188,6 +1188,7 @@ const CalendarSpreadTable = ({ spreads, currentPrice }) => {
             <th className="text-right py-3 px-2 font-medium text-cyan-400">IV Diff</th>
             <th className="text-right py-3 px-2 font-medium text-purple-400">θ Edge</th>
             <th className="text-right py-3 px-2 font-medium">From Spot</th>
+            <th className="text-center py-3 px-2 font-medium">Trade</th>
           </tr>
         </thead>
         <tbody>
@@ -1227,6 +1228,24 @@ const CalendarSpreadTable = ({ spreads, currentPrice }) => {
               </td>
               <td className={`text-right py-2.5 px-2 font-mono ${Math.abs(cs.distance_from_spot) < 0.5 ? 'text-green-400' : 'text-zinc-400'}`}>
                 {cs.distance_from_spot >= 0 ? '+' : ''}{cs.distance_from_spot.toFixed(1)}%
+              </td>
+              <td className="text-center py-2.5 px-2">
+                <button
+                  onClick={() => onTrade && onTrade(
+                    cs,
+                    'calendar_spread',
+                    `Calendar ${cs.option_type.toUpperCase()} ${cs.strike}`,
+                    [
+                      { option_type: cs.option_type, action: 'sell', strike: cs.strike, price: cs.near_price, quantity: 1, expiration: nearExpiration },
+                      { option_type: cs.option_type, action: 'buy', strike: cs.strike, price: cs.far_price, quantity: 1, expiration: farExpiration }
+                    ],
+                    -cs.net_debit  // Negative because it's a debit
+                  )}
+                  className="text-green-400 hover:text-green-300 transition-colors"
+                  title="Paper Trade"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
               </td>
             </tr>
           ))}
