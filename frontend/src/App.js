@@ -2467,7 +2467,13 @@ function App() {
                   <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
                 </div>
               ) : (
-                <CalendarSpreadTable spreads={calendarSpreads?.calendar_spreads} currentPrice={calendarSpreads?.current_price} />
+                <CalendarSpreadTable 
+                  spreads={calendarSpreads?.calendar_spreads} 
+                  currentPrice={calendarSpreads?.current_price} 
+                  onTrade={handleTrade}
+                  nearExpiration={selectedExpiration}
+                  farExpiration={farExpiration}
+                />
               )}
             </div>
           </div>
