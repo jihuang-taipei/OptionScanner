@@ -226,7 +226,7 @@ const PLChart = ({ strategy, currentPrice, onClose }) => {
       </div>
       
       <div className="text-xs text-zinc-500 text-center">
-        P/L at expiration based on ${symbol} price. Current price: ${currentPrice?.toLocaleString()}
+        P/L at expiration based on underlying price. Current price: ${currentPrice?.toLocaleString()}
       </div>
     </div>
   );
