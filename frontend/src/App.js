@@ -2077,6 +2077,7 @@ function App() {
                     type="calls" 
                     currentPrice={quote?.price}
                     strikeRange={strikeRange}
+                    onTrade={handleTrade}
                   />
                 )}
               </TabsContent>
@@ -2091,6 +2092,7 @@ function App() {
                     type="puts" 
                     currentPrice={quote?.price}
                     strikeRange={strikeRange}
+                    onTrade={handleTrade}
                   />
                 )}
               </TabsContent>
