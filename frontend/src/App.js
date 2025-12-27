@@ -795,6 +795,26 @@ const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, onSe
                   <LineChartIcon className="w-4 h-4" />
                 </button>
               </td>
+              <td className="text-center py-2.5 px-2">
+                <button
+                  onClick={() => onTrade && onTrade(
+                    ic,
+                    'iron_condor',
+                    `IC ${ic.put_sell_strike}/${ic.put_buy_strike} - ${ic.call_sell_strike}/${ic.call_buy_strike}`,
+                    [
+                      { option_type: 'put', action: 'sell', strike: ic.put_sell_strike, price: ic.put_credit, quantity: 1 },
+                      { option_type: 'put', action: 'buy', strike: ic.put_buy_strike, price: 0, quantity: 1 },
+                      { option_type: 'call', action: 'sell', strike: ic.call_sell_strike, price: ic.call_credit, quantity: 1 },
+                      { option_type: 'call', action: 'buy', strike: ic.call_buy_strike, price: 0, quantity: 1 }
+                    ],
+                    ic.net_credit
+                  )}
+                  className="text-green-400 hover:text-green-300 transition-colors"
+                  title="Paper Trade"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -804,7 +824,7 @@ const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, onSe
 };
 
 // Iron Butterfly Table Component
-const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskReward, onSelectStrategy }) => {
+const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskReward, onSelectStrategy, onTrade }) => {
   if (!butterflies || butterflies.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Iron Butterflies available</p>;
   }
