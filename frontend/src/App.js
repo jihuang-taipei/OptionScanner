@@ -2537,12 +2537,23 @@ function App() {
 
           {/* Calendar Spreads Section */}
           <div className="lg:col-span-3 glass-card p-6" data-testid="calendar-spreads">
-            <div className="flex items-center justify-between mb-4">
+            <div 
+              className="flex items-center justify-between mb-4 cursor-pointer"
+              onClick={() => toggleSection('calendarSpreads')}
+            >
               <h2 className="text-lg font-medium text-white flex items-center gap-2">
+                {collapsedSections.calendarSpreads ? (
+                  <ChevronRight className="w-5 h-5 text-zinc-400" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-zinc-400" />
+                )}
                 <Calendar className="w-5 h-5 text-zinc-400" />
                 Calendar Spreads
+                <span className="text-xs text-zinc-500 font-normal ml-2">
+                  {calendarSpreads?.calendar_spreads?.length || 0} found
+                </span>
               </h2>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                 <span className="text-zinc-500 text-sm">Far Exp:</span>
                 <Select value={farExpiration} onValueChange={setFarExpiration}>
                   <SelectTrigger className="w-40 bg-zinc-900 border-zinc-800 text-white" data-testid="far-expiration-select">
@@ -2574,35 +2585,39 @@ function App() {
               </div>
             </div>
 
-            <p className="text-zinc-500 text-xs mb-4">
-              Time decay strategy: Sell near-term option, buy far-term option at same strike. 
-              Profits from faster theta decay of near-term option and/or IV increase.
-            </p>
+            {!collapsedSections.calendarSpreads && (
+              <>
+                <p className="text-zinc-500 text-xs mb-4">
+                  Time decay strategy: Sell near-term option, buy far-term option at same strike. 
+                  Profits from faster theta decay of near-term option and/or IV increase.
+                </p>
 
-            {calendarSpreads && (
-              <div className="mb-4 flex flex-wrap gap-4 text-sm">
-                <span className="text-zinc-400">{symbol}: <span className="text-white font-mono">${calendarSpreads.current_price?.toLocaleString()}</span></span>
-                <span className="text-zinc-400">Near: <span className="text-white">{new Date(calendarSpreads.near_expiration).toLocaleDateString()}</span></span>
-                <span className="text-zinc-400">Far: <span className="text-white">{new Date(calendarSpreads.far_expiration).toLocaleDateString()}</span></span>
-                <span className="text-zinc-400">Found: <span className="text-white">{calendarSpreads.calendar_spreads?.length || 0}</span></span>
-              </div>
-            )}
+                {calendarSpreads && (
+                  <div className="mb-4 flex flex-wrap gap-4 text-sm">
+                    <span className="text-zinc-400">{symbol}: <span className="text-white font-mono">${calendarSpreads.current_price?.toLocaleString()}</span></span>
+                    <span className="text-zinc-400">Near: <span className="text-white">{new Date(calendarSpreads.near_expiration).toLocaleDateString()}</span></span>
+                    <span className="text-zinc-400">Far: <span className="text-white">{new Date(calendarSpreads.far_expiration).toLocaleDateString()}</span></span>
+                    <span className="text-zinc-400">Found: <span className="text-white">{calendarSpreads.calendar_spreads?.length || 0}</span></span>
+                  </div>
+                )}
 
-            <div className="max-h-96 overflow-y-auto">
-              {isLoadingCalendars ? (
-                <div className="flex items-center justify-center py-12">
-                  <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                <div className="max-h-96 overflow-y-auto">
+                  {isLoadingCalendars ? (
+                    <div className="flex items-center justify-center py-12">
+                      <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                    </div>
+                  ) : (
+                    <CalendarSpreadTable 
+                      spreads={calendarSpreads?.calendar_spreads} 
+                      currentPrice={calendarSpreads?.current_price} 
+                      onTrade={handleTrade}
+                      nearExpiration={selectedExpiration}
+                      farExpiration={farExpiration}
+                    />
+                  )}
                 </div>
-              ) : (
-                <CalendarSpreadTable 
-                  spreads={calendarSpreads?.calendar_spreads} 
-                  currentPrice={calendarSpreads?.current_price} 
-                  onTrade={handleTrade}
-                  nearExpiration={selectedExpiration}
-                  farExpiration={farExpiration}
-                />
-              )}
-            </div>
+              </>
+            )}
           </div>
         </div>
 
