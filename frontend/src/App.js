@@ -1209,6 +1209,85 @@ function App() {
   const [selectedStrategy, setSelectedStrategy] = useState(null);
   const [showPLChart, setShowPLChart] = useState(false);
 
+  // Portfolio state
+  const [positions, setPositions] = useState([]);
+  const [isLoadingPositions, setIsLoadingPositions] = useState(false);
+  const [showPortfolio, setShowPortfolio] = useState(false);
+  const [tradeDialog, setTradeDialog] = useState({ open: false, strategy: null });
+  const [tradeQuantity, setTradeQuantity] = useState(1);
+  const [closeDialog, setCloseDialog] = useState({ open: false, position: null });
+  const [closePrice, setClosePrice] = useState("");
+
+  // Fetch positions
+  const fetchPositions = useCallback(async () => {
+    setIsLoadingPositions(true);
+    try {
+      const response = await axios.get(`${API}/positions`);
+      setPositions(response.data);
+    } catch (e) {
+      console.error("Error fetching positions:", e);
+    } finally {
+      setIsLoadingPositions(false);
+    }
+  }, []);
+
+  // Create a new position (paper trade)
+  const createPosition = async (strategy, strategyType, strategyName, legs, entryPrice) => {
+    try {
+      const position = {
+        symbol: symbol,
+        strategy_type: strategyType,
+        strategy_name: strategyName,
+        expiration: selectedExpiration,
+        legs: legs,
+        entry_price: entryPrice,
+        quantity: tradeQuantity,
+        notes: ""
+      };
+      
+      await axios.post(`${API}/positions`, position);
+      await fetchPositions();
+      setTradeDialog({ open: false, strategy: null });
+      setTradeQuantity(1);
+    } catch (e) {
+      console.error("Error creating position:", e);
+      alert("Failed to create position. Make sure the database is available.");
+    }
+  };
+
+  // Close a position
+  const closePosition = async (positionId, exitPrice) => {
+    try {
+      await axios.put(`${API}/positions/${positionId}/close?exit_price=${exitPrice}`);
+      await fetchPositions();
+      setCloseDialog({ open: false, position: null });
+      setClosePrice("");
+    } catch (e) {
+      console.error("Error closing position:", e);
+      alert("Failed to close position.");
+    }
+  };
+
+  // Delete a position
+  const deletePosition = async (positionId) => {
+    if (!window.confirm("Are you sure you want to delete this position?")) return;
+    try {
+      await axios.delete(`${API}/positions/${positionId}`);
+      await fetchPositions();
+    } catch (e) {
+      console.error("Error deleting position:", e);
+      alert("Failed to delete position.");
+    }
+  };
+
+  // Handler to open trade dialog
+  const handleTrade = (strategy, strategyType, strategyName, legs, entryPrice) => {
+    setTradeDialog({
+      open: true,
+      strategy: { strategy, strategyType, strategyName, legs, entryPrice }
+    });
+  };
+
   const fetchQuote = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/quote?symbol=${symbol}`);
