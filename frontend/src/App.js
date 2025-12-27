@@ -1033,6 +1033,24 @@ const StraddleTable = ({ straddles, currentPrice, onSelectStrategy, onTrade }) =
                   <LineChartIcon className="w-4 h-4" />
                 </button>
               </td>
+              <td className="text-center py-2.5 px-2">
+                <button
+                  onClick={() => onTrade && onTrade(
+                    s,
+                    'straddle',
+                    `Straddle ${s.strike}`,
+                    [
+                      { option_type: 'call', action: 'buy', strike: s.strike, price: s.call_price, quantity: 1 },
+                      { option_type: 'put', action: 'buy', strike: s.strike, price: s.put_price, quantity: 1 }
+                    ],
+                    -s.total_cost  // Negative because it's a debit
+                  )}
+                  className="text-green-400 hover:text-green-300 transition-colors"
+                  title="Paper Trade"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -1042,7 +1060,7 @@ const StraddleTable = ({ straddles, currentPrice, onSelectStrategy, onTrade }) =
 };
 
 // Strangle Table Component
-const StrangleTable = ({ strangles, currentPrice, onSelectStrategy }) => {
+const StrangleTable = ({ strangles, currentPrice, onSelectStrategy, onTrade }) => {
   if (!strangles || strangles.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Strangles available</p>;
   }
@@ -1067,6 +1085,7 @@ const StrangleTable = ({ strangles, currentPrice, onSelectStrategy }) => {
             <th className="text-right py-3 px-2 font-medium text-amber-400">Move to B/E</th>
             <th className="text-right py-3 px-2 font-medium text-purple-400">Avg IV</th>
             <th className="text-center py-3 px-2 font-medium">P/L</th>
+            <th className="text-center py-3 px-2 font-medium">Trade</th>
           </tr>
         </thead>
         <tbody>
