@@ -1656,6 +1656,21 @@ function App() {
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               Refresh
             </button>
+            
+            {/* Portfolio Button */}
+            <button
+              onClick={() => setShowPortfolio(true)}
+              className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-full font-medium hover:bg-emerald-500 transition-all duration-200 active:scale-95 relative"
+              data-testid="portfolio-button"
+            >
+              <Briefcase className="w-4 h-4" />
+              Portfolio
+              {positions.filter(p => p.status === 'open').length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {positions.filter(p => p.status === 'open').length}
+                </span>
+              )}
+            </button>
           </div>
         </header>
 
