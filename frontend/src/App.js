@@ -2361,12 +2361,23 @@ function App() {
 
           {/* Iron Butterfly Section */}
           <div className="lg:col-span-3 glass-card p-6" data-testid="iron-butterflies">
-            <div className="flex items-center justify-between mb-4">
+            <div 
+              className="flex items-center justify-between mb-4 cursor-pointer"
+              onClick={() => toggleSection('ironButterflies')}
+            >
               <h2 className="text-lg font-medium text-white flex items-center gap-2">
+                {collapsedSections.ironButterflies ? (
+                  <ChevronRight className="w-5 h-5 text-zinc-400" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-zinc-400" />
+                )}
                 <Triangle className="w-5 h-5 text-zinc-400" />
                 Iron Butterflies
+                <span className="text-xs text-zinc-500 font-normal ml-2">
+                  {ironButterflies?.iron_butterflies?.length || 0} found
+                </span>
               </h2>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
                 <span className="text-zinc-500 text-sm">Wing Width:</span>
                 <Select value={wingWidth.toString()} onValueChange={(v) => setWingWidth(parseInt(v))}>
                   <SelectTrigger className="w-20 bg-zinc-900 border-zinc-800 text-white" data-testid="wing-width-select">
@@ -2393,35 +2404,39 @@ function App() {
               </div>
             </div>
 
-            <p className="text-zinc-500 text-xs mb-4">
-              Neutral strategy: Sell ATM call + put at same strike, buy OTM wings. 
-              Max profit if {symbol} expires exactly at center strike.
-            </p>
+            {!collapsedSections.ironButterflies && (
+              <>
+                <p className="text-zinc-500 text-xs mb-4">
+                  Neutral strategy: Sell ATM call + put at same strike, buy OTM wings. 
+                  Max profit if {symbol} expires exactly at center strike.
+                </p>
 
-            {ironButterflies && (
-              <div className="mb-4 flex gap-4 text-sm">
-                <span className="text-zinc-400">{symbol}: <span className="text-white font-mono">${ironButterflies.current_price?.toLocaleString()}</span></span>
-                <span className="text-zinc-400">Exp: <span className="text-white">{new Date(ironButterflies.expiration).toLocaleDateString()}</span></span>
-                <span className="text-zinc-400">Found: <span className="text-white">{ironButterflies.iron_butterflies?.length || 0}</span></span>
-              </div>
-            )}
+                {ironButterflies && (
+                  <div className="mb-4 flex gap-4 text-sm">
+                    <span className="text-zinc-400">{symbol}: <span className="text-white font-mono">${ironButterflies.current_price?.toLocaleString()}</span></span>
+                    <span className="text-zinc-400">Exp: <span className="text-white">{new Date(ironButterflies.expiration).toLocaleDateString()}</span></span>
+                    <span className="text-zinc-400">Found: <span className="text-white">{ironButterflies.iron_butterflies?.length || 0}</span></span>
+                  </div>
+                )}
 
-            <div className="max-h-96 overflow-y-auto">
-              {isLoadingButterflies ? (
-                <div className="flex items-center justify-center py-12">
-                  <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                <div className="max-h-96 overflow-y-auto">
+                  {isLoadingButterflies ? (
+                    <div className="flex items-center justify-center py-12">
+                      <RefreshCw className="w-6 h-6 text-zinc-500 animate-spin" />
+                    </div>
+                  ) : (
+                    <IronButterflyTable 
+                      butterflies={ironButterflies?.iron_butterflies} 
+                      currentPrice={ironButterflies?.current_price}
+                      minCredit={minCredit}
+                      maxRiskReward={maxRiskReward}
+                      onSelectStrategy={handleSelectStrategy}
+                      onTrade={handleTrade}
+                    />
+                  )}
                 </div>
-              ) : (
-                <IronButterflyTable 
-                  butterflies={ironButterflies?.iron_butterflies} 
-                  currentPrice={ironButterflies?.current_price}
-                  minCredit={minCredit}
-                  maxRiskReward={maxRiskReward}
-                  onSelectStrategy={handleSelectStrategy}
-                  onTrade={handleTrade}
-                />
-              )}
-            </div>
+              </>
+            )}
           </div>
 
           {/* Straddle/Strangle Section */}
