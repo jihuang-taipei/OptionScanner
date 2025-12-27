@@ -865,6 +865,7 @@ const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskRewar
             <th className="text-right py-3 px-2 font-medium">R/R</th>
             <th className="text-right py-3 px-2 font-medium">From Spot</th>
             <th className="text-center py-3 px-2 font-medium">P/L</th>
+            <th className="text-center py-3 px-2 font-medium">Trade</th>
           </tr>
         </thead>
         <tbody>
