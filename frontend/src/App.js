@@ -687,7 +687,7 @@ const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskRewa
 };
 
 // Iron Condor Table Component
-const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, onSelectStrategy }) => {
+const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, onSelectStrategy, onTrade }) => {
   if (!condors || condors.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Iron Condors available</p>;
   }
