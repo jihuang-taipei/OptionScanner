@@ -186,16 +186,10 @@ async def get_iron_butterflies(symbol: str = "^SPX", expiration: str = None, win
         calls_df = opt_chain.calls.copy()
         puts_df = opt_chain.puts.copy()
         
-        min_center = current_price * 0.95
-        max_center = current_price * 1.05
-        
         iron_butterflies = []
         
         for _, call_row in calls_df.iterrows():
             center_strike = float(call_row['strike'])
-            
-            if center_strike < min_center or center_strike > max_center:
-                continue
             
             upper_strike = center_strike + wing
             lower_strike = center_strike - wing
