@@ -68,7 +68,7 @@ const PLTooltip = ({ active, payload, label }) => {
 };
 
 // P/L Chart Component
-const PLChart = ({ strategy, currentPrice, onClose }) => {
+const PLChart = memo(({ strategy, currentPrice, onClose }) => {
   if (!strategy) return null;
   
   const plData = calculatePLData(strategy, currentPrice);
