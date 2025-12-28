@@ -674,7 +674,7 @@ const CreditSpreadTable = memo(({ spreads, type, currentPrice, minCredit, maxRis
       </table>
     </div>
   );
-};
+});
 
 // Iron Condor Table Component
 const IronCondorTable = memo(({ condors, currentPrice, minCredit, maxRiskReward, minProfitProb, onSelectStrategy, onTrade, maxRiskAmount, minRewardAmount }) => {
