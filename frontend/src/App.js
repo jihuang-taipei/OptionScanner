@@ -2512,12 +2512,46 @@ function App() {
                   Volatility plays: Profit from large moves in either direction. Max loss = premium paid. Unlimited profit potential.
                 </p>
 
-                {straddles && (
-                  <div className="mb-4 flex gap-4 text-sm">
-                    <span className="text-zinc-400">{symbol}: <span className="text-white font-mono">${straddles.current_price?.toLocaleString()}</span></span>
-                    <span className="text-zinc-400">Exp: <span className="text-white">{new Date(straddles.expiration).toLocaleDateString()}</span></span>
+                {/* Strike Range Filters */}
+                <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-zinc-900/50 rounded-lg border border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <label className="text-zinc-400 text-sm">Straddle Strike ±</label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        min="0.01"
+                        max="10"
+                        step="0.01"
+                        value={straddleRange}
+                        onChange={(e) => setStraddleRange(Math.max(0.01, Math.min(10, parseFloat(e.target.value) || 0.05)))}
+                        className="w-20 bg-zinc-800 border-zinc-700 text-white text-sm h-8 pr-6 text-center font-mono"
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">%</span>
+                    </div>
                   </div>
-                )}
+                  <div className="flex items-center gap-2">
+                    <label className="text-zinc-400 text-sm">Strangle Strikes ±</label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        min="0.01"
+                        max="10"
+                        step="0.01"
+                        value={strangleRange}
+                        onChange={(e) => setStrangleRange(Math.max(0.01, Math.min(10, parseFloat(e.target.value) || 0.05)))}
+                        className="w-20 bg-zinc-800 border-zinc-700 text-white text-sm h-8 pr-6 text-center font-mono"
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">%</span>
+                    </div>
+                  </div>
+                  {straddles && (
+                    <span className="text-zinc-500 text-xs">
+                      {symbol}: <span className="text-white font-mono">${straddles.current_price?.toLocaleString()}</span>
+                      <span className="text-zinc-600 mx-2">|</span>
+                      Exp: <span className="text-white">{new Date(straddles.expiration).toLocaleDateString()}</span>
+                    </span>
+                  )}
+                </div>
 
                 <Tabs defaultValue="straddles" className="w-full">
                   <TabsList className="bg-zinc-900/50 mb-4">
