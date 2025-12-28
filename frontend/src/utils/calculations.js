@@ -31,6 +31,9 @@ export const calculatePLData = (strategy, currentPrice) => {
       case 'strangle':
         pl = calculateStranglePL(price, strategy.call_strike, strategy.put_strike, strategy.total_cost);
         break;
+      case 'calendar_spread':
+        pl = calculateCalendarSpreadPL(price, strategy.strike, strategy.net_debit, strategy.option_type);
+        break;
       default:
         pl = 0;
     }
