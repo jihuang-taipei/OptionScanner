@@ -1208,6 +1208,7 @@ const CalendarSpreadTable = ({ spreads, currentPrice, strikeRange, onSelectStrat
             <th className="text-right py-3 px-2 font-medium text-cyan-400">IV Diff</th>
             <th className="text-right py-3 px-2 font-medium text-purple-400">θ Edge</th>
             <th className="text-right py-3 px-2 font-medium">From Spot</th>
+            <th className="text-center py-3 px-2 font-medium">P/L</th>
             <th className="text-center py-3 px-2 font-medium">Trade</th>
           </tr>
         </thead>
