@@ -2652,14 +2652,38 @@ function App() {
                   Profits from faster theta decay of near-term option and/or IV increase.
                 </p>
 
-                {calendarSpreads && (
-                  <div className="mb-4 flex flex-wrap gap-4 text-sm">
-                    <span className="text-zinc-400">{symbol}: <span className="text-white font-mono">${calendarSpreads.current_price?.toLocaleString()}</span></span>
-                    <span className="text-zinc-400">Near: <span className="text-white">{new Date(calendarSpreads.near_expiration).toLocaleDateString()}</span></span>
-                    <span className="text-zinc-400">Far: <span className="text-white">{new Date(calendarSpreads.far_expiration).toLocaleDateString()}</span></span>
-                    <span className="text-zinc-400">Found: <span className="text-white">{calendarSpreads.calendar_spreads?.length || 0}</span></span>
+                {/* Strike Range Filter */}
+                <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-zinc-900/50 rounded-lg border border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <label className="text-zinc-400 text-sm">Strike ±</label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        min="0.01"
+                        max="10"
+                        step="0.01"
+                        value={calendarRange}
+                        onChange={(e) => setCalendarRange(Math.max(0.01, Math.min(10, parseFloat(e.target.value) || 0.05)))}
+                        className="w-20 bg-zinc-800 border-zinc-700 text-white text-sm h-8 pr-6 text-center font-mono"
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">%</span>
+                    </div>
+                    <span className="text-zinc-500 text-xs">
+                      (${calendarSpreads?.current_price ? (calendarSpreads.current_price * (1 - calendarRange/100)).toFixed(0) : '...'} - ${calendarSpreads?.current_price ? (calendarSpreads.current_price * (1 + calendarRange/100)).toFixed(0) : '...'})
+                    </span>
                   </div>
-                )}
+                  {calendarSpreads && (
+                    <span className="text-zinc-500 text-xs">
+                      {symbol}: <span className="text-white font-mono">${calendarSpreads.current_price?.toLocaleString()}</span>
+                      <span className="text-zinc-600 mx-2">|</span>
+                      Near: <span className="text-white">{new Date(calendarSpreads.near_expiration).toLocaleDateString()}</span>
+                      <span className="text-zinc-600 mx-2">|</span>
+                      Far: <span className="text-white">{new Date(calendarSpreads.far_expiration).toLocaleDateString()}</span>
+                      <span className="text-zinc-600 mx-2">|</span>
+                      Found: <span className="text-white">{calendarSpreads.calendar_spreads?.length || 0}</span>
+                    </span>
+                  )}
+                </div>
 
                 <div className="max-h-96 overflow-y-auto">
                   {isLoadingCalendars ? (
@@ -2669,7 +2693,8 @@ function App() {
                   ) : (
                     <CalendarSpreadTable 
                       spreads={calendarSpreads?.calendar_spreads} 
-                      currentPrice={calendarSpreads?.current_price} 
+                      currentPrice={calendarSpreads?.current_price}
+                      strikeRange={calendarRange}
                       onTrade={handleTrade}
                       nearExpiration={selectedExpiration}
                       farExpiration={farExpiration}
