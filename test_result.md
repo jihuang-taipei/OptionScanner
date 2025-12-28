@@ -1,22 +1,26 @@
 # Test Result Tracking
 
-## Test Run - Refactoring Validation
+## Test Run - OTM Filter Verification
 
 ### Features to Test:
-1. Backend API endpoints - all routes should work after modular refactoring
-2. Frontend app loading - should display properly after utils extraction
-3. Collapsible sections - expand/collapse should work
-4. CSV export - should work after function extraction to utils
-5. P/L chart calculations - should work after moving to calculations.js
+1. Straddles & Strangles section - configurable OTM filter inputs (0.5% default, 0.1 step)
+2. Calendar Spreads section - configurable OTM filter input (0.5% default, 0.1 step)  
+3. Filter functionality - tables should filter strategies based on user-defined % range
+4. Input validation - values should be constrained between 0.01 and 10
 
 ### Test Status:
-- Backend: PENDING
-- Frontend: PENDING
-- Integration: PENDING
+- Straddles Filter UI: PENDING
+- Strangles Filter UI: PENDING
+- Calendar Spreads Filter UI: PENDING
+- Filter Functionality: PENDING
 
 ### Agent Communication:
-- Main agent completed full backend/frontend refactoring
-- Backend split from 1780 lines to modular structure
-- Frontend App.js reduced from 2913 to 2647 lines
-- Created utils folder with calculations.js, exportUtils.js, constants.js
-- Created components structure with charts/, common/, sections/
+- Main agent is verifying the configurable OTM filters for Straddles, Strangles, and Calendar Spreads
+- Filter inputs should have 0.5% default value and 0.1 step increment
+- Need to verify that changing the filter value updates the displayed data correctly
+- Current observations: 
+  - Straddles section shows "Showing 11 of 100 straddles" with 0.5% filter
+  - Calendar Spreads shows "Showing 24 of 100 calendar spreads" with 0.5% filter
+  
+### Incorporate User Feedback:
+- None
