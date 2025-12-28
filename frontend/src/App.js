@@ -1414,6 +1414,7 @@ function App() {
   // Symbol state
   const [symbol, setSymbol] = useState("^SPX");
   const [symbolInput, setSymbolInput] = useState("^SPX");
+  const debouncedSymbolInput = useDebounce(symbolInput, 500); // Debounce symbol input by 500ms
   
   const [quote, setQuote] = useState(null);
   const [history, setHistory] = useState([]);
