@@ -2447,6 +2447,8 @@ function App() {
                       minProfitProb={minProfitProb}
                       onSelectStrategy={handleSelectStrategy}
                       onTrade={handleTrade}
+                      maxRiskAmount={maxRiskAmount}
+                      minRewardPercent={minRewardPercent}
                     />
                   )}
                 </div>
