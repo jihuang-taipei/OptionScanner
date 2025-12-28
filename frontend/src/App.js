@@ -1245,7 +1245,7 @@ const StrangleTable = memo(({ strangles, currentPrice, strikeRange, onSelectStra
 };
 
 // Calendar Spread Table Component
-const CalendarSpreadTable = ({ spreads, currentPrice, strikeRange, onSelectStrategy, onTrade, nearExpiration, farExpiration, maxRiskAmount, minRewardAmount }) => {
+const CalendarSpreadTable = memo(({ spreads, currentPrice, strikeRange, onSelectStrategy, onTrade, nearExpiration, farExpiration, maxRiskAmount, minRewardAmount }) => {
   if (!spreads || spreads.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Calendar Spreads available</p>;
   }
