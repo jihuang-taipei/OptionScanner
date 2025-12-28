@@ -163,9 +163,9 @@ async def get_credit_spreads(symbol: str = "^SPX", expiration: str = None, sprea
                 buy_delta=buy_delta
             ))
         
-        # Sort by sell strike (short strike) - descending for puts, ascending for calls
-        bull_put_spreads.sort(key=lambda x: x.sell_strike, reverse=True)
-        bear_call_spreads.sort(key=lambda x: x.sell_strike)
+        # Sort by net credit (highest credit first)
+        bull_put_spreads.sort(key=lambda x: x.net_credit, reverse=True)
+        bear_call_spreads.sort(key=lambda x: x.net_credit, reverse=True)
         
         logger.info(f"Credit spreads fetched for {symbol}: {len(bull_put_spreads)} bull puts, {len(bear_call_spreads)} bear calls")
         
