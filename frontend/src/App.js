@@ -1108,7 +1108,7 @@ const StraddleTable = ({ straddles, currentPrice, strikeRange, onSelectStrategy,
 };
 
 // Strangle Table Component
-const StrangleTable = ({ strangles, currentPrice, strikeRange, onSelectStrategy, onTrade, maxRiskAmount, minRewardPercent }) => {
+const StrangleTable = ({ strangles, currentPrice, strikeRange, onSelectStrategy, onTrade, maxRiskAmount, minRewardAmount }) => {
   if (!strangles || strangles.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Strangles available</p>;
   }
