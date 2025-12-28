@@ -1600,7 +1600,12 @@ function App() {
                 </div>
 
                 <p className="text-zinc-600 text-sm mt-4 font-mono">
-                  Last updated: {quote?.timestamp ? new Date(quote.timestamp).toLocaleTimeString() : 'N/A'}
+                  Last updated: {quote?.timestamp ? new Date(quote.timestamp).toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit',
+                    timeZoneName: 'short'
+                  }) : 'N/A'}
                 </p>
               </>
             )}
