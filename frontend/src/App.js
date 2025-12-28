@@ -2011,6 +2011,12 @@ function App() {
                     <TabsTrigger value="puts" className="data-[state=active]:bg-red-500/20 data-[state=active]:text-red-500" data-testid="puts-tab">
                       Puts
                     </TabsTrigger>
+                    <TabsTrigger value="bull-puts" className="data-[state=active]:bg-emerald-500/20 data-[state=active]:text-emerald-500" data-testid="bull-puts-tab">
+                      Bull Put Spreads
+                    </TabsTrigger>
+                    <TabsTrigger value="bear-calls" className="data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-500" data-testid="bear-calls-tab">
+                      Bear Call Spreads
+                    </TabsTrigger>
                   </TabsList>
                   <TabsContent value="calls" className="max-h-96 overflow-y-auto">
                     {isLoadingOptions ? (
