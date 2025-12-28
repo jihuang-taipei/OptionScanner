@@ -982,7 +982,7 @@ const IronButterflyTable = memo(({ butterflies, currentPrice, minCredit, maxRisk
       </table>
     </div>
   );
-};
+});
 
 // Straddle Table Component
 const StraddleTable = memo(({ straddles, currentPrice, strikeRange, onSelectStrategy, onTrade, maxRiskAmount, minRewardAmount }) => {
