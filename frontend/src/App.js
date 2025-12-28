@@ -662,7 +662,7 @@ const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskRewa
 };
 
 // Iron Condor Table Component
-const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, minProfitProb, onSelectStrategy, onTrade }) => {
+const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, minProfitProb, onSelectStrategy, onTrade, maxRiskAmount, minRewardPercent }) => {
   if (!condors || condors.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Iron Condors available</p>;
   }
@@ -670,6 +670,14 @@ const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, minP
   if (!currentPrice) {
     return <p className="text-zinc-500 text-center py-8">Loading price data...</p>;
   }
+
+  // Calculate contracts and reward % for position sizing
+  const calculatePositionSize = (maxLoss, maxProfit) => {
+    const contracts = Math.floor(maxRiskAmount / maxLoss);
+    const rewardPct = maxLoss > 0 ? (maxProfit / maxLoss) * 100 : 0;
+    const meetsReward = rewardPct >= minRewardPercent;
+    return { contracts: Math.max(1, contracts), rewardPct, meetsReward };
+  };
 
   // Apply filters including P(Profit)
   const filteredCondors = condors.filter(ic => 
@@ -701,14 +709,16 @@ const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, minP
             <th className="text-right py-3 px-2 font-medium text-green-400">Max Profit</th>
             <th className="text-right py-3 px-2 font-medium text-red-400">Max Loss</th>
             <th className="text-right py-3 px-2 font-medium">Profit Zone</th>
-            <th className="text-right py-3 px-2 font-medium">R/R</th>
             <th className="text-right py-3 px-2 font-medium text-cyan-400">P(Profit)</th>
+            <th className="text-center py-3 px-2 font-medium text-purple-400">Contracts</th>
             <th className="text-center py-3 px-2 font-medium">P/L</th>
             <th className="text-center py-3 px-2 font-medium">Trade</th>
           </tr>
         </thead>
         <tbody>
-          {filteredCondors.map((ic, idx) => (
+          {filteredCondors.map((ic, idx) => {
+            const posSize = calculatePositionSize(ic.max_loss, ic.max_profit);
+            return (
             <tr 
               key={idx} 
               className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors"
@@ -746,11 +756,16 @@ const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, minP
                   {ic.profit_zone_pct.toFixed(1)}% width
                 </div>
               </td>
-              <td className="text-right py-2.5 px-2 font-mono text-zinc-400">
-                {ic.risk_reward_ratio.toFixed(1)}:1
-              </td>
               <td className="text-right py-2.5 px-2 font-mono text-cyan-400 font-medium">
                 {ic.probability_profit ? `${ic.probability_profit.toFixed(0)}%` : '-'}
+              </td>
+              <td className="text-center py-2.5 px-2">
+                <div className={`font-mono font-medium ${posSize.meetsReward ? 'text-green-400' : 'text-zinc-500'}`}>
+                  {posSize.contracts}
+                </div>
+                <div className={`text-xs ${posSize.meetsReward ? 'text-green-500' : 'text-zinc-600'}`}>
+                  {posSize.rewardPct.toFixed(0)}% R
+                </div>
               </td>
               <td className="text-center py-2.5 px-2">
                 <button
@@ -792,7 +807,7 @@ const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, minP
                 </button>
               </td>
             </tr>
-          ))}
+          )})}
         </tbody>
       </table>
     </div>
