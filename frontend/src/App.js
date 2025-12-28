@@ -221,7 +221,7 @@ const PeriodButton = memo(({ period, currentPeriod, onClick, label }) => (
   >
     {label}
   </button>
-);
+));
 
 // Generated Credit Spreads from Filtered Options
 const GeneratedSpreadsTable = memo(({ options, type, currentPrice, strikeRange, spreadWidth, onTrade }) => {
