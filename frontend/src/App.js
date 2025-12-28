@@ -1257,7 +1257,7 @@ const StrangleTable = memo(({ strangles, currentPrice, strikeRange, onSelectStra
       </table>
     </div>
   );
-};
+});
 
 // Calendar Spread Table Component
 const CalendarSpreadTable = memo(({ spreads, currentPrice, strikeRange, onSelectStrategy, onTrade, nearExpiration, farExpiration, maxRiskAmount, minRewardAmount }) => {
