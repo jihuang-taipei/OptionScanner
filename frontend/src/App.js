@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
 import "@/App.css";
 import axios from "axios";
 import { RefreshCw, TrendingUp, TrendingDown, Activity, BarChart3, ArrowUpRight, ArrowDownRight, Clock, ChevronDown, ChevronRight, Table2, Calculator, Plus, Trash2, X, Layers, Triangle, ArrowLeftRight, LineChart as LineChartIcon, Download, Calendar, Briefcase, DollarSign, CheckCircle, XCircle } from "lucide-react";
