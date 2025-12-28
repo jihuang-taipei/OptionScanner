@@ -122,9 +122,28 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
                 
                 risk_reward = max_loss / max_profit if max_profit > 0 else 999
                 
-                put_prob = (1 - abs(bp['sell_delta'])) if bp['sell_delta'] else 0.5
-                call_prob = (1 - abs(bc['sell_delta'])) if bc['sell_delta'] else 0.5
-                prob_profit = put_prob * call_prob * 100
+                # More accurate P(Profit) calculation using breakeven points
+                # Use average IV from both legs for the probability calculation
+                avg_iv = (bp['sell_iv'] + bc['sell_iv']) / 2
+                
+                # Calculate probability that price stays between breakevens at expiration
+                prob_profit = calculate_probability_between(
+                    S=current_price,
+                    lower=lower_breakeven,
+                    upper=upper_breakeven,
+                    T=T,
+                    r=r,
+                    sigma=avg_iv
+                )
+                
+                # Convert to percentage, fallback to delta-based if calculation fails
+                if prob_profit is not None:
+                    prob_profit_pct = prob_profit * 100
+                else:
+                    # Fallback to simple delta-based calculation
+                    put_prob = (1 - abs(bp['sell_delta'])) if bp['sell_delta'] else 0.5
+                    call_prob = (1 - abs(bc['sell_delta'])) if bc['sell_delta'] else 0.5
+                    prob_profit_pct = put_prob * call_prob * 100
                 
                 iron_condors.append(IronCondor(
                     put_sell_strike=bp['sell_strike'],
@@ -141,7 +160,7 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
                     profit_zone_width=round(profit_zone_width, 2),
                     profit_zone_pct=round(profit_zone_pct, 2),
                     risk_reward_ratio=round(risk_reward, 2),
-                    probability_profit=round(prob_profit, 1)
+                    probability_profit=round(prob_profit_pct, 1)
                 ))
         
         # Sort by net credit (highest first)
