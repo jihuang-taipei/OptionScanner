@@ -600,6 +600,7 @@ async def get_calendar_spreads(symbol: str = "^SPX", near_exp: str = None, far_e
                 distance_from_spot=round(distance_from_spot, 2)
             ))
         
+        # Sort by distance from spot (closest first)
         calendar_spreads.sort(key=lambda x: abs(x.distance_from_spot))
         
         logger.info(f"Calendar spreads fetched for {symbol}: {len(calendar_spreads)}")
@@ -609,7 +610,7 @@ async def get_calendar_spreads(symbol: str = "^SPX", near_exp: str = None, far_e
             near_expiration=near_exp,
             far_expiration=far_exp,
             current_price=round(current_price, 2),
-            calendar_spreads=calendar_spreads[:20]
+            calendar_spreads=calendar_spreads[:100]
         )
         
     except HTTPException:
