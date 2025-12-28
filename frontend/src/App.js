@@ -209,7 +209,7 @@ const PeriodButton = ({ period, currentPeriod, onClick, label }) => (
 );
 
 // Generated Credit Spreads from Filtered Options
-const GeneratedSpreadsTable = ({ options, type, currentPrice, strikeRange, spreadWidth, onTrade }) => {
+const GeneratedSpreadsTable = memo(({ options, type, currentPrice, strikeRange, spreadWidth, onTrade }) => {
   if (!options || options.length === 0 || !currentPrice) {
     return <p className="text-zinc-500 text-center py-8">No options data available</p>;
   }
