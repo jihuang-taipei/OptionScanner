@@ -51,8 +51,7 @@ logs/
 # Build artifacts (we build fresh in Docker)
 frontend/build/
 
-# Documentation
-*.md
+# Documentation (keep README.md)
 docs/
 
 # Emergent platform files
