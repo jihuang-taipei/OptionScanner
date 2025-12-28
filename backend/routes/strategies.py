@@ -437,6 +437,7 @@ async def get_strangles(symbol: str = "^SPX", expiration: str = None, width: int
                 avg_iv=round(avg_iv, 1)
             ))
         
+        # Sort by total cost (lowest first)
         strangles.sort(key=lambda x: x.total_cost)
         
         seen = set()
@@ -453,7 +454,7 @@ async def get_strangles(symbol: str = "^SPX", expiration: str = None, width: int
             symbol=symbol,
             expiration=expiration,
             current_price=round(current_price, 2),
-            strangles=unique_strangles[:15]
+            strangles=unique_strangles[:100]
         )
         
     except HTTPException:
