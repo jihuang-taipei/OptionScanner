@@ -815,7 +815,7 @@ const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, minP
 };
 
 // Iron Butterfly Table Component
-const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskReward, centerRange, onSelectStrategy, onTrade }) => {
+const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskReward, centerRange, onSelectStrategy, onTrade, maxRiskAmount, minRewardPercent }) => {
   if (!butterflies || butterflies.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Iron Butterflies available</p>;
   }
@@ -823,6 +823,14 @@ const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskRewar
   if (!currentPrice) {
     return <p className="text-zinc-500 text-center py-8">Loading price data...</p>;
   }
+
+  // Calculate contracts and reward % for position sizing
+  const calculatePositionSize = (maxLoss, maxProfit) => {
+    const contracts = Math.floor(maxRiskAmount / maxLoss);
+    const rewardPct = maxLoss > 0 ? (maxProfit / maxLoss) * 100 : 0;
+    const meetsReward = rewardPct >= minRewardPercent;
+    return { contracts: Math.max(1, contracts), rewardPct, meetsReward };
+  };
 
   // Apply filters including center range
   const rangePct = centerRange / 100;
@@ -859,14 +867,16 @@ const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskRewar
             <th className="text-right py-3 px-2 font-medium text-green-400">Max Profit</th>
             <th className="text-right py-3 px-2 font-medium text-red-400">Max Loss</th>
             <th className="text-right py-3 px-2 font-medium">Breakevens</th>
-            <th className="text-right py-3 px-2 font-medium">R/R</th>
             <th className="text-right py-3 px-2 font-medium">From Spot</th>
+            <th className="text-center py-3 px-2 font-medium text-purple-400">Contracts</th>
             <th className="text-center py-3 px-2 font-medium">P/L</th>
             <th className="text-center py-3 px-2 font-medium">Trade</th>
           </tr>
         </thead>
         <tbody>
-          {filteredButterflies.map((ib, idx) => (
+          {filteredButterflies.map((ib, idx) => {
+            const posSize = calculatePositionSize(ib.max_loss, ib.max_profit);
+            return (
             <tr 
               key={idx} 
               className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors"
@@ -904,11 +914,16 @@ const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskRewar
                   ${ib.lower_breakeven.toFixed(0)} - ${ib.upper_breakeven.toFixed(0)}
                 </div>
               </td>
-              <td className="text-right py-2.5 px-2 font-mono text-zinc-400">
-                {ib.risk_reward_ratio.toFixed(1)}:1
-              </td>
               <td className={`text-right py-2.5 px-2 font-mono ${Math.abs(ib.distance_from_spot) < 1 ? 'text-green-400' : 'text-zinc-400'}`}>
                 {ib.distance_from_spot >= 0 ? '+' : ''}{ib.distance_from_spot.toFixed(1)}%
+              </td>
+              <td className="text-center py-2.5 px-2">
+                <div className={`font-mono font-medium ${posSize.meetsReward ? 'text-green-400' : 'text-zinc-500'}`}>
+                  {posSize.contracts}
+                </div>
+                <div className={`text-xs ${posSize.meetsReward ? 'text-green-500' : 'text-zinc-600'}`}>
+                  {posSize.rewardPct.toFixed(0)}% R
+                </div>
               </td>
               <td className="text-center py-2.5 px-2">
                 <button
@@ -947,7 +962,7 @@ const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskRewar
                 </button>
               </td>
             </tr>
-          ))}
+          )})}
         </tbody>
       </table>
     </div>
