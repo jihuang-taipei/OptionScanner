@@ -99,7 +99,8 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
                 'sell_strike': sell_strike,
                 'buy_strike': buy_strike,
                 'credit': net_credit,
-                'sell_delta': sell_delta
+                'sell_delta': sell_delta,
+                'sell_iv': sell_iv
             })
         
         # Combine into Iron Condors
