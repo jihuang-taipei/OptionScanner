@@ -2697,6 +2697,7 @@ function App() {
                       spreads={calendarSpreads?.calendar_spreads} 
                       currentPrice={calendarSpreads?.current_price}
                       strikeRange={calendarRange}
+                      onSelectStrategy={handleSelectStrategy}
                       onTrade={handleTrade}
                       nearExpiration={selectedExpiration}
                       farExpiration={farExpiration}
