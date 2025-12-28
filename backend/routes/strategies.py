@@ -79,9 +79,6 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
             buy_rows = calls_df[calls_df['strike'] == buy_strike]
             if buy_rows.empty:
                 continue
-            
-            if sell_strike <= current_price:
-                continue
                 
             buy_row = buy_rows.iloc[0]
             sell_bid = float(sell_row['bid']) if not pd.isna(sell_row['bid']) else 0
