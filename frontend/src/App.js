@@ -1406,7 +1406,7 @@ const CalendarSpreadTable = memo(({ spreads, currentPrice, strikeRange, onSelect
       </table>
     </div>
   );
-};
+});
 
  
 
