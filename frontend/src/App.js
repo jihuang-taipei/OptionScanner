@@ -2572,7 +2572,7 @@ function App() {
                         <p className="text-zinc-500 text-xs mb-3">
                           Buy call + put at same strike. Profit if {symbol} moves more than the total premium paid.
                         </p>
-                        <StraddleTable straddles={straddles?.straddles} currentPrice={straddles?.current_price} onSelectStrategy={handleSelectStrategy} onTrade={handleTrade} />
+                        <StraddleTable straddles={straddles?.straddles} currentPrice={straddles?.current_price} strikeRange={straddleRange} onSelectStrategy={handleSelectStrategy} onTrade={handleTrade} />
                       </>
                     )}
                   </TabsContent>
