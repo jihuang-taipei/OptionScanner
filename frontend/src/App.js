@@ -2511,33 +2511,18 @@ function App() {
                   Volatility plays: Profit from large moves in either direction. Max loss = premium paid. Unlimited profit potential.
                 </p>
 
-                {/* Strike Range Filters */}
+                {/* Strike Range Filter */}
                 <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-zinc-900/50 rounded-lg border border-zinc-800">
                   <div className="flex items-center gap-2">
-                    <label className="text-zinc-400 text-sm">Straddle Strike ±</label>
+                    <label className="text-zinc-400 text-sm">Strike ±</label>
                     <div className="relative">
                       <Input
                         type="number"
                         min="0.1"
                         max="10"
                         step="0.1"
-                        value={straddleRange}
-                        onChange={(e) => setStraddleRange(Math.round(Math.max(0.1, Math.min(10, parseFloat(e.target.value) || 0.5)) * 10) / 10)}
-                        className="w-20 bg-zinc-800 border-zinc-700 text-white text-sm h-8 pr-6 text-center font-mono"
-                      />
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">%</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <label className="text-zinc-400 text-sm">Strangle Strikes ±</label>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        min="0.1"
-                        max="10"
-                        step="0.1"
-                        value={strangleRange}
-                        onChange={(e) => setStrangleRange(Math.round(Math.max(0.1, Math.min(10, parseFloat(e.target.value) || 0.5)) * 10) / 10)}
+                        value={straddleStrangleRange}
+                        onChange={(e) => setStraddleStrangleRange(Math.round(Math.max(0.1, Math.min(10, parseFloat(e.target.value) || 0.5)) * 10) / 10)}
                         className="w-20 bg-zinc-800 border-zinc-700 text-white text-sm h-8 pr-6 text-center font-mono"
                       />
                       <span className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">%</span>
