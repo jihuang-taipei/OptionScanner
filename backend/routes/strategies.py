@@ -148,7 +148,7 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
             expiration=expiration,
             current_price=round(current_price, 2),
             spread_width=spread,
-            iron_condors=iron_condors[:50]
+            iron_condors=iron_condors[:100]
         )
         
     except HTTPException:
