@@ -2568,6 +2568,8 @@ function App() {
                       centerRange={centerRange}
                       onSelectStrategy={handleSelectStrategy}
                       onTrade={handleTrade}
+                      maxRiskAmount={maxRiskAmount}
+                      minRewardPercent={minRewardPercent}
                     />
                   )}
                 </div>
