@@ -10,7 +10,7 @@ from models.schemas import (
     CalendarSpread, CalendarSpreadsResponse
 )
 from services.yahoo_finance import YahooFinanceService
-from services.greeks import calculate_greeks
+from services.greeks import calculate_greeks, calculate_probability_between
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -45,9 +45,6 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
             buy_rows = puts_df[puts_df['strike'] == buy_strike]
             if buy_rows.empty:
                 continue
-            
-            if sell_strike >= current_price:
-                continue
                 
             buy_row = buy_rows.iloc[0]
             sell_bid = float(sell_row['bid']) if not pd.isna(sell_row['bid']) else 0
@@ -67,7 +64,8 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
                 'sell_strike': sell_strike,
                 'buy_strike': buy_strike,
                 'credit': net_credit,
-                'sell_delta': sell_delta
+                'sell_delta': sell_delta,
+                'sell_iv': sell_iv
             })
         
         # Process calls for Bear Call Spreads
@@ -81,9 +79,6 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
             
             buy_rows = calls_df[calls_df['strike'] == buy_strike]
             if buy_rows.empty:
-                continue
-            
-            if sell_strike <= current_price:
                 continue
                 
             buy_row = buy_rows.iloc[0]
@@ -104,13 +99,18 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
                 'sell_strike': sell_strike,
                 'buy_strike': buy_strike,
                 'credit': net_credit,
-                'sell_delta': sell_delta
+                'sell_delta': sell_delta,
+                'sell_iv': sell_iv
             })
         
         # Combine into Iron Condors
         iron_condors = []
         for bp in bull_puts:
             for bc in bear_calls:
+                # Valid Iron Condor: short call strike must be higher than short put strike
+                if bc['sell_strike'] <= bp['sell_strike']:
+                    continue
+                
                 net_credit = bp['credit'] + bc['credit']
                 max_profit = net_credit * 100
                 max_loss = (spread - net_credit) * 100
@@ -122,9 +122,28 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
                 
                 risk_reward = max_loss / max_profit if max_profit > 0 else 999
                 
-                put_prob = (1 - abs(bp['sell_delta'])) if bp['sell_delta'] else 0.5
-                call_prob = (1 - abs(bc['sell_delta'])) if bc['sell_delta'] else 0.5
-                prob_profit = put_prob * call_prob * 100
+                # More accurate P(Profit) calculation using breakeven points
+                # Use average IV from both legs for the probability calculation
+                avg_iv = (bp['sell_iv'] + bc['sell_iv']) / 2
+                
+                # Calculate probability that price stays between breakevens at expiration
+                prob_profit = calculate_probability_between(
+                    S=current_price,
+                    lower=lower_breakeven,
+                    upper=upper_breakeven,
+                    T=T,
+                    r=r,
+                    sigma=avg_iv
+                )
+                
+                # Convert to percentage, fallback to delta-based if calculation fails
+                if prob_profit is not None:
+                    prob_profit_pct = prob_profit * 100
+                else:
+                    # Fallback to simple delta-based calculation
+                    put_prob = (1 - abs(bp['sell_delta'])) if bp['sell_delta'] else 0.5
+                    call_prob = (1 - abs(bc['sell_delta'])) if bc['sell_delta'] else 0.5
+                    prob_profit_pct = put_prob * call_prob * 100
                 
                 iron_condors.append(IronCondor(
                     put_sell_strike=bp['sell_strike'],
@@ -141,10 +160,11 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
                     profit_zone_width=round(profit_zone_width, 2),
                     profit_zone_pct=round(profit_zone_pct, 2),
                     risk_reward_ratio=round(risk_reward, 2),
-                    probability_profit=round(prob_profit, 1)
+                    probability_profit=round(prob_profit_pct, 1)
                 ))
         
-        iron_condors.sort(key=lambda x: x.probability_profit or 0, reverse=True)
+        # Sort by net credit (highest first)
+        iron_condors.sort(key=lambda x: x.net_credit, reverse=True)
         
         logger.info(f"Iron Condors fetched for {symbol}: {len(iron_condors)} combinations")
         
@@ -153,7 +173,7 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
             expiration=expiration,
             current_price=round(current_price, 2),
             spread_width=spread,
-            iron_condors=iron_condors[:20]
+            iron_condors=iron_condors[:200]
         )
         
     except HTTPException:
@@ -187,16 +207,10 @@ async def get_iron_butterflies(symbol: str = "^SPX", expiration: str = None, win
         calls_df = opt_chain.calls.copy()
         puts_df = opt_chain.puts.copy()
         
-        min_center = current_price * 0.95
-        max_center = current_price * 1.05
-        
         iron_butterflies = []
         
         for _, call_row in calls_df.iterrows():
             center_strike = float(call_row['strike'])
-            
-            if center_strike < min_center or center_strike > max_center:
-                continue
             
             upper_strike = center_strike + wing
             lower_strike = center_strike - wing
@@ -258,7 +272,8 @@ async def get_iron_butterflies(symbol: str = "^SPX", expiration: str = None, win
                 distance_from_spot=round(distance_from_spot, 2)
             ))
         
-        iron_butterflies.sort(key=lambda x: abs(x.distance_from_spot))
+        # Sort by net credit (highest first)
+        iron_butterflies.sort(key=lambda x: x.net_credit, reverse=True)
         
         logger.info(f"Iron Butterflies fetched for {symbol}: {len(iron_butterflies)} combinations")
         
@@ -267,7 +282,7 @@ async def get_iron_butterflies(symbol: str = "^SPX", expiration: str = None, win
             expiration=expiration,
             current_price=round(current_price, 2),
             wing_width=wing,
-            iron_butterflies=iron_butterflies[:15]
+            iron_butterflies=iron_butterflies[:100]
         )
         
     except HTTPException:
@@ -301,16 +316,10 @@ async def get_straddles(symbol: str = "^SPX", expiration: str = None):
         calls_df = opt_chain.calls.copy()
         puts_df = opt_chain.puts.copy()
         
-        min_strike = current_price * 0.95
-        max_strike = current_price * 1.05
-        
         straddles = []
         
         for _, call_row in calls_df.iterrows():
             strike = float(call_row['strike'])
-            
-            if strike < min_strike or strike > max_strike:
-                continue
             
             matching_puts = puts_df[puts_df['strike'] == strike]
             if matching_puts.empty:
@@ -349,6 +358,7 @@ async def get_straddles(symbol: str = "^SPX", expiration: str = None):
                 avg_iv=round(avg_iv, 1)
             ))
         
+        # Sort by distance from spot (closest first)
         straddles.sort(key=lambda x: abs(x.distance_from_spot))
         
         logger.info(f"Straddles fetched for {symbol}: {len(straddles)}")
@@ -357,7 +367,7 @@ async def get_straddles(symbol: str = "^SPX", expiration: str = None):
             symbol=symbol,
             expiration=expiration,
             current_price=round(current_price, 2),
-            straddles=straddles[:15]
+            straddles=straddles[:100]
         )
         
     except HTTPException:
@@ -393,28 +403,24 @@ async def get_strangles(symbol: str = "^SPX", expiration: str = None, width: int
         
         strangles = []
         
-        otm_calls = calls_df[calls_df['strike'] > current_price].copy()
-        
-        for _, call_row in otm_calls.iterrows():
+        # Generate strangles from all call/put combinations
+        for _, call_row in calls_df.iterrows():
             call_strike = float(call_row['strike'])
             put_strike = call_strike - width
             
             matching_puts = puts_df[puts_df['strike'] == put_strike]
             if matching_puts.empty:
-                puts_below = puts_df[puts_df['strike'] < current_price]
-                if puts_below.empty:
+                # Find closest put strike
+                closest_puts = puts_df.iloc[(puts_df['strike'] - put_strike).abs().argsort()[:1]]
+                if closest_puts.empty:
                     continue
-                call_distance = call_strike - current_price
-                target_put_strike = current_price - call_distance
-                closest_put = puts_below.iloc[(puts_below['strike'] - target_put_strike).abs().argsort()[:1]]
-                if closest_put.empty:
-                    continue
-                put_row = closest_put.iloc[0]
+                put_row = closest_puts.iloc[0]
                 put_strike = float(put_row['strike'])
             else:
                 put_row = matching_puts.iloc[0]
             
-            if put_strike >= current_price or call_strike <= current_price:
+            # For a valid strangle, call strike should be higher than put strike
+            if call_strike <= put_strike:
                 continue
             
             call_ask = float(call_row['ask']) if not pd.isna(call_row['ask']) else 0
@@ -452,6 +458,7 @@ async def get_strangles(symbol: str = "^SPX", expiration: str = None, width: int
                 avg_iv=round(avg_iv, 1)
             ))
         
+        # Sort by total cost (lowest first)
         strangles.sort(key=lambda x: x.total_cost)
         
         seen = set()
@@ -468,7 +475,7 @@ async def get_strangles(symbol: str = "^SPX", expiration: str = None, width: int
             symbol=symbol,
             expiration=expiration,
             current_price=round(current_price, 2),
-            strangles=unique_strangles[:15]
+            strangles=unique_strangles[:100]
         )
         
     except HTTPException:
@@ -515,9 +522,6 @@ async def get_calendar_spreads(symbol: str = "^SPX", near_exp: str = None, far_e
         # Process calls
         for _, near_row in near_chain.calls.iterrows():
             strike = float(near_row['strike'])
-            
-            if strike < current_price * 0.95 or strike > current_price * 1.05:
-                continue
             
             far_calls = far_chain.calls[far_chain.calls['strike'] == strike]
             if far_calls.empty:
@@ -570,9 +574,6 @@ async def get_calendar_spreads(symbol: str = "^SPX", near_exp: str = None, far_e
         for _, near_row in near_chain.puts.iterrows():
             strike = float(near_row['strike'])
             
-            if strike < current_price * 0.95 or strike > current_price * 1.05:
-                continue
-            
             far_puts = far_chain.puts[far_chain.puts['strike'] == strike]
             if far_puts.empty:
                 continue
@@ -620,6 +621,7 @@ async def get_calendar_spreads(symbol: str = "^SPX", near_exp: str = None, far_e
                 distance_from_spot=round(distance_from_spot, 2)
             ))
         
+        # Sort by distance from spot (closest first)
         calendar_spreads.sort(key=lambda x: abs(x.distance_from_spot))
         
         logger.info(f"Calendar spreads fetched for {symbol}: {len(calendar_spreads)}")
@@ -629,7 +631,7 @@ async def get_calendar_spreads(symbol: str = "^SPX", near_exp: str = None, far_e
             near_expiration=near_exp,
             far_expiration=far_exp,
             current_price=round(current_price, 2),
-            calendar_spreads=calendar_spreads[:20]
+            calendar_spreads=calendar_spreads[:100]
         )
         
     except HTTPException:
