@@ -815,7 +815,7 @@ const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, minP
 };
 
 // Iron Butterfly Table Component
-const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskReward, centerRange, onSelectStrategy, onTrade, maxRiskAmount, minRewardPercent }) => {
+const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskReward, centerRange, onSelectStrategy, onTrade, maxRiskAmount, minRewardAmount }) => {
   if (!butterflies || butterflies.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Iron Butterflies available</p>;
   }
@@ -824,12 +824,12 @@ const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskRewar
     return <p className="text-zinc-500 text-center py-8">Loading price data...</p>;
   }
 
-  // Calculate contracts and reward % for position sizing
+  // Calculate contracts and check reward threshold
   const calculatePositionSize = (maxLoss, maxProfit) => {
     const contracts = Math.floor(maxRiskAmount / maxLoss);
-    const rewardPct = maxLoss > 0 ? (maxProfit / maxLoss) * 100 : 0;
-    const meetsReward = rewardPct >= minRewardPercent;
-    return { contracts: Math.max(1, contracts), rewardPct, meetsReward };
+    const totalReward = maxProfit * contracts;
+    const meetsReward = totalReward >= minRewardAmount;
+    return { contracts: Math.max(1, contracts), totalReward, meetsReward };
   };
 
   // Apply filters including center range
