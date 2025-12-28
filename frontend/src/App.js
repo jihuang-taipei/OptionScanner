@@ -1251,7 +1251,7 @@ function App() {
   // Iron Condors state
   const [ironCondors, setIronCondors] = useState(null);
   const [isLoadingCondors, setIsLoadingCondors] = useState(false);
-  const [minProfitProb, setMinProfitProb] = useState(0);  // P(Profit) filter for Iron Condors
+  const [minProfitProb, setMinProfitProb] = useState(60);  // P(Profit) filter for Iron Condors, default 60%
   
   // Iron Butterflies state
   const [ironButterflies, setIronButterflies] = useState(null);
