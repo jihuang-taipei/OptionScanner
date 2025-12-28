@@ -1465,6 +1465,7 @@ function App() {
   const [calendarRange, setCalendarRange] = useState(0.5);  // Strike within ±x% of current price
   const [isLoadingCalendars, setIsLoadingCalendars] = useState(false);
   const [farExpiration, setFarExpiration] = useState("");
+  const [nearExpiration, setNearExpiration] = useState("");
   
   // P/L Chart state
   const [selectedStrategy, setSelectedStrategy] = useState(null);
