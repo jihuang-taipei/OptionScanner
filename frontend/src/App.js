@@ -970,7 +970,7 @@ const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskRewar
 };
 
 // Straddle Table Component
-const StraddleTable = ({ straddles, currentPrice, strikeRange, onSelectStrategy, onTrade }) => {
+const StraddleTable = ({ straddles, currentPrice, strikeRange, onSelectStrategy, onTrade, maxRiskAmount, minRewardPercent }) => {
   if (!straddles || straddles.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Straddles available</p>;
   }
@@ -978,6 +978,13 @@ const StraddleTable = ({ straddles, currentPrice, strikeRange, onSelectStrategy,
   if (!currentPrice) {
     return <p className="text-zinc-500 text-center py-8">Loading price data...</p>;
   }
+
+  // Calculate contracts for debit strategies (unlimited profit potential)
+  const calculatePositionSize = (totalCost) => {
+    const maxLoss = totalCost * 100; // Cost per contract
+    const contracts = Math.floor(maxRiskAmount / maxLoss);
+    return { contracts: Math.max(1, contracts), maxLoss };
+  };
 
   // Apply strike range filter
   const rangePct = strikeRange / 100;
@@ -1013,12 +1020,15 @@ const StraddleTable = ({ straddles, currentPrice, strikeRange, onSelectStrategy,
             <th className="text-right py-3 px-2 font-medium text-amber-400">Move to B/E</th>
             <th className="text-right py-3 px-2 font-medium text-purple-400">Avg IV</th>
             <th className="text-right py-3 px-2 font-medium">From Spot</th>
+            <th className="text-center py-3 px-2 font-medium text-purple-400">Contracts</th>
             <th className="text-center py-3 px-2 font-medium">P/L</th>
             <th className="text-center py-3 px-2 font-medium">Trade</th>
           </tr>
         </thead>
         <tbody>
-          {filteredStraddles.map((s, idx) => (
+          {filteredStraddles.map((s, idx) => {
+            const posSize = calculatePositionSize(s.total_cost);
+            return (
             <tr 
               key={idx} 
               className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors ${Math.abs(s.distance_from_spot) < 0.5 ? 'bg-blue-500/5' : ''}`}
@@ -1048,6 +1058,14 @@ const StraddleTable = ({ straddles, currentPrice, strikeRange, onSelectStrategy,
               </td>
               <td className={`text-right py-2.5 px-2 font-mono ${Math.abs(s.distance_from_spot) < 0.5 ? 'text-green-400' : 'text-zinc-400'}`}>
                 {s.distance_from_spot >= 0 ? '+' : ''}{s.distance_from_spot.toFixed(1)}%
+              </td>
+              <td className="text-center py-2.5 px-2">
+                <div className="font-mono font-medium text-green-400">
+                  {posSize.contracts}
+                </div>
+                <div className="text-xs text-zinc-500">
+                  ${posSize.maxLoss.toFixed(0)}
+                </div>
               </td>
               <td className="text-center py-2.5 px-2">
                 <button
@@ -1082,7 +1100,7 @@ const StraddleTable = ({ straddles, currentPrice, strikeRange, onSelectStrategy,
                 </button>
               </td>
             </tr>
-          ))}
+          )})}
         </tbody>
       </table>
     </div>
