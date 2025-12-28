@@ -1245,7 +1245,7 @@ const StrangleTable = ({ strangles, currentPrice, strikeRange, onSelectStrategy,
 };
 
 // Calendar Spread Table Component
-const CalendarSpreadTable = ({ spreads, currentPrice, strikeRange, onSelectStrategy, onTrade, nearExpiration, farExpiration }) => {
+const CalendarSpreadTable = ({ spreads, currentPrice, strikeRange, onSelectStrategy, onTrade, nearExpiration, farExpiration, maxRiskAmount, minRewardPercent }) => {
   if (!spreads || spreads.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Calendar Spreads available</p>;
   }
@@ -1253,6 +1253,13 @@ const CalendarSpreadTable = ({ spreads, currentPrice, strikeRange, onSelectStrat
   if (!currentPrice) {
     return <p className="text-zinc-500 text-center py-8">Loading price data...</p>;
   }
+
+  // Calculate contracts for debit strategies
+  const calculatePositionSize = (netDebit) => {
+    const maxLoss = netDebit * 100; // Cost per contract
+    const contracts = Math.floor(maxRiskAmount / maxLoss);
+    return { contracts: Math.max(1, contracts), maxLoss };
+  };
 
   // Apply strike range filter
   const rangePct = strikeRange / 100;
@@ -1290,12 +1297,15 @@ const CalendarSpreadTable = ({ spreads, currentPrice, strikeRange, onSelectStrat
             <th className="text-right py-3 px-2 font-medium text-cyan-400">IV Diff</th>
             <th className="text-right py-3 px-2 font-medium text-purple-400">θ Edge</th>
             <th className="text-right py-3 px-2 font-medium">From Spot</th>
+            <th className="text-center py-3 px-2 font-medium text-purple-400">Contracts</th>
             <th className="text-center py-3 px-2 font-medium">P/L</th>
             <th className="text-center py-3 px-2 font-medium">Trade</th>
           </tr>
         </thead>
         <tbody>
-          {filteredSpreads.map((cs, idx) => (
+          {filteredSpreads.map((cs, idx) => {
+            const posSize = calculatePositionSize(cs.net_debit);
+            return (
             <tr 
               key={idx} 
               className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors ${Math.abs(cs.distance_from_spot) < 0.5 ? 'bg-blue-500/5' : ''}`}
@@ -1333,6 +1343,14 @@ const CalendarSpreadTable = ({ spreads, currentPrice, strikeRange, onSelectStrat
                 {cs.distance_from_spot >= 0 ? '+' : ''}{cs.distance_from_spot.toFixed(1)}%
               </td>
               <td className="text-center py-2.5 px-2">
+                <div className="font-mono font-medium text-green-400">
+                  {posSize.contracts}
+                </div>
+                <div className="text-xs text-zinc-500">
+                  ${posSize.maxLoss.toFixed(0)}
+                </div>
+              </td>
+              <td className="text-center py-2.5 px-2">
                 <button
                   onClick={() => onSelectStrategy({
                     type: 'calendar_spread',
@@ -1368,7 +1386,7 @@ const CalendarSpreadTable = ({ spreads, currentPrice, strikeRange, onSelectStrat
                 </button>
               </td>
             </tr>
-          ))}
+          )})}
         </tbody>
       </table>
     </div>
