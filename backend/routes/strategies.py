@@ -251,7 +251,8 @@ async def get_iron_butterflies(symbol: str = "^SPX", expiration: str = None, win
                 distance_from_spot=round(distance_from_spot, 2)
             ))
         
-        iron_butterflies.sort(key=lambda x: abs(x.distance_from_spot))
+        # Sort by net credit (highest first)
+        iron_butterflies.sort(key=lambda x: x.net_credit, reverse=True)
         
         logger.info(f"Iron Butterflies fetched for {symbol}: {len(iron_butterflies)} combinations")
         
@@ -260,7 +261,7 @@ async def get_iron_butterflies(symbol: str = "^SPX", expiration: str = None, win
             expiration=expiration,
             current_price=round(current_price, 2),
             wing_width=wing,
-            iron_butterflies=iron_butterflies[:15]
+            iron_butterflies=iron_butterflies[:100]
         )
         
     except HTTPException:
