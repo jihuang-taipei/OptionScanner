@@ -398,7 +398,7 @@ const GeneratedSpreadsTable = memo(({ options, type, currentPrice, strikeRange, 
       </table>
     </div>
   );
-};
+});
 
 // Options Table Component
 const OptionsTable = ({ options, type, currentPrice, strikeRange, onTrade }) => {
