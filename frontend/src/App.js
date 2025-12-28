@@ -2519,7 +2519,7 @@ function App() {
                     <div className="relative">
                       <Input
                         type="number"
-                        min="0.01"
+                        min="0.1"
                         max="10"
                         step="0.1"
                         value={straddleRange}
@@ -2534,7 +2534,7 @@ function App() {
                     <div className="relative">
                       <Input
                         type="number"
-                        min="0.01"
+                        min="0.1"
                         max="10"
                         step="0.1"
                         value={strangleRange}
@@ -2659,7 +2659,7 @@ function App() {
                     <div className="relative">
                       <Input
                         type="number"
-                        min="0.01"
+                        min="0.1"
                         max="10"
                         step="0.1"
                         value={calendarRange}
