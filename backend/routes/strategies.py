@@ -10,7 +10,7 @@ from models.schemas import (
     CalendarSpread, CalendarSpreadsResponse
 )
 from services.yahoo_finance import YahooFinanceService
-from services.greeks import calculate_greeks
+from services.greeks import calculate_greeks, calculate_probability_between
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
