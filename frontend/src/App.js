@@ -784,7 +784,7 @@ const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, minP
 };
 
 // Iron Butterfly Table Component
-const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskReward, onSelectStrategy, onTrade }) => {
+const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskReward, centerRange, onSelectStrategy, onTrade }) => {
   if (!butterflies || butterflies.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Iron Butterflies available</p>;
   }
@@ -793,17 +793,23 @@ const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskRewar
     return <p className="text-zinc-500 text-center py-8">Loading price data...</p>;
   }
 
-  // Apply filters
+  // Apply filters including center range
+  const rangePct = centerRange / 100;
+  const minCenter = currentPrice * (1 - rangePct);
+  const maxCenter = currentPrice * (1 + rangePct);
+  
   const filteredButterflies = butterflies.filter(ib => 
     ib.net_credit >= minCredit && 
-    ib.risk_reward_ratio <= maxRiskReward
+    ib.risk_reward_ratio <= maxRiskReward &&
+    ib.center_strike >= minCenter &&
+    ib.center_strike <= maxCenter
   );
 
   if (filteredButterflies.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-zinc-500">No Iron Butterflies match your filters</p>
-        <p className="text-zinc-600 text-sm mt-1">Try lowering min credit or increasing max risk/reward</p>
+        <p className="text-zinc-600 text-sm mt-1">Try increasing center range or adjusting other filters</p>
       </div>
     );
   }
