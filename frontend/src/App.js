@@ -2356,13 +2356,36 @@ function App() {
                   Max profit if {symbol} expires exactly at center strike.
                 </p>
 
-                {ironButterflies && (
-                  <div className="mb-4 flex gap-4 text-sm">
-                    <span className="text-zinc-400">{symbol}: <span className="text-white font-mono">${ironButterflies.current_price?.toLocaleString()}</span></span>
-                    <span className="text-zinc-400">Exp: <span className="text-white">{new Date(ironButterflies.expiration).toLocaleDateString()}</span></span>
-                    <span className="text-zinc-400">Found: <span className="text-white">{ironButterflies.iron_butterflies?.length || 0}</span></span>
+                {/* Center Range Filter */}
+                <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-zinc-900/50 rounded-lg border border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <label className="text-zinc-400 text-sm">Center Strike ±</label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        min="0.1"
+                        max="10"
+                        step="0.1"
+                        value={centerRange}
+                        onChange={(e) => setCenterRange(Math.max(0.1, Math.min(10, parseFloat(e.target.value) || 0.5)))}
+                        className="w-20 bg-zinc-800 border-zinc-700 text-white text-sm h-8 pr-6 text-center font-mono"
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">%</span>
+                    </div>
+                    <span className="text-zinc-500 text-xs">
+                      (${ironButterflies?.current_price ? (ironButterflies.current_price * (1 - centerRange/100)).toFixed(0) : '...'} - ${ironButterflies?.current_price ? (ironButterflies.current_price * (1 + centerRange/100)).toFixed(0) : '...'})
+                    </span>
                   </div>
-                )}
+                  {ironButterflies && (
+                    <span className="text-zinc-500 text-xs">
+                      {symbol}: <span className="text-white font-mono">${ironButterflies.current_price?.toLocaleString()}</span>
+                      <span className="text-zinc-600 mx-2">|</span>
+                      Exp: <span className="text-white">{new Date(ironButterflies.expiration).toLocaleDateString()}</span>
+                      <span className="text-zinc-600 mx-2">|</span>
+                      Found: <span className="text-white">{ironButterflies.iron_butterflies?.length || 0}</span>
+                    </span>
+                  )}
+                </div>
 
                 <div className="max-h-96 overflow-y-auto">
                   {isLoadingButterflies ? (
@@ -2375,6 +2398,7 @@ function App() {
                       currentPrice={ironButterflies?.current_price}
                       minCredit={minCredit}
                       maxRiskReward={maxRiskReward}
+                      centerRange={centerRange}
                       onSelectStrategy={handleSelectStrategy}
                       onTrade={handleTrade}
                     />
