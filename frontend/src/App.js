@@ -2850,6 +2850,8 @@ function App() {
                       onTrade={handleTrade}
                       nearExpiration={selectedExpiration}
                       farExpiration={farExpiration}
+                      maxRiskAmount={maxRiskAmount}
+                      minRewardPercent={minRewardPercent}
                     />
                   )}
                 </div>
