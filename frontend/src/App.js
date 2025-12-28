@@ -1324,12 +1324,12 @@ function App() {
   const [strangles, setStrangles] = useState(null);
   const [isLoadingStraddles, setIsLoadingStraddles] = useState(false);
   const [isLoadingStrangles, setIsLoadingStrangles] = useState(false);
-  const [straddleRange, setStraddleRange] = useState(0.05);  // Strike within ±x% of current price
-  const [strangleRange, setStrangleRange] = useState(0.05);  // Strikes within ±x% of current price
+  const [straddleRange, setStraddleRange] = useState(0.5);  // Strike within ±x% of current price
+  const [strangleRange, setStrangleRange] = useState(0.5);  // Strikes within ±x% of current price
   
   // Calendar spreads state
   const [calendarSpreads, setCalendarSpreads] = useState(null);
-  const [calendarRange, setCalendarRange] = useState(0.05);  // Strike within ±x% of current price
+  const [calendarRange, setCalendarRange] = useState(0.5);  // Strike within ±x% of current price
   const [isLoadingCalendars, setIsLoadingCalendars] = useState(false);
   const [farExpiration, setFarExpiration] = useState("");
   
