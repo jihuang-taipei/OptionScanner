@@ -294,16 +294,10 @@ async def get_straddles(symbol: str = "^SPX", expiration: str = None):
         calls_df = opt_chain.calls.copy()
         puts_df = opt_chain.puts.copy()
         
-        min_strike = current_price * 0.95
-        max_strike = current_price * 1.05
-        
         straddles = []
         
         for _, call_row in calls_df.iterrows():
             strike = float(call_row['strike'])
-            
-            if strike < min_strike or strike > max_strike:
-                continue
             
             matching_puts = puts_df[puts_df['strike'] == strike]
             if matching_puts.empty:
