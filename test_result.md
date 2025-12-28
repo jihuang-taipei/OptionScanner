@@ -12,7 +12,8 @@
 - Straddles Filter UI: ✅ PASSED
 - Strangles Filter UI: ✅ PASSED
 - Calendar Spreads Filter UI: ✅ PASSED
-- Filter Functionality: ⚠️ PARTIAL (Calendar filter issue)
+- Filter Functionality: ✅ ALL PASSED
+- Floating-point precision fix: ✅ PASSED (0.5 → 0.6/0.4 now works correctly)
 
 ### Detailed Test Results:
 
