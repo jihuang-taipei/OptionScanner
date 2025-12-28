@@ -1257,6 +1257,7 @@ function App() {
   const [ironButterflies, setIronButterflies] = useState(null);
   const [isLoadingButterflies, setIsLoadingButterflies] = useState(false);
   const [wingWidth, setWingWidth] = useState(25);
+  const [centerRange, setCenterRange] = useState(0.5);  // Center strike within ±x% of current price
   
   // Straddle/Strangle state
   const [straddles, setStraddles] = useState(null);
