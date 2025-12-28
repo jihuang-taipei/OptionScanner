@@ -970,7 +970,7 @@ const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskRewar
 };
 
 // Straddle Table Component
-const StraddleTable = ({ straddles, currentPrice, strikeRange, onSelectStrategy, onTrade, maxRiskAmount, minRewardPercent }) => {
+const StraddleTable = ({ straddles, currentPrice, strikeRange, onSelectStrategy, onTrade, maxRiskAmount, minRewardAmount }) => {
   if (!straddles || straddles.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Straddles available</p>;
   }
