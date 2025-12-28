@@ -527,7 +527,7 @@ const OptionsTable = ({ options, type, currentPrice, strikeRange, onTrade }) => 
 };
 
 // Credit Spread Table Component
-const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskReward, onSelectStrategy, onTrade, maxRiskAmount, minRewardAmount }) => {
+const CreditSpreadTable = memo(({ spreads, type, currentPrice, minCredit, maxRiskReward, onSelectStrategy, onTrade, maxRiskAmount, minRewardAmount }) => {
   if (!spreads || spreads.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No {type} spreads available</p>;
   }
