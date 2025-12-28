@@ -1120,7 +1120,7 @@ const StraddleTable = memo(({ straddles, currentPrice, strikeRange, onSelectStra
       </table>
     </div>
   );
-};
+});
 
 // Strangle Table Component
 const StrangleTable = memo(({ strangles, currentPrice, strikeRange, onSelectStrategy, onTrade, maxRiskAmount, minRewardAmount }) => {
