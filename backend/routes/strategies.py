@@ -337,6 +337,7 @@ async def get_straddles(symbol: str = "^SPX", expiration: str = None):
                 avg_iv=round(avg_iv, 1)
             ))
         
+        # Sort by distance from spot (closest first)
         straddles.sort(key=lambda x: abs(x.distance_from_spot))
         
         logger.info(f"Straddles fetched for {symbol}: {len(straddles)}")
@@ -345,7 +346,7 @@ async def get_straddles(symbol: str = "^SPX", expiration: str = None):
             symbol=symbol,
             expiration=expiration,
             current_price=round(current_price, 2),
-            straddles=straddles[:15]
+            straddles=straddles[:100]
         )
         
     except HTTPException:
