@@ -1163,7 +1163,7 @@ const StrangleTable = ({ strangles, currentPrice, strikeRange, onSelectStrategy,
 };
 
 // Calendar Spread Table Component
-const CalendarSpreadTable = ({ spreads, currentPrice, strikeRange, onTrade, nearExpiration, farExpiration }) => {
+const CalendarSpreadTable = ({ spreads, currentPrice, strikeRange, onSelectStrategy, onTrade, nearExpiration, farExpiration }) => {
   if (!spreads || spreads.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Calendar Spreads available</p>;
   }
