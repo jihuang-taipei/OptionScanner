@@ -2523,7 +2523,7 @@ function App() {
                         max="10"
                         step="0.1"
                         value={straddleRange}
-                        onChange={(e) => setStraddleRange(Math.max(0.01, Math.min(10, parseFloat(e.target.value) || 0.05)))}
+                        onChange={(e) => setStraddleRange(Math.round(Math.max(0.1, Math.min(10, parseFloat(e.target.value) || 0.5)) * 10) / 10)}
                         className="w-20 bg-zinc-800 border-zinc-700 text-white text-sm h-8 pr-6 text-center font-mono"
                       />
                       <span className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">%</span>
@@ -2538,7 +2538,7 @@ function App() {
                         max="10"
                         step="0.1"
                         value={strangleRange}
-                        onChange={(e) => setStrangleRange(Math.max(0.01, Math.min(10, parseFloat(e.target.value) || 0.05)))}
+                        onChange={(e) => setStrangleRange(Math.round(Math.max(0.1, Math.min(10, parseFloat(e.target.value) || 0.5)) * 10) / 10)}
                         className="w-20 bg-zinc-800 border-zinc-700 text-white text-sm h-8 pr-6 text-center font-mono"
                       />
                       <span className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">%</span>
@@ -2663,7 +2663,7 @@ function App() {
                         max="10"
                         step="0.1"
                         value={calendarRange}
-                        onChange={(e) => setCalendarRange(Math.max(0.01, Math.min(10, parseFloat(e.target.value) || 0.05)))}
+                        onChange={(e) => setCalendarRange(Math.round(Math.max(0.1, Math.min(10, parseFloat(e.target.value) || 0.5)) * 10) / 10)}
                         className="w-20 bg-zinc-800 border-zinc-700 text-white text-sm h-8 pr-6 text-center font-mono"
                       />
                       <span className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">%</span>
