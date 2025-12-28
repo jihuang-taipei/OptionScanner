@@ -924,7 +924,7 @@ const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskRewar
 };
 
 // Straddle Table Component
-const StraddleTable = ({ straddles, currentPrice, onSelectStrategy, onTrade }) => {
+const StraddleTable = ({ straddles, currentPrice, strikeRange, onSelectStrategy, onTrade }) => {
   if (!straddles || straddles.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Straddles available</p>;
   }
@@ -933,10 +933,28 @@ const StraddleTable = ({ straddles, currentPrice, onSelectStrategy, onTrade }) =
     return <p className="text-zinc-500 text-center py-8">Loading price data...</p>;
   }
 
+  // Apply strike range filter
+  const rangePct = strikeRange / 100;
+  const minStrike = currentPrice * (1 - rangePct);
+  const maxStrike = currentPrice * (1 + rangePct);
+  
+  const filteredStraddles = straddles.filter(s => 
+    s.strike >= minStrike && s.strike <= maxStrike
+  );
+
+  if (filteredStraddles.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-zinc-500">No Straddles match your filter</p>
+        <p className="text-zinc-600 text-sm mt-1">Try increasing the strike range %</p>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-x-auto">
       <div className="text-xs text-zinc-500 mb-2">
-        Showing {straddles.length} straddles near ATM
+        Showing {filteredStraddles.length} of {straddles.length} straddles
       </div>
       <table className="w-full text-sm">
         <thead>
@@ -954,7 +972,7 @@ const StraddleTable = ({ straddles, currentPrice, onSelectStrategy, onTrade }) =
           </tr>
         </thead>
         <tbody>
-          {straddles.map((s, idx) => (
+          {filteredStraddles.map((s, idx) => (
             <tr 
               key={idx} 
               className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors ${Math.abs(s.distance_from_spot) < 0.5 ? 'bg-blue-500/5' : ''}`}
