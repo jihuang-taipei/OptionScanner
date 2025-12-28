@@ -527,7 +527,7 @@ const OptionsTable = ({ options, type, currentPrice, strikeRange, onTrade }) => 
 };
 
 // Credit Spread Table Component
-const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskReward, onSelectStrategy, onTrade }) => {
+const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskReward, onSelectStrategy, onTrade, maxRiskAmount, minRewardPercent }) => {
   if (!spreads || spreads.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No {type} spreads available</p>;
   }
@@ -535,6 +535,14 @@ const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskRewa
   if (!currentPrice) {
     return <p className="text-zinc-500 text-center py-8">Loading price data...</p>;
   }
+
+  // Calculate contracts and reward % for position sizing
+  const calculatePositionSize = (maxLoss, maxProfit) => {
+    const contracts = Math.floor(maxRiskAmount / maxLoss);
+    const rewardPct = maxLoss > 0 ? (maxProfit / maxLoss) * 100 : 0;
+    const meetsReward = rewardPct >= minRewardPercent;
+    return { contracts: Math.max(1, contracts), rewardPct, meetsReward };
+  };
 
   // Apply filters
   const filteredSpreads = spreads.filter(spread => 
@@ -568,8 +576,8 @@ const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskRewa
             <th className="text-right py-3 px-2 font-medium text-green-400">Max Profit</th>
             <th className="text-right py-3 px-2 font-medium text-red-400">Max Loss</th>
             <th className="text-right py-3 px-2 font-medium">Breakeven</th>
-            <th className="text-right py-3 px-2 font-medium">Risk/Reward</th>
             <th className="text-right py-3 px-2 font-medium text-cyan-400">P(OTM)</th>
+            <th className="text-center py-3 px-2 font-medium text-purple-400">Contracts</th>
             <th className="text-center py-3 px-2 font-medium">P/L</th>
             <th className="text-center py-3 px-2 font-medium">Trade</th>
           </tr>
@@ -579,6 +587,7 @@ const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskRewa
             const distanceFromPrice = isBullPut 
               ? ((currentPrice - spread.sell_strike) / currentPrice * 100).toFixed(1)
               : ((spread.sell_strike - currentPrice) / currentPrice * 100).toFixed(1);
+            const posSize = calculatePositionSize(spread.max_loss, spread.max_profit);
             
             return (
               <tr 
@@ -599,9 +608,16 @@ const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskRewa
                 <td className="text-right py-2.5 px-2 font-mono text-green-400">${spread.max_profit.toFixed(0)}</td>
                 <td className="text-right py-2.5 px-2 font-mono text-red-400">${spread.max_loss.toFixed(0)}</td>
                 <td className="text-right py-2.5 px-2 font-mono text-white">${spread.breakeven.toFixed(2)}</td>
-                <td className="text-right py-2.5 px-2 font-mono text-zinc-400">{spread.risk_reward_ratio.toFixed(1)}:1</td>
                 <td className="text-right py-2.5 px-2 font-mono text-cyan-400 font-medium">
                   {spread.probability_otm ? `${spread.probability_otm.toFixed(0)}%` : '-'}
+                </td>
+                <td className="text-center py-2.5 px-2">
+                  <div className={`font-mono font-medium ${posSize.meetsReward ? 'text-green-400' : 'text-zinc-500'}`}>
+                    {posSize.contracts}
+                  </div>
+                  <div className={`text-xs ${posSize.meetsReward ? 'text-green-500' : 'text-zinc-600'}`}>
+                    {posSize.rewardPct.toFixed(0)}% R
+                  </div>
                 </td>
                 <td className="text-center py-2.5 px-2">
                   <button
