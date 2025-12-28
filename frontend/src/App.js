@@ -646,7 +646,7 @@ const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskRewa
 };
 
 // Iron Condor Table Component
-const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, onSelectStrategy, onTrade }) => {
+const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, minProfitProb, onSelectStrategy, onTrade }) => {
   if (!condors || condors.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Iron Condors available</p>;
   }
@@ -655,17 +655,18 @@ const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, onSe
     return <p className="text-zinc-500 text-center py-8">Loading price data...</p>;
   }
 
-  // Apply filters
+  // Apply filters including P(Profit)
   const filteredCondors = condors.filter(ic => 
     ic.net_credit >= minCredit && 
-    ic.risk_reward_ratio <= maxRiskReward
+    ic.risk_reward_ratio <= maxRiskReward &&
+    (ic.probability_profit || 0) >= minProfitProb
   );
 
   if (filteredCondors.length === 0) {
     return (
       <div className="text-center py-8">
         <p className="text-zinc-500">No Iron Condors match your filters</p>
-        <p className="text-zinc-600 text-sm mt-1">Try lowering min credit or increasing max risk/reward</p>
+        <p className="text-zinc-600 text-sm mt-1">Try lowering min credit, P(Profit), or increasing max risk/reward</p>
       </div>
     );
   }
