@@ -499,9 +499,6 @@ async def get_calendar_spreads(symbol: str = "^SPX", near_exp: str = None, far_e
         for _, near_row in near_chain.calls.iterrows():
             strike = float(near_row['strike'])
             
-            if strike < current_price * 0.95 or strike > current_price * 1.05:
-                continue
-            
             far_calls = far_chain.calls[far_chain.calls['strike'] == strike]
             if far_calls.empty:
                 continue
