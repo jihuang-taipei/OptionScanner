@@ -172,7 +172,7 @@ const PLChart = memo(({ strategy, currentPrice, onClose }) => {
       </div>
     </div>
   );
-};
+});
 
 // Custom Tooltip for Chart
 const CustomTooltip = ({ active, payload, label }) => {
