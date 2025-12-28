@@ -1941,20 +1941,20 @@ function App() {
             />
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-zinc-400 text-sm">Min Reward %</label>
+            <label className="text-zinc-400 text-sm">Min Reward $</label>
             <Input
               type="number"
               min="0"
-              max="500"
-              step="5"
-              value={minRewardPercent}
-              onChange={(e) => setMinRewardPercent(Math.max(0, parseInt(e.target.value) || 30))}
-              className="w-20 bg-zinc-800 border-zinc-700 text-white text-sm h-8 text-center font-mono"
+              max="100000"
+              step="100"
+              value={minRewardAmount}
+              onChange={(e) => setMinRewardAmount(Math.max(0, parseInt(e.target.value) || 1000))}
+              className="w-24 bg-zinc-800 border-zinc-700 text-white text-sm h-8 text-center font-mono"
             />
           </div>
           <div className="text-zinc-500 text-xs">
-            <span className="text-zinc-400">Contracts</span> = Max Risk ÷ Max Loss per contract | 
-            <span className="text-green-400 ml-2">✓ Reward ≥ {minRewardPercent}%</span>
+            <span className="text-zinc-400">Contracts</span> = Max Risk ÷ Max Loss | 
+            <span className="text-green-400 ml-2">✓ Reward ≥ ${minRewardAmount.toLocaleString()}</span>
           </div>
         </div>
 
