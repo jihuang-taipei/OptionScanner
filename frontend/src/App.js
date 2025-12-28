@@ -190,7 +190,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 // Stats Card Component
-const StatCard = ({ label, value, icon: Icon, isLoading }) => (
+const StatCard = memo(({ label, value, icon: Icon, isLoading }) => (
   <div className="glass-card p-5 hover:border-white/20 transition-all duration-300">
     <div className="flex items-center justify-between mb-2">
       <span className="text-zinc-500 text-sm">{label}</span>
@@ -206,10 +206,10 @@ const StatCard = ({ label, value, icon: Icon, isLoading }) => (
       </p>
     )}
   </div>
-);
+));
 
 // Period Selector Button
-const PeriodButton = ({ period, currentPeriod, onClick, label }) => (
+const PeriodButton = memo(({ period, currentPeriod, onClick, label }) => (
   <button
     onClick={() => onClick(period)}
     className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
