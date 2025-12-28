@@ -1252,6 +1252,23 @@ const CalendarSpreadTable = ({ spreads, currentPrice, strikeRange, onSelectStrat
               </td>
               <td className="text-center py-2.5 px-2">
                 <button
+                  onClick={() => onSelectStrategy({
+                    type: 'calendar_spread',
+                    name: `Calendar ${cs.option_type.toUpperCase()} ${cs.strike}`,
+                    strike: cs.strike,
+                    net_debit: cs.net_debit,
+                    option_type: cs.option_type,
+                    near_price: cs.near_price,
+                    far_price: cs.far_price
+                  })}
+                  className="text-purple-400 hover:text-purple-300 transition-colors"
+                  title="View P/L Chart"
+                >
+                  <LineChartIcon className="w-4 h-4" />
+                </button>
+              </td>
+              <td className="text-center py-2.5 px-2">
+                <button
                   onClick={() => onTrade && onTrade(
                     cs,
                     'calendar_spread',
