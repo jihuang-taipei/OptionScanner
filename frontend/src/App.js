@@ -2252,20 +2252,18 @@ function App() {
                 {/* P(Profit) Filter */}
                 <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-zinc-900/50 rounded-lg border border-zinc-800">
                   <div className="flex items-center gap-2">
-                    <label className="text-zinc-400 text-sm">Min P(Profit):</label>
-                    <Select value={minProfitProb.toString()} onValueChange={(v) => setMinProfitProb(parseInt(v))}>
-                      <SelectTrigger className="w-24 bg-zinc-800 border-zinc-700 text-white text-sm h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-zinc-800">
-                        <SelectItem value="0" className="text-white hover:bg-zinc-800">All</SelectItem>
-                        <SelectItem value="10" className="text-white hover:bg-zinc-800">&gt;10%</SelectItem>
-                        <SelectItem value="25" className="text-white hover:bg-zinc-800">&gt;25%</SelectItem>
-                        <SelectItem value="50" className="text-white hover:bg-zinc-800">&gt;50%</SelectItem>
-                        <SelectItem value="75" className="text-white hover:bg-zinc-800">&gt;75%</SelectItem>
-                        <SelectItem value="85" className="text-white hover:bg-zinc-800">&gt;85%</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <label className="text-zinc-400 text-sm">Min P(Profit) ≥</label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={minProfitProb}
+                        onChange={(e) => setMinProfitProb(Math.max(0, Math.min(100, parseInt(e.target.value) || 0)))}
+                        className="w-20 bg-zinc-800 border-zinc-700 text-white text-sm h-8 pr-6 text-center font-mono"
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">%</span>
+                    </div>
                   </div>
                   {ironCondors && (
                     <span className="text-zinc-500 text-xs">
