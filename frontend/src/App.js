@@ -1730,6 +1730,14 @@ function App() {
     }
   }, [symbolInput, symbol, handleSymbolChange]);
 
+  // Auto-submit when debounced symbol input changes
+  useEffect(() => {
+    const trimmed = debouncedSymbolInput.trim().toUpperCase();
+    if (trimmed && trimmed !== symbol && trimmed.length >= 1) {
+      handleSymbolChange(trimmed);
+    }
+  }, [debouncedSymbolInput]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await Promise.all([fetchQuote(), fetchHistory(period)]);
