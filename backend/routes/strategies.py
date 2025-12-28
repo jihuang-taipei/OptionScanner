@@ -380,28 +380,24 @@ async def get_strangles(symbol: str = "^SPX", expiration: str = None, width: int
         
         strangles = []
         
-        otm_calls = calls_df[calls_df['strike'] > current_price].copy()
-        
-        for _, call_row in otm_calls.iterrows():
+        # Generate strangles from all call/put combinations
+        for _, call_row in calls_df.iterrows():
             call_strike = float(call_row['strike'])
             put_strike = call_strike - width
             
             matching_puts = puts_df[puts_df['strike'] == put_strike]
             if matching_puts.empty:
-                puts_below = puts_df[puts_df['strike'] < current_price]
-                if puts_below.empty:
+                # Find closest put strike
+                closest_puts = puts_df.iloc[(puts_df['strike'] - put_strike).abs().argsort()[:1]]
+                if closest_puts.empty:
                     continue
-                call_distance = call_strike - current_price
-                target_put_strike = current_price - call_distance
-                closest_put = puts_below.iloc[(puts_below['strike'] - target_put_strike).abs().argsort()[:1]]
-                if closest_put.empty:
-                    continue
-                put_row = closest_put.iloc[0]
+                put_row = closest_puts.iloc[0]
                 put_strike = float(put_row['strike'])
             else:
                 put_row = matching_puts.iloc[0]
             
-            if put_strike >= current_price or call_strike <= current_price:
+            # For a valid strangle, call strike should be higher than put strike
+            if call_strike <= put_strike:
                 continue
             
             call_ask = float(call_row['ask']) if not pd.isna(call_row['ask']) else 0
