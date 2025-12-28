@@ -815,7 +815,7 @@ const IronCondorTable = memo(({ condors, currentPrice, minCredit, maxRiskReward,
 };
 
 // Iron Butterfly Table Component
-const IronButterflyTable = ({ butterflies, currentPrice, minCredit, maxRiskReward, centerRange, onSelectStrategy, onTrade, maxRiskAmount, minRewardAmount }) => {
+const IronButterflyTable = memo(({ butterflies, currentPrice, minCredit, maxRiskReward, centerRange, onSelectStrategy, onTrade, maxRiskAmount, minRewardAmount }) => {
   if (!butterflies || butterflies.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Iron Butterflies available</p>;
   }
