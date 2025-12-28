@@ -1364,9 +1364,9 @@ function App() {
   const [closePrice, setClosePrice] = useState("");
 
   // Position sizing state
-  const [accountSize, setAccountSize] = useState(50000);  // Default $50,000
-  const [riskPercent, setRiskPercent] = useState(2);  // Default 2% risk per trade
-  const [showPositionSizing, setShowPositionSizing] = useState(false);
+  const [maxRiskAmount, setMaxRiskAmount] = useState(1000);  // Default $1,000 risk per trade
+  const [minRewardPercent, setMinRewardPercent] = useState(30);  // Default 30% min reward
+  const [showPositionSizing, setShowPositionSizing] = useState(true);  // Show by default
 
   // Collapsed sections state
   const [collapsedSections, setCollapsedSections] = useState({
