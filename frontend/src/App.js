@@ -616,7 +616,7 @@ const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskRewa
                     {posSize.contracts}
                   </div>
                   <div className={`text-xs ${posSize.meetsReward ? 'text-green-500' : 'text-zinc-600'}`}>
-                    {posSize.rewardPct.toFixed(0)}% R
+                    ${posSize.totalReward.toFixed(0)}
                   </div>
                 </td>
                 <td className="text-center py-2.5 px-2">
