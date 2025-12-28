@@ -91,3 +91,24 @@ export const calculateStranglePL = (price, callStrike, putStrike, cost) => {
   else if (price < putStrike) intrinsicValue = (putStrike - price) * 100;
   return intrinsicValue - costPer;
 };
+
+export const calculateCalendarSpreadPL = (price, strike, netDebit, optionType) => {
+  // Calendar spread P/L at near-term expiration
+  // At near-term expiration, the short option expires and we're left with the long option value
+  // This is a simplified model - actual P/L depends on IV and time remaining
+  const debitPer = netDebit * 100;
+  
+  // Max profit occurs at the strike price (short option expires worthless, long retains time value)
+  // Max loss is limited to the net debit paid
+  // The P/L curve is tent-shaped for calendar spreads
+  
+  const distanceFromStrike = Math.abs(price - strike);
+  const maxProfitEstimate = debitPer * 0.5; // Estimated max profit (50% of debit as rough estimate)
+  
+  // Tent-shaped P/L: max at strike, decreasing as price moves away
+  const profitDecayRate = maxProfitEstimate / (strike * 0.05); // Decay over ~5% move
+  const profit = maxProfitEstimate - (distanceFromStrike * profitDecayRate);
+  
+  // P/L is capped at max profit and max loss (net debit)
+  return Math.max(-debitPer, Math.min(maxProfitEstimate, profit));
+};
