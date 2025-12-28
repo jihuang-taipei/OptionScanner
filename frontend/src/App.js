@@ -2402,7 +2402,7 @@ function App() {
                           onSelectStrategy={handleSelectStrategy}
                           onTrade={handleTrade}
                           maxRiskAmount={maxRiskAmount}
-                          minRewardPercent={minRewardPercent}
+                          minRewardAmount={minRewardAmount}
                         />
                       </>
                     )}
@@ -2426,7 +2426,7 @@ function App() {
                           onSelectStrategy={handleSelectStrategy}
                           onTrade={handleTrade}
                           maxRiskAmount={maxRiskAmount}
-                          minRewardPercent={minRewardPercent}
+                          minRewardAmount={minRewardAmount}
                         />
                       </>
                     )}
