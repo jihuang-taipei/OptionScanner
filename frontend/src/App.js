@@ -1108,7 +1108,7 @@ const StraddleTable = ({ straddles, currentPrice, strikeRange, onSelectStrategy,
 };
 
 // Strangle Table Component
-const StrangleTable = ({ strangles, currentPrice, strikeRange, onSelectStrategy, onTrade }) => {
+const StrangleTable = ({ strangles, currentPrice, strikeRange, onSelectStrategy, onTrade, maxRiskAmount, minRewardPercent }) => {
   if (!strangles || strangles.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Strangles available</p>;
   }
@@ -1116,6 +1116,13 @@ const StrangleTable = ({ strangles, currentPrice, strikeRange, onSelectStrategy,
   if (!currentPrice) {
     return <p className="text-zinc-500 text-center py-8">Loading price data...</p>;
   }
+
+  // Calculate contracts for debit strategies (unlimited profit potential)
+  const calculatePositionSize = (totalCost) => {
+    const maxLoss = totalCost * 100; // Cost per contract
+    const contracts = Math.floor(maxRiskAmount / maxLoss);
+    return { contracts: Math.max(1, contracts), maxLoss };
+  };
 
   // Apply strike range filter - both put and call strikes should be within range
   const rangePct = strikeRange / 100;
@@ -1150,12 +1157,15 @@ const StrangleTable = ({ strangles, currentPrice, strikeRange, onSelectStrategy,
             <th className="text-right py-3 px-2 font-medium">Breakevens</th>
             <th className="text-right py-3 px-2 font-medium text-amber-400">Move to B/E</th>
             <th className="text-right py-3 px-2 font-medium text-purple-400">Avg IV</th>
+            <th className="text-center py-3 px-2 font-medium text-purple-400">Contracts</th>
             <th className="text-center py-3 px-2 font-medium">P/L</th>
             <th className="text-center py-3 px-2 font-medium">Trade</th>
           </tr>
         </thead>
         <tbody>
-          {filteredStrangles.map((s, idx) => (
+          {filteredStrangles.map((s, idx) => {
+            const posSize = calculatePositionSize(s.total_cost);
+            return (
             <tr 
               key={idx} 
               className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors"
@@ -1184,6 +1194,14 @@ const StrangleTable = ({ strangles, currentPrice, strikeRange, onSelectStrategy,
               </td>
               <td className="text-right py-2.5 px-2 font-mono text-purple-400">
                 {s.avg_iv.toFixed(1)}%
+              </td>
+              <td className="text-center py-2.5 px-2">
+                <div className="font-mono font-medium text-green-400">
+                  {posSize.contracts}
+                </div>
+                <div className="text-xs text-zinc-500">
+                  ${posSize.maxLoss.toFixed(0)}
+                </div>
               </td>
               <td className="text-center py-2.5 px-2">
                 <button
@@ -1219,7 +1237,7 @@ const StrangleTable = ({ strangles, currentPrice, strikeRange, onSelectStrategy,
                 </button>
               </td>
             </tr>
-          ))}
+          )})}
         </tbody>
       </table>
     </div>
