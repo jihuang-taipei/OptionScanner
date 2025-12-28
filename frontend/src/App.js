@@ -2789,9 +2789,27 @@ function App() {
                 </span>
               </h2>
               <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-                <span className="text-zinc-500 text-sm">Far Exp:</span>
+                <span className="text-zinc-500 text-sm">Near:</span>
+                <Select value={selectedExpiration} onValueChange={setSelectedExpiration}>
+                  <SelectTrigger className="w-36 bg-zinc-900 border-zinc-800 text-white" data-testid="near-expiration-select">
+                    <SelectValue placeholder="Select date" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-zinc-900 border-zinc-800">
+                    {expirations.slice(0, 10).map((exp) => (
+                      <SelectItem 
+                        key={exp} 
+                        value={exp} 
+                        className="text-white hover:bg-zinc-800"
+                        disabled={exp === farExpiration}
+                      >
+                        {new Date(exp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <span className="text-zinc-500 text-sm">Far:</span>
                 <Select value={farExpiration} onValueChange={setFarExpiration}>
-                  <SelectTrigger className="w-40 bg-zinc-900 border-zinc-800 text-white" data-testid="far-expiration-select">
+                  <SelectTrigger className="w-36 bg-zinc-900 border-zinc-800 text-white" data-testid="far-expiration-select">
                     <SelectValue placeholder="Select date" />
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-900 border-zinc-800">
@@ -2802,7 +2820,7 @@ function App() {
                         className="text-white hover:bg-zinc-800"
                         disabled={exp === selectedExpiration}
                       >
-                        {new Date(exp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        {new Date(exp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </SelectItem>
                     ))}
                   </SelectContent>
