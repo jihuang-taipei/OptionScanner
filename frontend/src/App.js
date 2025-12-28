@@ -2723,7 +2723,7 @@ function App() {
                         <p className="text-zinc-500 text-xs mb-3">
                           Buy call + put at same strike. Profit if {symbol} moves more than the total premium paid.
                         </p>
-                        <StraddleTable straddles={straddles?.straddles} currentPrice={straddles?.current_price} strikeRange={straddleStrangleRange} onSelectStrategy={handleSelectStrategy} onTrade={handleTrade} maxRiskAmount={maxRiskAmount} minRewardPercent={minRewardPercent} />
+                        <StraddleTable straddles={straddles?.straddles} currentPrice={straddles?.current_price} strikeRange={straddleStrangleRange} onSelectStrategy={handleSelectStrategy} onTrade={handleTrade} maxRiskAmount={maxRiskAmount} minRewardAmount={minRewardAmount} />
                       </>
                     )}
                   </TabsContent>
@@ -2737,7 +2737,7 @@ function App() {
                         <p className="text-zinc-500 text-xs mb-3">
                           Buy OTM call + OTM put. Cheaper than straddles but needs larger move to profit.
                         </p>
-                        <StrangleTable strangles={strangles?.strangles} currentPrice={strangles?.current_price} strikeRange={straddleStrangleRange} onSelectStrategy={handleSelectStrategy} onTrade={handleTrade} maxRiskAmount={maxRiskAmount} minRewardPercent={minRewardPercent} />
+                        <StrangleTable strangles={strangles?.strangles} currentPrice={strangles?.current_price} strikeRange={straddleStrangleRange} onSelectStrategy={handleSelectStrategy} onTrade={handleTrade} maxRiskAmount={maxRiskAmount} minRewardAmount={minRewardAmount} />
                       </>
                     )}
                   </TabsContent>
@@ -2851,7 +2851,7 @@ function App() {
                       nearExpiration={selectedExpiration}
                       farExpiration={farExpiration}
                       maxRiskAmount={maxRiskAmount}
-                      minRewardPercent={minRewardPercent}
+                      minRewardAmount={minRewardAmount}
                     />
                   )}
                 </div>
