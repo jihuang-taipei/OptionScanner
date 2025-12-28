@@ -51,6 +51,21 @@ import {
   exportCalendarSpreads,
 } from "./utils/exportUtils";
 
+// Custom debounce hook
+const useDebounce = (value, delay) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debouncedValue;
+};
+
 // P/L Chart Tooltip
 const PLTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
