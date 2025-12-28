@@ -662,7 +662,7 @@ const CreditSpreadTable = memo(({ spreads, type, currentPrice, minCredit, maxRis
 };
 
 // Iron Condor Table Component
-const IronCondorTable = ({ condors, currentPrice, minCredit, maxRiskReward, minProfitProb, onSelectStrategy, onTrade, maxRiskAmount, minRewardAmount }) => {
+const IronCondorTable = memo(({ condors, currentPrice, minCredit, maxRiskReward, minProfitProb, onSelectStrategy, onTrade, maxRiskAmount, minRewardAmount }) => {
   if (!condors || condors.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Iron Condors available</p>;
   }
