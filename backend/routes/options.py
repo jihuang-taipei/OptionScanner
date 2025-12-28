@@ -163,8 +163,9 @@ async def get_credit_spreads(symbol: str = "^SPX", expiration: str = None, sprea
                 buy_delta=buy_delta
             ))
         
-        bull_put_spreads.sort(key=lambda x: x.probability_otm or 0, reverse=True)
-        bear_call_spreads.sort(key=lambda x: x.probability_otm or 0, reverse=True)
+        # Sort by strike (closest to current price first)
+        bull_put_spreads.sort(key=lambda x: abs(x.sell_strike - current_price))
+        bear_call_spreads.sort(key=lambda x: abs(x.sell_strike - current_price))
         
         logger.info(f"Credit spreads fetched for {symbol}: {len(bull_put_spreads)} bull puts, {len(bear_call_spreads)} bear calls")
         
@@ -173,8 +174,8 @@ async def get_credit_spreads(symbol: str = "^SPX", expiration: str = None, sprea
             expiration=expiration,
             current_price=round(current_price, 2),
             spread_width=spread,
-            bull_put_spreads=bull_put_spreads[:15],
-            bear_call_spreads=bear_call_spreads[:15]
+            bull_put_spreads=bull_put_spreads[:30],
+            bear_call_spreads=bear_call_spreads[:30]
         )
         
     except HTTPException:
