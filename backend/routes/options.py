@@ -70,9 +70,6 @@ async def get_credit_spreads(symbol: str = "^SPX", expiration: str = None, sprea
             
             buy_row = buy_rows.iloc[0]
             
-            if sell_strike >= current_price:
-                continue
-            
             sell_bid = float(sell_row['bid']) if not pd.isna(sell_row['bid']) else 0
             buy_ask = float(buy_row['ask']) if not pd.isna(buy_row['ask']) else 0
             
