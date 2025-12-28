@@ -1324,8 +1324,7 @@ function App() {
   const [strangles, setStrangles] = useState(null);
   const [isLoadingStraddles, setIsLoadingStraddles] = useState(false);
   const [isLoadingStrangles, setIsLoadingStrangles] = useState(false);
-  const [straddleRange, setStraddleRange] = useState(0.5);  // Strike within ±x% of current price
-  const [strangleRange, setStrangleRange] = useState(0.5);  // Strikes within ±x% of current price
+  const [straddleStrangleRange, setStraddleStrangleRange] = useState(0.5);  // Strike within ±x% of current price (shared for both)
   
   // Calendar spreads state
   const [calendarSpreads, setCalendarSpreads] = useState(null);
