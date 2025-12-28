@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # Production: Single container with built frontend
   option-scanner:
     build:
       context: .
@@ -10,6 +11,9 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - CORS_ORIGINS=*
+      # Optional: Add MongoDB for paper trading persistence
+      # - MONGO_URL=mongodb://mongo:27017
+      # - DB_NAME=options_scanner
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/"]
@@ -17,30 +21,20 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
+    # Uncomment to add MongoDB for paper trading
+    # depends_on:
+    #   - mongo
 
-  # Optional: If you want to run frontend and backend separately
-  # Uncomment below for development mode
-  
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile.dev
+  # Optional: MongoDB for paper trading feature
+  # Uncomment to enable persistent portfolio storage
+  # mongo:
+  #   image: mongo:6
   #   ports:
-  #     - "3000:3000"
+  #     - "27017:27017"
   #   volumes:
-  #     - ./frontend/src:/app/src
-  #   environment:
-  #     - REACT_APP_BACKEND_URL=http://localhost:8000
-  #   depends_on:
-  #     - backend
+  #     - mongo_data:/data/db
+  #   restart: unless-stopped
 
-  # backend:
-  #   build:
-  #     context: ./backend
-  #     dockerfile: Dockerfile.dev
-  #   ports:
-  #     - "8000:8000"
-  #   volumes:
-  #     - ./backend:/app
-  #   environment:
-  #     - CORS_ORIGINS=http://localhost:3000
+# Uncomment if using MongoDB
+# volumes:
+#   mongo_data:

@@ -1,60 +1,66 @@
-# Options Scanner
+# Option Scanner
 
-A real-time options analysis application that displays stock quotes, historical charts, options chains with Greeks, and various options strategy scanners.
+A comprehensive options analysis and paper trading application for stocks and indices.
 
 ## Features
 
-- **Configurable Symbol** - Track any stock/index (^SPX, SPY, QQQ, AAPL, etc.)
-- **Real-time Quotes** - Live price data from Yahoo Finance
-- **Historical Charts** - Interactive price charts with multiple timeframes
-- **Options Chain** - Full options chain with calculated Greeks (Delta, Gamma, Theta, Vega)
+- **Real-time Quotes**: Live price data from Yahoo Finance
+- **Options Chain**: Full options chain with Greeks (Delta, Gamma, Theta, Vega)
 - **Strategy Scanners**:
-  - Credit Spreads (Bull Put / Bear Call)
+  - Credit Spreads (Bull Put, Bear Call)
   - Iron Condors
   - Iron Butterflies
   - Straddles & Strangles
   - Calendar Spreads
-- **P/L Visualization** - Interactive profit/loss charts for strategies
-- **Export to CSV** - Download options data for offline analysis
+- **P/L Visualization**: Interactive profit/loss charts for all strategies
+- **Paper Trading**: Virtual portfolio to practice trading strategies
+- **Export**: Download options data as CSV
+- **Multi-Symbol**: Analyze any stock or index (SPX, SPY, AAPL, etc.)
 
-## Tech Stack
+## Quick Start with Docker
 
-- **Frontend**: React, TailwindCSS, Recharts, Shadcn UI
-- **Backend**: FastAPI, Python
-- **Data Source**: Yahoo Finance (yfinance library)
-
-## Running with Docker
-
-### Quick Start
+### Production Build (Recommended)
 
 ```bash
-# Build and run with Docker Compose
+# Build and run the application
 docker-compose up --build
 
-# Or build manually
-docker build -t option-scanner .
-docker run -p 8000:8000 option-scanner
+# Access the application
+open http://localhost:8000
 ```
 
-The application will be available at `http://localhost:8000`
+### Development Mode
 
-### Environment Variables
+For development with hot reload:
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `PORT` | Server port | `8000` |
-| `CORS_ORIGINS` | Allowed CORS origins | `*` |
-| `MONGO_URL` | MongoDB connection (optional) | - |
-| `DB_NAME` | Database name | `options_scanner` |
+```bash
+# Start development environment
+docker-compose -f docker-compose.dev.yml up --build
 
-## Running Locally (Development)
+# Frontend: http://localhost:3000
+# Backend API: http://localhost:8001
+```
+
+### With MongoDB (Paper Trading Persistence)
+
+To enable persistent paper trading:
+
+1. Edit `docker-compose.yml` and uncomment the MongoDB service
+2. Uncomment the `depends_on` and environment variables in the app service
+3. Run:
+
+```bash
+docker-compose up --build
+```
+
+## Manual Installation
 
 ### Backend
 
 ```bash
 cd backend
 pip install -r requirements.txt
-uvicorn server:app --reload --port 8001
+python -m uvicorn server:app --host 0.0.0.0 --port 8001 --reload
 ```
 
 ### Frontend
@@ -62,26 +68,63 @@ uvicorn server:app --reload --port 8001
 ```bash
 cd frontend
 yarn install
-yarn start
+REACT_APP_BACKEND_URL=http://localhost:8001 yarn start
+```
+
+## Project Structure
+
+```
+option-scanner/
+├── backend/
+│   ├── server.py           # FastAPI app setup
+│   ├── models/             # Pydantic schemas
+│   │   ├── schemas.py      # Quote, options, strategy models
+│   │   └── position.py     # Portfolio models
+│   ├── routes/             # API endpoints
+│   │   ├── quotes.py       # Price quotes
+│   │   ├── options.py      # Options chain
+│   │   ├── strategies.py   # Strategy scanners
+│   │   └── portfolio.py    # Paper trading
+│   └── services/           # Business logic
+│       ├── yahoo_finance.py
+│       └── greeks.py
+├── frontend/
+│   ├── src/
+│   │   ├── App.js          # Main React component
+│   │   ├── utils/          # Utility functions
+│   │   │   ├── calculations.js
+│   │   │   ├── exportUtils.js
+│   │   │   └── constants.js
+│   │   └── components/     # Reusable components
+│   └── public/
+├── Dockerfile              # Production build
+├── docker-compose.yml      # Production deployment
+└── docker-compose.dev.yml  # Development setup
 ```
 
 ## API Endpoints
 
-### Quote & History
-- `GET /api/quote?symbol=SPY` - Get current quote
-- `GET /api/history?symbol=SPY&period=1mo` - Get historical data
+| Endpoint | Description |
+|----------|-------------|
+| `GET /api/quote?symbol=SPY` | Get current quote |
+| `GET /api/history?symbol=SPY&period=1mo` | Historical data |
+| `GET /api/options/expirations?symbol=SPY` | Available expirations |
+| `GET /api/options/chain?symbol=SPY&expiration=DATE` | Options chain |
+| `GET /api/iron-condors?symbol=SPY&expiration=DATE` | Iron Condor scanner |
+| `GET /api/straddles?symbol=SPY&expiration=DATE` | Straddle scanner |
+| `GET /api/calendar-spreads?symbol=SPY&near_exp=DATE&far_exp=DATE` | Calendar spreads |
+| `POST /api/positions` | Create paper trade |
+| `GET /api/positions` | List all positions |
 
-### Options
-- `GET /api/options/expirations?symbol=SPY` - Get available expiration dates
-- `GET /api/options/chain?symbol=SPY&expiration=2024-01-19` - Get options chain
+## Environment Variables
 
-### Strategy Scanners
-- `GET /api/credit-spreads?symbol=SPY&expiration=...&spread=5`
-- `GET /api/iron-condors?symbol=SPY&expiration=...&spread=5`
-- `GET /api/iron-butterflies?symbol=SPY&expiration=...&wing=25`
-- `GET /api/straddles?symbol=SPY&expiration=...`
-- `GET /api/strangles?symbol=SPY&expiration=...&width=50`
-- `GET /api/calendar-spreads?symbol=SPY&near_exp=...&far_exp=...`
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | 8000 | Server port |
+| `CORS_ORIGINS` | * | Allowed CORS origins |
+| `MONGO_URL` | - | MongoDB connection (optional) |
+| `DB_NAME` | options_scanner | Database name |
+| `REACT_APP_BACKEND_URL` | - | Backend URL for frontend |
 
 ## License
 
