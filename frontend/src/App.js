@@ -2521,7 +2521,7 @@ function App() {
                         type="number"
                         min="0.01"
                         max="10"
-                        step="0.01"
+                        step="0.1"
                         value={straddleRange}
                         onChange={(e) => setStraddleRange(Math.max(0.01, Math.min(10, parseFloat(e.target.value) || 0.05)))}
                         className="w-20 bg-zinc-800 border-zinc-700 text-white text-sm h-8 pr-6 text-center font-mono"
@@ -2536,7 +2536,7 @@ function App() {
                         type="number"
                         min="0.01"
                         max="10"
-                        step="0.01"
+                        step="0.1"
                         value={strangleRange}
                         onChange={(e) => setStrangleRange(Math.max(0.01, Math.min(10, parseFloat(e.target.value) || 0.05)))}
                         className="w-20 bg-zinc-800 border-zinc-700 text-white text-sm h-8 pr-6 text-center font-mono"
@@ -2661,7 +2661,7 @@ function App() {
                         type="number"
                         min="0.01"
                         max="10"
-                        step="0.01"
+                        step="0.1"
                         value={calendarRange}
                         onChange={(e) => setCalendarRange(Math.max(0.01, Math.min(10, parseFloat(e.target.value) || 0.05)))}
                         className="w-20 bg-zinc-800 border-zinc-700 text-white text-sm h-8 pr-6 text-center font-mono"
@@ -2959,7 +2959,7 @@ function App() {
                   <label className="text-zinc-400 text-sm mb-1 block">Exit Price (per contract)</label>
                   <input
                     type="number"
-                    step="0.01"
+                    step="0.1"
                     value={closePrice}
                     onChange={(e) => setClosePrice(e.target.value)}
                     className="w-full bg-zinc-800 border border-zinc-700 text-white px-3 py-2 rounded-lg"
