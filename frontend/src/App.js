@@ -527,7 +527,7 @@ const OptionsTable = ({ options, type, currentPrice, strikeRange, onTrade }) => 
 };
 
 // Credit Spread Table Component
-const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskReward, onSelectStrategy, onTrade, maxRiskAmount, minRewardPercent }) => {
+const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskReward, onSelectStrategy, onTrade, maxRiskAmount, minRewardAmount }) => {
   if (!spreads || spreads.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No {type} spreads available</p>;
   }
@@ -536,12 +536,12 @@ const CreditSpreadTable = ({ spreads, type, currentPrice, minCredit, maxRiskRewa
     return <p className="text-zinc-500 text-center py-8">Loading price data...</p>;
   }
 
-  // Calculate contracts and reward % for position sizing
+  // Calculate contracts and check reward threshold
   const calculatePositionSize = (maxLoss, maxProfit) => {
     const contracts = Math.floor(maxRiskAmount / maxLoss);
-    const rewardPct = maxLoss > 0 ? (maxProfit / maxLoss) * 100 : 0;
-    const meetsReward = rewardPct >= minRewardPercent;
-    return { contracts: Math.max(1, contracts), rewardPct, meetsReward };
+    const totalReward = maxProfit * contracts;
+    const meetsReward = totalReward >= minRewardAmount;
+    return { contracts: Math.max(1, contracts), totalReward, meetsReward };
   };
 
   // Apply filters
