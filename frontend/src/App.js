@@ -1363,6 +1363,11 @@ function App() {
   const [closeDialog, setCloseDialog] = useState({ open: false, position: null });
   const [closePrice, setClosePrice] = useState("");
 
+  // Position sizing state
+  const [accountSize, setAccountSize] = useState(50000);  // Default $50,000
+  const [riskPercent, setRiskPercent] = useState(2);  // Default 2% risk per trade
+  const [showPositionSizing, setShowPositionSizing] = useState(false);
+
   // Collapsed sections state
   const [collapsedSections, setCollapsedSections] = useState({
     optionsChain: false,
