@@ -138,7 +138,8 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
                     probability_profit=round(prob_profit, 1)
                 ))
         
-        iron_condors.sort(key=lambda x: x.probability_profit or 0, reverse=True)
+        # Sort by net credit (highest first)
+        iron_condors.sort(key=lambda x: x.net_credit, reverse=True)
         
         logger.info(f"Iron Condors fetched for {symbol}: {len(iron_condors)} combinations")
         
@@ -147,7 +148,7 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
             expiration=expiration,
             current_price=round(current_price, 2),
             spread_width=spread,
-            iron_condors=iron_condors[:20]
+            iron_condors=iron_condors[:30]
         )
         
     except HTTPException:
