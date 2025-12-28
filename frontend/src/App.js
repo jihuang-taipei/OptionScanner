@@ -2249,13 +2249,34 @@ function App() {
                   Profit if {symbol} stays within the profit zone at expiration.
                 </p>
 
-            {ironCondors && (
-              <div className="mb-4 flex gap-4 text-sm">
-                <span className="text-zinc-400">{symbol}: <span className="text-white font-mono">${ironCondors.current_price?.toLocaleString()}</span></span>
-                <span className="text-zinc-400">Exp: <span className="text-white">{new Date(ironCondors.expiration).toLocaleDateString()}</span></span>
-                <span className="text-zinc-400">Found: <span className="text-white">{ironCondors.iron_condors?.length || 0}</span></span>
-              </div>
-            )}
+                {/* P(Profit) Filter */}
+                <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-zinc-900/50 rounded-lg border border-zinc-800">
+                  <div className="flex items-center gap-2">
+                    <label className="text-zinc-400 text-sm">Min P(Profit):</label>
+                    <Select value={minProfitProb.toString()} onValueChange={(v) => setMinProfitProb(parseInt(v))}>
+                      <SelectTrigger className="w-24 bg-zinc-800 border-zinc-700 text-white text-sm h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-zinc-900 border-zinc-800">
+                        <SelectItem value="0" className="text-white hover:bg-zinc-800">All</SelectItem>
+                        <SelectItem value="10" className="text-white hover:bg-zinc-800">&gt;10%</SelectItem>
+                        <SelectItem value="25" className="text-white hover:bg-zinc-800">&gt;25%</SelectItem>
+                        <SelectItem value="50" className="text-white hover:bg-zinc-800">&gt;50%</SelectItem>
+                        <SelectItem value="75" className="text-white hover:bg-zinc-800">&gt;75%</SelectItem>
+                        <SelectItem value="85" className="text-white hover:bg-zinc-800">&gt;85%</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {ironCondors && (
+                    <span className="text-zinc-500 text-xs">
+                      {symbol}: <span className="text-white font-mono">${ironCondors.current_price?.toLocaleString()}</span>
+                      <span className="text-zinc-600 mx-2">|</span>
+                      Exp: <span className="text-white">{new Date(ironCondors.expiration).toLocaleDateString()}</span>
+                      <span className="text-zinc-600 mx-2">|</span>
+                      Found: <span className="text-white">{ironCondors.iron_condors?.length || 0}</span>
+                    </span>
+                  )}
+                </div>
 
                 <div className="max-h-96 overflow-y-auto">
                   {isLoadingCondors ? (
