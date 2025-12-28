@@ -105,6 +105,10 @@ async def get_iron_condors(symbol: str = "^SPX", expiration: str = None, spread:
         iron_condors = []
         for bp in bull_puts:
             for bc in bear_calls:
+                # Valid Iron Condor: short call strike must be higher than short put strike
+                if bc['sell_strike'] <= bp['sell_strike']:
+                    continue
+                
                 net_credit = bp['credit'] + bc['credit']
                 max_profit = net_credit * 100
                 max_loss = (spread - net_credit) * 100
