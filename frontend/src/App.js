@@ -827,7 +827,7 @@ const IronCondorTable = memo(({ condors, currentPrice, minCredit, maxRiskReward,
       </table>
     </div>
   );
-};
+});
 
 // Iron Butterfly Table Component
 const IronButterflyTable = memo(({ butterflies, currentPrice, minCredit, maxRiskReward, centerRange, onSelectStrategy, onTrade, maxRiskAmount, minRewardAmount }) => {
