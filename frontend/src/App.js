@@ -67,7 +67,7 @@ const useDebounce = (value, delay) => {
 };
 
 // P/L Chart Tooltip
-const PLTooltip = ({ active, payload, label }) => {
+const PLTooltip = memo(({ active, payload, label }) => {
   if (active && payload && payload.length) {
     const pl = payload[0].value;
     return (
@@ -80,7 +80,7 @@ const PLTooltip = ({ active, payload, label }) => {
     );
   }
   return null;
-};
+});
 
 // P/L Chart Component
 const PLChart = memo(({ strategy, currentPrice, onClose }) => {
