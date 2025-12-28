@@ -2807,7 +2807,6 @@ function App() {
                         key={exp} 
                         value={exp} 
                         className="text-white hover:bg-zinc-800"
-                        disabled={exp === farExpiration}
                       >
                         {new Date(exp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </SelectItem>
@@ -2820,12 +2819,14 @@ function App() {
                     <SelectValue placeholder="Select date" />
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-900 border-zinc-800">
-                    {expirations.slice(1, 12).map((exp) => (
+                    {expirations
+                      .filter((exp) => new Date(exp) > new Date(selectedExpiration))
+                      .slice(0, 10)
+                      .map((exp) => (
                       <SelectItem 
                         key={exp} 
                         value={exp} 
                         className="text-white hover:bg-zinc-800"
-                        disabled={exp === selectedExpiration}
                       >
                         {new Date(exp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </SelectItem>
