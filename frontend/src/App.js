@@ -1807,14 +1807,21 @@ function App() {
     }
   }, [selectedExpiration, fetchOptionsChain, fetchCreditSpreads, fetchIronCondors, fetchIronButterflies, fetchStraddles, fetchStrangles, spreadWidth, wingWidth]);
 
-  // Set far expiration when expirations are loaded (pick a later one)
+  // Set far expiration to date after near expiration
   useEffect(() => {
-    if (expirations.length > 2 && !farExpiration) {
-      // Pick an expiration that's a few weeks after the first one
-      const farIndex = Math.min(3, expirations.length - 1);
-      setFarExpiration(expirations[farIndex]);
+    if (expirations.length > 1 && selectedExpiration) {
+      const nearIndex = expirations.indexOf(selectedExpiration);
+      if (nearIndex >= 0 && nearIndex < expirations.length - 1) {
+        // Set far to the next available date after near
+        const nextFarIndex = nearIndex + 1;
+        // Only update if current far is not after near or not set
+        const farIndex = expirations.indexOf(farExpiration);
+        if (!farExpiration || farIndex <= nearIndex) {
+          setFarExpiration(expirations[nextFarIndex]);
+        }
+      }
     }
-  }, [expirations, farExpiration]);
+  }, [expirations, selectedExpiration]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch calendar spreads when both expirations are set
   useEffect(() => {
