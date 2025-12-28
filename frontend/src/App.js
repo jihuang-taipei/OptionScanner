@@ -1822,6 +1822,42 @@ function App() {
           </div>
         </header>
 
+        {/* Position Sizing Settings Bar */}
+        <div className="glass-card p-4 mb-6 flex flex-wrap items-center gap-6">
+          <div className="flex items-center gap-2">
+            <Calculator className="w-5 h-5 text-purple-400" />
+            <span className="text-zinc-300 font-medium">Position Sizing</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-zinc-400 text-sm">Max Risk $</label>
+            <Input
+              type="number"
+              min="100"
+              max="100000"
+              step="100"
+              value={maxRiskAmount}
+              onChange={(e) => setMaxRiskAmount(Math.max(100, parseInt(e.target.value) || 1000))}
+              className="w-24 bg-zinc-800 border-zinc-700 text-white text-sm h-8 text-center font-mono"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-zinc-400 text-sm">Min Reward %</label>
+            <Input
+              type="number"
+              min="0"
+              max="500"
+              step="5"
+              value={minRewardPercent}
+              onChange={(e) => setMinRewardPercent(Math.max(0, parseInt(e.target.value) || 30))}
+              className="w-20 bg-zinc-800 border-zinc-700 text-white text-sm h-8 text-center font-mono"
+            />
+          </div>
+          <div className="text-zinc-500 text-xs">
+            <span className="text-zinc-400">Contracts</span> = Max Risk ÷ Max Loss per contract | 
+            <span className="text-green-400 ml-2">✓ Reward ≥ {minRewardPercent}%</span>
+          </div>
+        </div>
+
         {error && (
           <div className="glass-card border-red-500/30 bg-red-500/10 p-4 mb-6 text-red-400">
             {error}
