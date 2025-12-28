@@ -1163,7 +1163,7 @@ const StrangleTable = ({ strangles, currentPrice, strikeRange, onSelectStrategy,
 };
 
 // Calendar Spread Table Component
-const CalendarSpreadTable = ({ spreads, currentPrice, onTrade, nearExpiration, farExpiration }) => {
+const CalendarSpreadTable = ({ spreads, currentPrice, strikeRange, onTrade, nearExpiration, farExpiration }) => {
   if (!spreads || spreads.length === 0) {
     return <p className="text-zinc-500 text-center py-8">No Calendar Spreads available</p>;
   }
@@ -1172,10 +1172,28 @@ const CalendarSpreadTable = ({ spreads, currentPrice, onTrade, nearExpiration, f
     return <p className="text-zinc-500 text-center py-8">Loading price data...</p>;
   }
 
+  // Apply strike range filter
+  const rangePct = strikeRange / 100;
+  const minStrike = currentPrice * (1 - rangePct);
+  const maxStrike = currentPrice * (1 + rangePct);
+  
+  const filteredSpreads = spreads.filter(cs => 
+    cs.strike >= minStrike && cs.strike <= maxStrike
+  );
+
+  if (filteredSpreads.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-zinc-500">No Calendar Spreads match your filter</p>
+        <p className="text-zinc-600 text-sm mt-1">Try increasing the strike range %</p>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-x-auto">
       <div className="text-xs text-zinc-500 mb-2">
-        Showing {spreads.length} calendar spreads (sorted by distance from ATM)
+        Showing {filteredSpreads.length} of {spreads.length} calendar spreads
       </div>
       <table className="w-full text-sm">
         <thead>
@@ -1194,7 +1212,7 @@ const CalendarSpreadTable = ({ spreads, currentPrice, onTrade, nearExpiration, f
           </tr>
         </thead>
         <tbody>
-          {spreads.map((cs, idx) => (
+          {filteredSpreads.map((cs, idx) => (
             <tr 
               key={idx} 
               className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors ${Math.abs(cs.distance_from_spot) < 0.5 ? 'bg-blue-500/5' : ''}`}
