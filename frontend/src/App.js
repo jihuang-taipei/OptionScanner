@@ -3064,8 +3064,9 @@ function App() {
                                 <button
                                   onClick={() => {
                                     setCloseDialog({ open: true, position: pos });
-                                    // Default to empty so user enters actual exit price
-                                    setClosePrice("");
+                                    // Auto-fill exit price with current strategy quote
+                                    const currentPrice = calculateCurrentStrategyPrice(pos);
+                                    setClosePrice(currentPrice !== null ? Math.abs(currentPrice).toFixed(2) : "");
                                   }}
                                   className="text-amber-400 hover:text-amber-300"
                                   title="Close Position"
