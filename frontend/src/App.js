@@ -3028,6 +3028,7 @@ function App() {
                         <th className="text-left py-3 px-2">Strategy</th>
                         <th className="text-left py-3 px-2">Expiration</th>
                         <th className="text-right py-3 px-2">Entry</th>
+                        <th className="text-right py-3 px-2">Current</th>
                         <th className="text-right py-3 px-2">Qty</th>
                         <th className="text-right py-3 px-2">P/L</th>
                         <th className="text-center py-3 px-2">Status</th>
@@ -3035,7 +3036,13 @@ function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {positions.map((pos) => (
+                      {positions.map((pos) => {
+                        const currentPrice = pos.status === 'open' ? calculateCurrentStrategyPrice(pos) : null;
+                        const unrealizedPnL = currentPrice !== null 
+                          ? (pos.entry_price - Math.abs(currentPrice)) * pos.quantity * 100 
+                          : null;
+                        
+                        return (
                         <tr key={pos.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
                           <td className="py-3 px-2 font-mono text-white">{pos.symbol}</td>
                           <td className="py-3 px-2">
@@ -3044,11 +3051,25 @@ function App() {
                           </td>
                           <td className="py-3 px-2 text-zinc-400">{new Date(pos.expiration).toLocaleDateString()}</td>
                           <td className="py-3 px-2 text-right font-mono text-green-400">${pos.entry_price.toFixed(2)}</td>
+                          <td className="py-3 px-2 text-right font-mono text-cyan-400">
+                            {pos.status === 'open' && currentPrice !== null 
+                              ? `$${Math.abs(currentPrice).toFixed(2)}`
+                              : '-'
+                            }
+                          </td>
                           <td className="py-3 px-2 text-right text-white">{pos.quantity}</td>
-                          <td className={`py-3 px-2 text-right font-mono ${pos.status === 'closed' ? (pos.realized_pnl >= 0 ? 'text-green-400' : 'text-red-400') : 'text-zinc-400'}`}>
+                          <td className={`py-3 px-2 text-right font-mono ${
+                            pos.status === 'closed' 
+                              ? (pos.realized_pnl >= 0 ? 'text-green-400' : 'text-red-400')
+                              : unrealizedPnL !== null
+                                ? (unrealizedPnL >= 0 ? 'text-green-400' : 'text-red-400')
+                                : 'text-zinc-400'
+                          }`}>
                             {pos.status === 'closed' 
                               ? `$${pos.realized_pnl?.toFixed(2) || '0.00'}`
-                              : '-'
+                              : unrealizedPnL !== null
+                                ? `${unrealizedPnL >= 0 ? '+' : ''}$${unrealizedPnL.toFixed(2)}`
+                                : '-'
                             }
                           </td>
                           <td className="py-3 px-2 text-center">
