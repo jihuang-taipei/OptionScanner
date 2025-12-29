@@ -10,6 +10,7 @@ class PositionLeg(BaseModel):
     strike: float
     price: float
     quantity: int = 1
+    expiration: Optional[str] = None  # For calendar spreads where legs have different expirations
 
 
 class PositionCreate(BaseModel):
