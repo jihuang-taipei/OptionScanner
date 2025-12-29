@@ -2082,7 +2082,7 @@ function App() {
                             <div className="text-sm">{new Date(pos.opened_at).toLocaleDateString()}</div>
                             <div className="text-xs text-zinc-500">{new Date(pos.opened_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
                           </td>
-                          <td className="py-3 px-2 text-zinc-400">{new Date(pos.expiration).toLocaleDateString()}</td>
+                          <td className="py-3 px-2 text-zinc-400">{formatExpDate(pos.expiration, { includeYear: true })}</td>
                           <td className={`py-3 px-2 text-right font-mono ${isDebitStrategy ? 'text-red-400' : 'text-green-400'}`}>
                             {isDebitStrategy ? `-$${Math.abs(pos.entry_price).toFixed(2)}` : `$${pos.entry_price.toFixed(2)}`}
                           </td>
