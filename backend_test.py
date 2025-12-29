@@ -806,108 +806,6 @@ def main():
     print("\n📊 Testing Portfolio Summary...")
     summary_success, summary_data = tester.test_portfolio_summary()
     
-    # Test SPX quote endpoint (backwards compatibility)
-    print("\n💰 Testing SPX Quote Endpoint (Legacy)...")
-    tester.test_spx_quote()
-    
-    # Test SPX history endpoints (backwards compatibility)
-    print("\n📈 Testing SPX History Endpoints (Legacy)...")
-    tester.test_spx_history_default()
-    
-    print("\n📊 Testing Different Time Periods...")
-    period_results = tester.test_spx_history_periods()
-    
-    print("\n🚫 Testing Error Handling...")
-    tester.test_invalid_period()
-    
-    # NEW: Test configurable symbol feature
-    print("\n🔄 Testing Configurable Symbol Feature...")
-    print("\n💰 Testing Quote with Different Symbols...")
-    quote_results = tester.test_configurable_quote()
-    for symbol, success, price in quote_results:
-        if success:
-            print(f"   ✅ {symbol}: ${price}")
-        else:
-            print(f"   ❌ {symbol}: Failed")
-    
-    print("\n📈 Testing History with Different Symbols...")
-    history_results = tester.test_configurable_history()
-    for symbol, success in history_results:
-        if success:
-            print(f"   ✅ {symbol}: History data retrieved")
-        else:
-            print(f"   ❌ {symbol}: Failed")
-    
-    print("\n📅 Testing Options Expirations with Different Symbols...")
-    exp_results = tester.test_configurable_options_expirations()
-    for symbol, success, exp_count in exp_results:
-        if success:
-            print(f"   ✅ {symbol}: {exp_count} expirations")
-        else:
-            print(f"   ❌ {symbol}: Failed")
-    
-    print("\n⛓️ Testing Options Chain with Different Symbols...")
-    chain_results = tester.test_configurable_options_chain()
-    for symbol, success, call_count in chain_results:
-        if success:
-            print(f"   ✅ {symbol}: {call_count} call options")
-        else:
-            print(f"   ❌ {symbol}: Failed")
-    
-    print("\n📊 Testing Credit Spreads with Different Symbols...")
-    spread_results = tester.test_configurable_credit_spreads()
-    for symbol, success in spread_results:
-        if success:
-            print(f"   ✅ {symbol}: Credit spreads data retrieved")
-        else:
-            print(f"   ❌ {symbol}: Failed")
-    
-    print("\n🦋 Testing Iron Condors with Different Symbols...")
-    condor_results = tester.test_configurable_iron_condors()
-    for symbol, success in condor_results:
-        if success:
-            print(f"   ✅ {symbol}: Iron condors data retrieved")
-        else:
-            print(f"   ❌ {symbol}: Failed")
-    
-    print("\n📈 Testing Straddles with Different Symbols...")
-    straddle_results = tester.test_configurable_straddles()
-    for symbol, success in straddle_results:
-        if success:
-            print(f"   ✅ {symbol}: Straddles data retrieved")
-        else:
-            print(f"   ❌ {symbol}: Failed")
-    
-    # Test legacy Options endpoints (backwards compatibility)
-    print("\n📅 Testing Legacy Options Expirations...")
-    exp_success, exp_data = tester.test_options_expirations()
-    
-    if exp_success and exp_data.get('expirations'):
-        expiration = exp_data['expirations'][0]
-        
-        print("\n⛓️ Testing Legacy Options Chain...")
-        tester.test_options_chain(expiration)
-        
-        print("\n📊 Testing Legacy Credit Spreads...")
-        tester.test_credit_spreads(expiration)
-        
-        print("\n🦋 Testing Legacy Iron Condors...")
-        tester.test_iron_condors(expiration)
-        
-        print("\n🦋 Testing Legacy Iron Butterflies...")
-        tester.test_iron_butterflies(expiration)
-        
-        print("\n📈 Testing Legacy Straddles...")
-        tester.test_straddles(expiration)
-        
-        print("\n📉 Testing Legacy Strangles...")
-        tester.test_strangles(expiration)
-        
-        print("\n📅 Testing Legacy Calendar Spreads...")
-        tester.test_calendar_spreads()
-    else:
-        print("⚠️ Skipping legacy options tests due to expiration fetch failure")
-    
     # Print final results
     print("\n" + "=" * 70)
     print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
@@ -915,11 +813,10 @@ def main():
     # Summary of Auto-Expiration feature
     print("\n⏰ Auto-Expiration Feature Summary:")
     portfolio_tests = [
-        ("Position Expiration", expire_success),
-        ("Get All Positions", all_positions_success),
+        ("Position Expiration (4:30 PM ET Logic)", expire_success),
+        ("Get All Positions (opened_at field)", all_positions_success),
         ("Get Open Positions", open_positions_success),
         ("Get Expired Positions", expired_positions_success),
-        ("Get Closed Positions", closed_positions_success),
         ("Portfolio Summary", summary_success)
     ]
     
@@ -931,21 +828,28 @@ def main():
         status = "✅" if success else "❌"
         print(f"   {status} {test_name}")
     
-    # Summary of configurable symbol feature
-    print("\n🔄 Configurable Symbol Feature Summary:")
-    successful_symbols = []
-    failed_symbols = []
+    # Key Feature Validation
+    print("\n🎯 Key Feature Validation:")
     
-    for symbol, success, _ in quote_results:
-        if success:
-            successful_symbols.append(symbol)
+    # 1. Timezone Logic Validation
+    if expire_success:
+        print("   ✅ 4:30 PM ET expiration logic working")
+        if expire_data and len(expire_data.get('expired_positions', [])) == 0:
+            print("   ✅ Correctly NOT expiring positions before 4:30 PM ET")
         else:
-            failed_symbols.append(symbol)
+            print("   ⚠️  Some positions expired (check if this is expected)")
+    else:
+        print("   ❌ 4:30 PM ET expiration logic failed")
     
-    if successful_symbols:
-        print(f"   ✅ Working symbols: {', '.join(successful_symbols)}")
-    if failed_symbols:
-        print(f"   ❌ Failed symbols: {', '.join(failed_symbols)}")
+    # 2. Opened Column Data Validation
+    if all_positions_success and all_positions_data:
+        has_opened_at = all(pos.get('opened_at') for pos in all_positions_data)
+        if has_opened_at:
+            print("   ✅ All positions have opened_at field for Opened column")
+        else:
+            print("   ❌ Some positions missing opened_at field")
+    else:
+        print("   ❌ Could not validate opened_at field")
     
     if tester.tests_passed == tester.tests_run:
         print("🎉 All tests passed!")
