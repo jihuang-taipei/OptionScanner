@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, memo, useMemo } from "react";
 import "@/App.css";
 import axios from "axios";
 import { RefreshCw, TrendingUp, TrendingDown, Activity, BarChart3, ArrowUpRight, ArrowDownRight, Clock, ChevronDown, ChevronRight, Table2, Calculator, Plus, Trash2, X, Layers, Triangle, ArrowLeftRight, LineChart as LineChartIcon, Download, Calendar, Briefcase, DollarSign, CheckCircle, XCircle } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, ReferenceLine, ComposedChart } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,6 +28,20 @@ import {
   DialogDescription,
 } from "./components/ui/dialog";
 import { Input } from "./components/ui/input";
+
+// Import refactored components
+import { StatCard, PeriodButton } from "./components/common";
+import { PLChart, CustomTooltip } from "./components/charts";
+import {
+  OptionsTable,
+  CreditSpreadTable,
+  IronCondorTable,
+  IronButterflyTable,
+  StraddleTable,
+  StrangleTable,
+  CalendarSpreadTable,
+  GeneratedSpreadsTable,
+} from "./components/tables";
 
 // Import utilities and constants from modular structure
 import { API, REFRESH_INTERVALS, POPULAR_SYMBOLS } from "./utils/constants";
