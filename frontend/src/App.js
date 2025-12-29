@@ -559,10 +559,11 @@ const CreditSpreadTable = memo(({ spreads, type, currentPrice, minCredit, maxRis
     return { contracts: Math.max(1, contracts), totalReward, meetsReward };
   };
 
-  // Apply filters
+  // Apply filters including P(OTM)
   const filteredSpreads = spreads.filter(spread => 
     spread.net_credit >= minCredit && 
-    spread.risk_reward_ratio <= maxRiskReward
+    spread.risk_reward_ratio <= maxRiskReward &&
+    (spread.probability_otm || 0) >= minProbOTM
   );
 
   const isBullPut = type === "Bull Put";
