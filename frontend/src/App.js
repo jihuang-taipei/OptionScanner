@@ -490,9 +490,17 @@ function App() {
   const fetchExpirations = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/options/expirations?symbol=${symbol}`);
-      setExpirations(response.data.expirations);
-      if (response.data.expirations.length > 0 && !selectedExpiration) {
-        setSelectedExpiration(response.data.expirations[0]);
+      // Client-side filtering: remove any expired dates (dates before today)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const validExpirations = response.data.expirations.filter(exp => {
+        const [year, month, day] = exp.split('-').map(Number);
+        const expDate = new Date(year, month - 1, day);
+        return expDate >= today;
+      });
+      setExpirations(validExpirations);
+      if (validExpirations.length > 0 && !selectedExpiration) {
+        setSelectedExpiration(validExpirations[0]);
       }
     } catch (e) {
       console.error(`Error fetching ${symbol} options expirations:`, e);
