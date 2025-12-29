@@ -167,6 +167,13 @@ function App() {
   const intervalRef = useRef(null);
   const countdownRef = useRef(null);
   
+  // Memoized candlestick shape renderer
+  const candlestickShape = useMemo(() => {
+    if (history.length === 0) return null;
+    const yAxisDomain = [Math.min(...history.map(d => d.low)), Math.max(...history.map(d => d.high))];
+    return createCandlestickShape(yAxisDomain);
+  }, [history]);
+  
   // Options chain state
   const [expirations, setExpirations] = useState([]);
   const [selectedExpiration, setSelectedExpiration] = useState("");
