@@ -93,7 +93,7 @@ function App() {
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  const [autoRefreshInterval, setAutoRefreshInterval] = useState(0);
+  const [autoRefreshInterval, setAutoRefreshInterval] = useState(60); // Default: 1 minute
   const [countdown, setCountdown] = useState(0);
   const intervalRef = useRef(null);
   const countdownRef = useRef(null);
