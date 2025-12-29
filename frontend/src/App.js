@@ -3066,6 +3066,7 @@ function App() {
                       <tr className="border-b border-zinc-800 text-zinc-400">
                         <th className="text-left py-3 px-2">Symbol</th>
                         <th className="text-left py-3 px-2">Strategy</th>
+                        <th className="text-left py-3 px-2">Opened</th>
                         <th className="text-left py-3 px-2">Expiration</th>
                         <th className="text-right py-3 px-2">Entry</th>
                         <th className="text-right py-3 px-2">Current/Exit</th>
