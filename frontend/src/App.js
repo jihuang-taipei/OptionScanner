@@ -2432,6 +2432,7 @@ function App() {
                           currentPrice={creditSpreads?.current_price}
                           minCredit={minCredit}
                           maxRiskReward={maxRiskReward}
+                          minProbOTM={minProbOTM}
                           onSelectStrategy={handleSelectStrategy}
                           onTrade={handleTrade}
                           maxRiskAmount={maxRiskAmount}
@@ -2456,6 +2457,7 @@ function App() {
                           currentPrice={creditSpreads?.current_price}
                           minCredit={minCredit}
                           maxRiskReward={maxRiskReward}
+                          minProbOTM={minProbOTM}
                           onSelectStrategy={handleSelectStrategy}
                           onTrade={handleTrade}
                           maxRiskAmount={maxRiskAmount}
