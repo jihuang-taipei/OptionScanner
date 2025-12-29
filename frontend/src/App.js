@@ -922,11 +922,11 @@ function App() {
                 {/* Chart Type Selector */}
                 <div className="flex gap-1 bg-zinc-900/50 p-1 rounded-lg">
                   <button
-                    onClick={() => setChartType("area")}
-                    className={`p-1.5 rounded transition-colors ${chartType === "area" ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-white"}`}
-                    title="Area Chart"
+                    onClick={() => setChartType("bollinger")}
+                    className={`p-1.5 rounded transition-colors ${chartType === "bollinger" ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-white"}`}
+                    title="Bollinger Bands"
                   >
-                    <TrendingUp className="w-4 h-4" />
+                    <Activity className="w-4 h-4" />
                   </button>
                   <button
                     onClick={() => setChartType("line")}
