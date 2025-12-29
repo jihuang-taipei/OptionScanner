@@ -80,25 +80,28 @@ const useDebounce = (value, delay) => {
   return debouncedValue;
 };
 
-// Calculate Bollinger Bands
+// Calculate Bollinger Bands with adaptive period
 const calculateBollingerBands = (data, period = 20, multiplier = 2) => {
-  if (!data || data.length < period) return data;
+  if (!data || data.length === 0) return data;
+  
+  // Adjust period based on data length (min 5, max 20)
+  const effectivePeriod = Math.min(period, Math.max(5, Math.floor(data.length / 3)));
   
   return data.map((item, index) => {
-    if (index < period - 1) {
+    if (index < effectivePeriod - 1) {
       return { ...item, sma: null, upperBand: null, lowerBand: null };
     }
     
-    // Get last 'period' closing prices
-    const slice = data.slice(index - period + 1, index + 1);
+    // Get last 'effectivePeriod' closing prices
+    const slice = data.slice(index - effectivePeriod + 1, index + 1);
     const closes = slice.map(d => d.close);
     
     // Calculate SMA
-    const sma = closes.reduce((sum, val) => sum + val, 0) / period;
+    const sma = closes.reduce((sum, val) => sum + val, 0) / effectivePeriod;
     
     // Calculate Standard Deviation
     const squaredDiffs = closes.map(val => Math.pow(val - sma, 2));
-    const avgSquaredDiff = squaredDiffs.reduce((sum, val) => sum + val, 0) / period;
+    const avgSquaredDiff = squaredDiffs.reduce((sum, val) => sum + val, 0) / effectivePeriod;
     const stdDev = Math.sqrt(avgSquaredDiff);
     
     // Calculate bands
