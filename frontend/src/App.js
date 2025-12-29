@@ -3113,7 +3113,7 @@ function App() {
                           }`}>
                             {pos.status === 'open' && closePrice !== null 
                               ? (closePrice > 0 ? `-$${closePrice.toFixed(2)}` : `$${Math.abs(closePrice).toFixed(2)}`)
-                              : pos.status === 'closed' && pos.exit_price !== null
+                              : (pos.status === 'closed' || pos.status === 'expired') && pos.exit_price !== null
                                 ? (isDebitStrategy 
                                     ? `$${Math.abs(pos.exit_price).toFixed(2)}`
                                     : `-$${Math.abs(pos.exit_price).toFixed(2)}`)
@@ -3122,13 +3122,13 @@ function App() {
                           </td>
                           <td className="py-3 px-2 text-right text-white">{pos.quantity}</td>
                           <td className={`py-3 px-2 text-right font-mono ${
-                            pos.status === 'closed' 
+                            (pos.status === 'closed' || pos.status === 'expired')
                               ? (pos.realized_pnl >= 0 ? 'text-green-400' : 'text-red-400')
                               : unrealizedPnL !== null
                                 ? (unrealizedPnL >= 0 ? 'text-green-400' : 'text-red-400')
                                 : 'text-zinc-400'
                           }`}>
-                            {pos.status === 'closed' 
+                            {(pos.status === 'closed' || pos.status === 'expired')
                               ? `$${pos.realized_pnl?.toFixed(2) || '0.00'}`
                               : unrealizedPnL !== null
                                 ? `${unrealizedPnL >= 0 ? '+' : ''}$${unrealizedPnL.toFixed(2)}`
