@@ -3036,8 +3036,8 @@ function App() {
                                 <button
                                   onClick={() => {
                                     setCloseDialog({ open: true, position: pos });
-                                    // Auto-fill exit price with current quote price
-                                    setClosePrice(quote?.price ? quote.price.toFixed(2) : pos.entry_price.toString());
+                                    // Default to empty so user enters actual exit price
+                                    setClosePrice("");
                                   }}
                                   className="text-amber-400 hover:text-amber-300"
                                   title="Close Position"
