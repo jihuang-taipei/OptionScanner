@@ -428,6 +428,11 @@ function App() {
   const calculateCurrentStrategyPrice = useCallback((position) => {
     if (!optionsChain || !position?.legs) return null;
     
+    // Calendar spreads have legs with different expirations - can't calculate from single chain
+    if (position.strategy_type === 'calendar_spread') {
+      return null; // Return null to indicate N/A for calendar spreads
+    }
+    
     const { calls, puts } = optionsChain;
     if (!calls || !puts) return null;
     
