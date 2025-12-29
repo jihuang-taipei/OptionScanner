@@ -80,6 +80,77 @@ const useDebounce = (value, delay) => {
   return debouncedValue;
 };
 
+// Calculate Bollinger Bands
+const calculateBollingerBands = (data, period = 20, multiplier = 2) => {
+  if (!data || data.length < period) return data;
+  
+  return data.map((item, index) => {
+    if (index < period - 1) {
+      return { ...item, sma: null, upperBand: null, lowerBand: null };
+    }
+    
+    // Get last 'period' closing prices
+    const slice = data.slice(index - period + 1, index + 1);
+    const closes = slice.map(d => d.close);
+    
+    // Calculate SMA
+    const sma = closes.reduce((sum, val) => sum + val, 0) / period;
+    
+    // Calculate Standard Deviation
+    const squaredDiffs = closes.map(val => Math.pow(val - sma, 2));
+    const avgSquaredDiff = squaredDiffs.reduce((sum, val) => sum + val, 0) / period;
+    const stdDev = Math.sqrt(avgSquaredDiff);
+    
+    // Calculate bands
+    const upperBand = sma + (multiplier * stdDev);
+    const lowerBand = sma - (multiplier * stdDev);
+    
+    return {
+      ...item,
+      sma: Math.round(sma * 100) / 100,
+      upperBand: Math.round(upperBand * 100) / 100,
+      lowerBand: Math.round(lowerBand * 100) / 100
+    };
+  });
+};
+
+// Bollinger Bands Tooltip
+const BollingerTooltip = memo(({ active, payload, label }) => {
+  if (active && payload && payload.length > 0) {
+    const data = payload[0].payload;
+    let displayLabel = label;
+    if (label && label.includes(' ')) {
+      const [datePart, timePart] = label.split(' ');
+      const date = new Date(datePart);
+      displayLabel = `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${timePart}`;
+    } else if (label) {
+      const date = new Date(label);
+      displayLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    
+    return (
+      <div className="bg-zinc-900 border border-white/10 rounded-lg p-3 text-sm">
+        <p className="text-zinc-400 mb-2">{displayLabel}</p>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono">
+          <span className="text-zinc-500">Price:</span>
+          <span className="text-white">${data.close?.toLocaleString()}</span>
+          {data.upperBand && (
+            <>
+              <span className="text-zinc-500">Upper:</span>
+              <span className="text-purple-400">${data.upperBand?.toLocaleString()}</span>
+              <span className="text-zinc-500">SMA(20):</span>
+              <span className="text-amber-400">${data.sma?.toLocaleString()}</span>
+              <span className="text-zinc-500">Lower:</span>
+              <span className="text-purple-400">${data.lowerBand?.toLocaleString()}</span>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+  return null;
+});
+
 // OHLC Tooltip for Candlestick Chart
 const OHLCTooltip = memo(({ active, payload, label }) => {
   if (active && payload && payload.length > 0) {
