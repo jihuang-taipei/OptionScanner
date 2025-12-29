@@ -745,8 +745,8 @@ class SPXAPITester:
         return True
 
 def main():
-    print("🚀 Starting SPX Finance API Tests - Configurable Symbol Feature")
-    print("=" * 60)
+    print("🚀 Starting Options Scanner API Tests - Auto-Expiration Feature Focus")
+    print("=" * 70)
     
     # Setup
     tester = SPXAPITester()
@@ -754,6 +754,26 @@ def main():
     # Run basic connectivity test
     print("\n📡 Testing Basic Connectivity...")
     tester.test_basic_connectivity()
+    
+    # NEW: Test Portfolio/Position Management (Auto-Expiration Feature)
+    print("\n💼 Testing Portfolio Management - Auto-Expiration Feature...")
+    print("\n⏰ Testing Position Expiration...")
+    expire_success, expire_data = tester.test_positions_expire()
+    
+    print("\n📋 Testing Get All Positions...")
+    all_positions_success, all_positions_data = tester.test_get_all_positions()
+    
+    print("\n🟢 Testing Get Open Positions...")
+    open_positions_success, open_positions_data = tester.test_get_open_positions()
+    
+    print("\n🟡 Testing Get Expired Positions...")
+    expired_positions_success, expired_positions_data = tester.test_get_expired_positions()
+    
+    print("\n🔴 Testing Get Closed Positions...")
+    closed_positions_success, closed_positions_data = tester.test_get_closed_positions()
+    
+    print("\n📊 Testing Portfolio Summary...")
+    summary_success, summary_data = tester.test_portfolio_summary()
     
     # Test SPX quote endpoint (backwards compatibility)
     print("\n💰 Testing SPX Quote Endpoint (Legacy)...")
@@ -858,8 +878,27 @@ def main():
         print("⚠️ Skipping legacy options tests due to expiration fetch failure")
     
     # Print final results
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 70)
     print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
+    
+    # Summary of Auto-Expiration feature
+    print("\n⏰ Auto-Expiration Feature Summary:")
+    portfolio_tests = [
+        ("Position Expiration", expire_success),
+        ("Get All Positions", all_positions_success),
+        ("Get Open Positions", open_positions_success),
+        ("Get Expired Positions", expired_positions_success),
+        ("Get Closed Positions", closed_positions_success),
+        ("Portfolio Summary", summary_success)
+    ]
+    
+    portfolio_passed = sum(1 for _, success in portfolio_tests if success)
+    portfolio_total = len(portfolio_tests)
+    
+    print(f"   📈 Portfolio Tests: {portfolio_passed}/{portfolio_total} passed")
+    for test_name, success in portfolio_tests:
+        status = "✅" if success else "❌"
+        print(f"   {status} {test_name}")
     
     # Summary of configurable symbol feature
     print("\n🔄 Configurable Symbol Feature Summary:")
