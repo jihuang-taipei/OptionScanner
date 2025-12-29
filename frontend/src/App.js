@@ -1553,6 +1553,34 @@ function App() {
     }
   };
 
+  // Calculate current price for a strategy from options chain
+  const calculateCurrentStrategyPrice = useCallback((position) => {
+    if (!optionsChain || !position?.legs) return null;
+    
+    const { calls, puts } = optionsChain;
+    if (!calls || !puts) return null;
+    
+    let totalPrice = 0;
+    
+    for (const leg of position.legs) {
+      const optionList = leg.option_type === 'call' ? calls : puts;
+      const option = optionList.find(o => o.strike === leg.strike);
+      
+      if (!option) return null; // Option not found in current chain
+      
+      // Use mid price (average of bid and ask) or last price
+      const currentPrice = option.lastPrice || option.bid || 0;
+      
+      if (leg.action === 'sell') {
+        totalPrice += currentPrice; // Credit received
+      } else {
+        totalPrice -= currentPrice; // Debit paid
+      }
+    }
+    
+    return totalPrice;
+  }, [optionsChain]);
+
   // Delete a position
   const deletePosition = async (positionId) => {
     if (!window.confirm("Are you sure you want to delete this position?")) return;
