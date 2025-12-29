@@ -566,6 +566,127 @@ class SPXAPITester:
                 results.append((symbol, False))
         return results
 
+    # Portfolio/Position Testing Methods
+    def validate_positions_response(self, data):
+        """Validate positions response structure"""
+        if not isinstance(data, list):
+            print(f"   Positions should be a list, got {type(data)}")
+            return False
+        
+        if len(data) == 0:
+            print("   No positions found")
+            return True  # Empty list is valid
+        
+        # Validate first position structure
+        first_pos = data[0]
+        required_fields = ['id', 'symbol', 'strategy_type', 'strategy_name', 'status', 'entry_price', 'quantity']
+        
+        for field in required_fields:
+            if field not in first_pos:
+                print(f"   Missing field in position: {field}")
+                return False
+        
+        print(f"   Positions validation passed - {len(data)} positions found")
+        return True
+
+    def validate_expire_response(self, data):
+        """Validate expire positions response structure"""
+        required_fields = ['message', 'expired_positions']
+        
+        for field in required_fields:
+            if field not in data:
+                print(f"   Missing required field: {field}")
+                return False
+        
+        if not isinstance(data['expired_positions'], list):
+            print(f"   Expired positions should be a list, got {type(data['expired_positions'])}")
+            return False
+        
+        expired_count = len(data['expired_positions'])
+        print(f"   Expire validation passed - {expired_count} positions expired")
+        return True
+
+    def test_positions_expire(self):
+        """Test positions expire endpoint"""
+        return self.run_test(
+            "Expire Positions",
+            "POST",
+            "api/positions/expire",
+            200,
+            validate_response=self.validate_expire_response
+        )
+
+    def test_get_all_positions(self):
+        """Test get all positions endpoint"""
+        return self.run_test(
+            "Get All Positions",
+            "GET",
+            "api/positions",
+            200,
+            validate_response=self.validate_positions_response
+        )
+
+    def test_get_open_positions(self):
+        """Test get open positions only"""
+        return self.run_test(
+            "Get Open Positions",
+            "GET",
+            "api/positions",
+            200,
+            params={"status": "open"},
+            validate_response=self.validate_positions_response
+        )
+
+    def test_get_expired_positions(self):
+        """Test get expired positions only"""
+        return self.run_test(
+            "Get Expired Positions",
+            "GET",
+            "api/positions",
+            200,
+            params={"status": "expired"},
+            validate_response=self.validate_positions_response
+        )
+
+    def test_get_closed_positions(self):
+        """Test get closed positions only"""
+        return self.run_test(
+            "Get Closed Positions",
+            "GET",
+            "api/positions",
+            200,
+            params={"status": "closed"},
+            validate_response=self.validate_positions_response
+        )
+
+    def test_portfolio_summary(self):
+        """Test portfolio summary endpoint"""
+        def validate_summary(data):
+            required_fields = ['total_positions', 'open_positions', 'closed_positions', 
+                             'total_unrealized_pnl', 'total_realized_pnl', 'positions']
+            
+            for field in required_fields:
+                if field not in data:
+                    print(f"   Missing field in summary: {field}")
+                    return False
+            
+            if not isinstance(data['positions'], list):
+                print(f"   Positions should be a list, got {type(data['positions'])}")
+                return False
+            
+            print(f"   Summary validation passed - {data['total_positions']} total positions, "
+                  f"{data['open_positions']} open, {data['closed_positions']} closed/expired")
+            print(f"   Unrealized P/L: ${data['total_unrealized_pnl']}, Realized P/L: ${data['total_realized_pnl']}")
+            return True
+        
+        return self.run_test(
+            "Portfolio Summary",
+            "GET",
+            "api/portfolio/summary",
+            200,
+            validate_response=validate_summary
+        )
+
     def validate_options_expirations_symbol(self, data, expected_symbol):
         """Validate options expirations response for specific symbol"""
         required_fields = ['symbol', 'expirations']
