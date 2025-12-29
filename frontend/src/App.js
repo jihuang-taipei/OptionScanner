@@ -89,6 +89,7 @@ function App() {
   const [quote, setQuote] = useState(null);
   const [history, setHistory] = useState([]);
   const [period, setPeriod] = useState("1mo");
+  const [chartType, setChartType] = useState("area"); // area, line, candle
   const [isLoadingQuote, setIsLoadingQuote] = useState(true);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
