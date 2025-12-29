@@ -801,10 +801,15 @@ function App() {
                       tickLine={false}
                       tick={{ fill: '#52525b', fontSize: 12 }}
                       tickFormatter={(value) => {
+                        // Check if value contains time (intraday data)
+                        if (value && value.includes(' ')) {
+                          // Intraday format: "2025-12-29 14:30" -> "14:30"
+                          const timePart = value.split(' ')[1];
+                          return timePart;
+                        }
+                        // Daily format: "2025-12-29" -> "Dec 29"
                         const date = new Date(value);
-                        return period === '1d' || period === '5d' 
-                          ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-                          : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                       }}
                       interval="preserveStartEnd"
                       minTickGap={50}
