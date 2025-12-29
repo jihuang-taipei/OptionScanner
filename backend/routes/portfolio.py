@@ -178,6 +178,117 @@ async def delete_position(position_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to delete position: {str(e)}")
 
 
+@router.post("/positions/expire")
+async def expire_positions():
+    """
+    Check all open positions and expire those past their expiration date.
+    Calculate final P/L based on closing price at expiration.
+    """
+    if db is None:
+        raise HTTPException(status_code=503, detail="Database not available")
+    
+    try:
+        today = datetime.now(timezone.utc).date()
+        
+        # Get all open positions
+        open_positions = await db.positions.find({"status": "open"}, {"_id": 0}).to_list(1000)
+        
+        expired_count = 0
+        expired_positions = []
+        
+        for pos in open_positions:
+            try:
+                # Parse expiration date
+                exp_date = datetime.fromisoformat(pos["expiration"].replace('Z', '+00:00')).date()
+                
+                # Check if position has expired
+                if exp_date < today:
+                    symbol = pos["symbol"]
+                    
+                    # Get closing price on expiration date
+                    ticker = yf.Ticker(symbol)
+                    
+                    # Try to get historical data around expiration date
+                    hist = ticker.history(start=exp_date.isoformat(), end=(exp_date + timedelta(days=5)).isoformat())
+                    
+                    if hist.empty:
+                        # Fallback to recent price
+                        hist = ticker.history(period="5d")
+                    
+                    if not hist.empty:
+                        closing_price = float(hist['Close'].iloc[0])
+                    else:
+                        logger.warning(f"Could not get closing price for {symbol}, using current price")
+                        info = ticker.info
+                        closing_price = info.get('regularMarketPrice', info.get('previousClose', 0))
+                    
+                    # Calculate P/L based on option expiration values
+                    exit_price = 0
+                    for leg in pos["legs"]:
+                        strike = leg["strike"]
+                        option_type = leg["option_type"]
+                        action = leg["action"]
+                        
+                        # Calculate intrinsic value at expiration
+                        if option_type == "call":
+                            intrinsic = max(0, closing_price - strike)
+                        else:  # put
+                            intrinsic = max(0, strike - closing_price)
+                        
+                        # Add or subtract based on position
+                        if action == "sell":
+                            exit_price += intrinsic  # Have to pay intrinsic if ITM
+                        else:  # buy
+                            exit_price -= intrinsic  # Receive intrinsic if ITM
+                    
+                    # Calculate realized P/L
+                    entry_value = pos["entry_price"] * pos["quantity"] * 100
+                    exit_value = exit_price * pos["quantity"] * 100
+                    
+                    # For credit strategies: profit = entry - exit
+                    # For debit strategies: profit = -exit - entry (entry is negative)
+                    if pos["entry_price"] >= 0:  # Credit strategy
+                        realized_pnl = entry_value - exit_value
+                    else:  # Debit strategy
+                        realized_pnl = -exit_value + entry_value
+                    
+                    # Update position as expired
+                    await db.positions.update_one(
+                        {"id": pos["id"]},
+                        {"$set": {
+                            "status": "expired",
+                            "closed_at": datetime.now(timezone.utc).isoformat(),
+                            "exit_price": round(exit_price, 2),
+                            "realized_pnl": round(realized_pnl, 2)
+                        }}
+                    )
+                    
+                    expired_count += 1
+                    expired_positions.append({
+                        "id": pos["id"],
+                        "strategy_name": pos["strategy_name"],
+                        "expiration": pos["expiration"],
+                        "closing_price": closing_price,
+                        "exit_price": round(exit_price, 2),
+                        "realized_pnl": round(realized_pnl, 2)
+                    })
+                    
+                    logger.info(f"Position expired: {pos['strategy_name']}, P/L: ${realized_pnl:.2f}")
+                    
+            except Exception as e:
+                logger.error(f"Error processing position {pos.get('id')}: {str(e)}")
+                continue
+        
+        return {
+            "message": f"Expired {expired_count} positions",
+            "expired_positions": expired_positions
+        }
+        
+    except Exception as e:
+        logger.error(f"Error expiring positions: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to expire positions: {str(e)}")
+
+
 @router.get("/portfolio/summary", response_model=PortfolioSummary)
 async def get_portfolio_summary():
     """Get portfolio summary with all positions and P/L"""
