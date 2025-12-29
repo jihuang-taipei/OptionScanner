@@ -39,15 +39,17 @@ export const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     // Format label based on whether it's intraday or daily data
     let displayLabel = label;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
     if (label && label.includes(' ')) {
       // Intraday: "2025-12-29 14:30" -> "Dec 29, 14:30"
       const [datePart, timePart] = label.split(' ');
-      const date = new Date(datePart);
-      displayLabel = `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${timePart}`;
+      const [year, month, day] = datePart.split('-').map(Number);
+      displayLabel = `${months[month - 1]} ${day}, ${timePart}`;
     } else if (label) {
       // Daily: "2025-12-29" -> "Dec 29, 2025"
-      const date = new Date(label);
-      displayLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const [year, month, day] = label.split('-').map(Number);
+      displayLabel = `${months[month - 1]} ${day}, ${year}`;
     }
     
     return (
