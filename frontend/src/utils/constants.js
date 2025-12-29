@@ -15,7 +15,6 @@ export const REFRESH_INTERVALS = [
 // Common stock/index symbols with options
 export const POPULAR_SYMBOLS = [
   { value: "^SPX", label: "^SPX (S&P 500 Index)" },
-  { value: "^GSPC", label: "^GSPC (S&P 500)" },
   { value: "SPY", label: "SPY (S&P 500 ETF)" },
   { value: "QQQ", label: "QQQ (Nasdaq-100 ETF)" },
   { value: "^NDX", label: "^NDX (Nasdaq-100 Index)" },
