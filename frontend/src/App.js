@@ -138,19 +138,26 @@ const calculateBollingerBands = (data, period = 20, multiplier = 2) => {
   });
 };
 
+// Helper function to format date without timezone issues
+const formatDateLabel = (label) => {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  
+  if (label && label.includes(' ')) {
+    const [datePart, timePart] = label.split(' ');
+    const [year, month, day] = datePart.split('-').map(Number);
+    return `${months[month - 1]} ${day}, ${timePart}`;
+  } else if (label) {
+    const [year, month, day] = label.split('-').map(Number);
+    return `${months[month - 1]} ${day}, ${year}`;
+  }
+  return label;
+};
+
 // Bollinger Bands Tooltip
 const BollingerTooltip = memo(({ active, payload, label }) => {
   if (active && payload && payload.length > 0) {
     const data = payload[0].payload;
-    let displayLabel = label;
-    if (label && label.includes(' ')) {
-      const [datePart, timePart] = label.split(' ');
-      const date = new Date(datePart);
-      displayLabel = `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${timePart}`;
-    } else if (label) {
-      const date = new Date(label);
-      displayLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    }
+    const displayLabel = formatDateLabel(label);
     
     return (
       <div className="bg-zinc-900 border border-white/10 rounded-lg p-3 text-sm">
