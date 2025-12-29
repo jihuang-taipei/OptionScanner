@@ -1553,14 +1553,16 @@ function App() {
     }
   };
 
-  // Calculate current price for a strategy from options chain
+  // Calculate current price to CLOSE a strategy from options chain
+  // For credit strategies: returns what you'd PAY to close (debit)
+  // For debit strategies: returns what you'd RECEIVE to close (credit)
   const calculateCurrentStrategyPrice = useCallback((position) => {
     if (!optionsChain || !position?.legs) return null;
     
     const { calls, puts } = optionsChain;
     if (!calls || !puts) return null;
     
-    let totalPrice = 0;
+    let closePrice = 0;
     
     for (const leg of position.legs) {
       const optionList = leg.option_type === 'call' ? calls : puts;
@@ -1571,14 +1573,19 @@ function App() {
       // Use mid price (average of bid and ask) or last price
       const currentPrice = option.lastPrice || option.bid || 0;
       
+      // To CLOSE: reverse the original action
+      // If originally SOLD, need to BUY back (pay)
+      // If originally BOUGHT, need to SELL (receive)
       if (leg.action === 'sell') {
-        totalPrice += currentPrice; // Credit received
+        closePrice += currentPrice; // Pay to buy back
       } else {
-        totalPrice -= currentPrice; // Debit paid
+        closePrice -= currentPrice; // Receive from selling
       }
     }
     
-    return totalPrice;
+    // closePrice > 0 means you PAY to close (credit strategy profitable scenario)
+    // closePrice < 0 means you RECEIVE to close (debit strategy)
+    return closePrice;
   }, [optionsChain]);
 
   // Delete a position
