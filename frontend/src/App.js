@@ -186,15 +186,7 @@ const BollingerTooltip = memo(({ active, payload, label }) => {
 const OHLCTooltip = memo(({ active, payload, label }) => {
   if (active && payload && payload.length > 0) {
     const data = payload[0].payload;
-    let displayLabel = label;
-    if (label && label.includes(' ')) {
-      const [datePart, timePart] = label.split(' ');
-      const date = new Date(datePart);
-      displayLabel = `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${timePart}`;
-    } else if (label) {
-      const date = new Date(label);
-      displayLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    }
+    const displayLabel = formatDateLabel(label);
     const isBullish = data.close >= data.open;
     return (
       <div className="bg-zinc-900 border border-white/10 rounded-lg p-3 text-sm">
