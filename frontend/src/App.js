@@ -499,8 +499,11 @@ function App() {
         return expDate >= today;
       });
       setExpirations(validExpirations);
-      if (validExpirations.length > 0 && !selectedExpiration) {
-        setSelectedExpiration(validExpirations[0]);
+      // Set first valid expiration if none selected or current selection is invalid/expired
+      if (validExpirations.length > 0) {
+        if (!selectedExpiration || !validExpirations.includes(selectedExpiration)) {
+          setSelectedExpiration(validExpirations[0]);
+        }
       }
     } catch (e) {
       console.error(`Error fetching ${symbol} options expirations:`, e);
