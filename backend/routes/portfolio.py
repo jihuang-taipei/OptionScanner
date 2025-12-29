@@ -270,12 +270,13 @@ async def expire_positions():
                     entry_value = pos["entry_price"] * pos["quantity"] * 100
                     exit_value = exit_price * pos["quantity"] * 100
                     
-                    # For credit strategies: profit = entry - exit
-                    # For debit strategies: profit = -exit - entry (entry is negative)
+                    # For credit strategies (entry_price >= 0): profit = entry - exit
+                    # For debit strategies (entry_price < 0): profit = exit + entry (entry is negative)
                     if pos["entry_price"] >= 0:  # Credit strategy
                         realized_pnl = entry_value - exit_value
                     else:  # Debit strategy
-                        realized_pnl = -exit_value + entry_value
+                        # Example: entry=-5, exit=7 -> P/L = 7 + (-5) = 2 profit
+                        realized_pnl = exit_value + entry_value
                     
                     # Update position as expired
                     await db.positions.update_one(
