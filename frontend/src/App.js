@@ -3163,17 +3163,27 @@ function App() {
                   <div className="text-zinc-400 text-sm mb-1">Entry Price</div>
                   <div className="text-green-400 font-mono">${closeDialog.position.entry_price.toFixed(2)}</div>
                 </div>
+
+                {quote && (
+                  <div>
+                    <div className="text-zinc-400 text-sm mb-1">Current {symbol} Price</div>
+                    <div className="text-white font-mono">${quote.price?.toFixed(2)}</div>
+                  </div>
+                )}
                 
                 <div>
                   <label className="text-zinc-400 text-sm mb-1 block">Exit Price (per contract)</label>
                   <input
                     type="number"
-                    step="0.1"
+                    step="0.01"
                     value={closePrice}
                     onChange={(e) => setClosePrice(e.target.value)}
-                    className="w-full bg-zinc-800 border border-zinc-700 text-white px-3 py-2 rounded-lg"
+                    className="w-full bg-zinc-800 border border-zinc-700 text-white px-3 py-2 rounded-lg font-mono"
                     placeholder="0.00"
                   />
+                  <p className="text-zinc-500 text-xs mt-1">
+                    For credit spreads: Enter the debit to close (typically less than entry credit if profitable)
+                  </p>
                 </div>
                 
                 <div className="flex gap-3 pt-4">
