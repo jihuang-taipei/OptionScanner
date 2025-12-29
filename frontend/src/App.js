@@ -86,6 +86,21 @@ const formatChartTick = (value, period) => {
   return `${months[month - 1]} ${day}`;
 };
 
+// Safe date formatting to avoid timezone issues
+// Use this instead of new Date(dateString).toLocaleDateString()
+const formatExpDate = (dateString, options = {}) => {
+  if (!dateString) return '';
+  
+  // Parse YYYY-MM-DD format manually to avoid timezone shift
+  const [year, month, day] = dateString.split('-').map(Number);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  
+  if (options.includeYear) {
+    return `${months[month - 1]} ${day}, ${year}`;
+  }
+  return `${months[month - 1]} ${day}`;
+};
+
 // Custom debounce hook
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
