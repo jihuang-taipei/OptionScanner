@@ -299,7 +299,7 @@ async def get_portfolio_summary():
         positions = await get_positions()
         
         open_positions = [p for p in positions if p.status == "open"]
-        closed_positions = [p for p in positions if p.status == "closed"]
+        closed_positions = [p for p in positions if p.status in ["closed", "expired"]]
         
         total_unrealized = sum(p.unrealized_pnl or 0 for p in open_positions)
         total_realized = sum(p.realized_pnl or 0 for p in closed_positions)
