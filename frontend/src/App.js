@@ -30,8 +30,8 @@ import {
 import { Input } from "./components/ui/input";
 
 // Import refactored components
-import { StatCard, PeriodButton } from "./components/common";
-import { PLChart, CustomTooltip } from "./components/charts";
+import { StatCard, PeriodButton, CustomTooltip } from "./components/common";
+import { PLChart } from "./components/charts";
 import {
   OptionsTable,
   CreditSpreadTable,
