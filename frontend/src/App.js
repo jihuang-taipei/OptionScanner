@@ -1441,6 +1441,7 @@ function App() {
   const [spreadWidth, setSpreadWidth] = useState(5);
   const [minCredit, setMinCredit] = useState(0);
   const [maxRiskReward, setMaxRiskReward] = useState(100);
+  const [minProbOTM, setMinProbOTM] = useState(50);  // P(OTM) filter for Credit Spreads, default 50%
   
   // Iron Condors state
   const [ironCondors, setIronCondors] = useState(null);
