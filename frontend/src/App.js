@@ -3013,8 +3013,8 @@ function App() {
                   <div className="text-2xl font-bold text-white">{positions.filter(p => p.status === 'open').length}</div>
                 </div>
                 <div className="bg-zinc-800/50 rounded-lg p-4">
-                  <div className="text-zinc-500 text-sm">Closed Positions</div>
-                  <div className="text-2xl font-bold text-white">{positions.filter(p => p.status === 'closed').length}</div>
+                  <div className="text-zinc-500 text-sm">Closed/Expired</div>
+                  <div className="text-2xl font-bold text-white">{positions.filter(p => p.status === 'closed' || p.status === 'expired').length}</div>
                 </div>
                 <div className="bg-zinc-800/50 rounded-lg p-4">
                   <div className="text-zinc-500 text-sm">Unrealized P/L</div>
@@ -3042,8 +3042,8 @@ function App() {
                 </div>
                 <div className="bg-zinc-800/50 rounded-lg p-4">
                   <div className="text-zinc-500 text-sm">Realized P/L</div>
-                  <div className={`text-2xl font-bold ${positions.filter(p => p.status === 'closed').reduce((sum, p) => sum + (p.realized_pnl || 0), 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    ${positions.filter(p => p.status === 'closed').reduce((sum, p) => sum + (p.realized_pnl || 0), 0).toFixed(2)}
+                  <div className={`text-2xl font-bold ${positions.filter(p => p.status === 'closed' || p.status === 'expired').reduce((sum, p) => sum + (p.realized_pnl || 0), 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                    ${positions.filter(p => p.status === 'closed' || p.status === 'expired').reduce((sum, p) => sum + (p.realized_pnl || 0), 0).toFixed(2)}
                   </div>
                 </div>
               </div>
