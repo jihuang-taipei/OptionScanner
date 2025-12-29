@@ -63,24 +63,49 @@ class YahooFinanceService:
             raise HTTPException(status_code=500, detail=f"Failed to fetch data for {symbol}: {str(e)}")
     
     @classmethod
-    def fetch_history(cls, symbol: str, period: str) -> SPXHistory:
-        """Fetch historical data for a symbol"""
+    def fetch_history(cls, symbol: str, period: str, interval: str = None) -> SPXHistory:
+        """Fetch historical data for a symbol
+        
+        Args:
+            symbol: Stock/index symbol
+            period: Time period (1d, 5d, 1mo, etc.)
+            interval: Data interval (1m, 5m, 15m, 1h, 1d). Auto-selected if None.
+        """
         valid_periods = ["1d", "5d", "1mo", "3mo", "6mo", "1y", "2y", "5y", "10y", "ytd", "max"]
+        valid_intervals = ["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "1d", "5d", "1wk", "1mo"]
         
         if period not in valid_periods:
             raise HTTPException(status_code=400, detail=f"Invalid period. Valid options: {', '.join(valid_periods)}")
         
+        # Auto-select interval if not provided
+        if interval is None:
+            if period == "1d":
+                interval = "1m"  # 1-minute data for intraday
+            elif period == "5d":
+                interval = "5m"  # 5-minute data for 5 days
+            else:
+                interval = "1d"  # Daily data for longer periods
+        
+        if interval not in valid_intervals:
+            raise HTTPException(status_code=400, detail=f"Invalid interval. Valid options: {', '.join(valid_intervals)}")
+        
         try:
             ticker = cls.get_ticker(symbol)
-            hist = ticker.history(period=period)
+            hist = ticker.history(period=period, interval=interval)
             
             if hist.empty:
                 raise HTTPException(status_code=503, detail=f"Unable to fetch historical data for {symbol}")
             
             data_points = []
             for date, row in hist.iterrows():
+                # Format date/time based on interval
+                if interval in ["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h"]:
+                    date_str = date.strftime("%Y-%m-%d %H:%M")
+                else:
+                    date_str = date.strftime("%Y-%m-%d")
+                
                 data_points.append(HistoricalDataPoint(
-                    date=date.strftime("%Y-%m-%d"),
+                    date=date_str,
                     open=round(float(row['Open']), 2),
                     high=round(float(row['High']), 2),
                     low=round(float(row['Low']), 2),
@@ -88,7 +113,7 @@ class YahooFinanceService:
                     volume=int(row['Volume']) if row['Volume'] > 0 else None
                 ))
             
-            logger.info(f"History fetched for {symbol}: {len(data_points)} data points for period {period}")
+            logger.info(f"History fetched for {symbol}: {len(data_points)} data points for period {period}, interval {interval}")
             
             return SPXHistory(symbol=symbol, period=period, data=data_points)
         except HTTPException:
