@@ -184,12 +184,20 @@ async def expire_positions():
     """
     Check all open positions and expire those past their expiration date.
     Calculate final P/L based on closing price at expiration.
+    Positions expire at 4:30 PM Eastern time on expiration date.
     """
     if db is None:
         raise HTTPException(status_code=503, detail="Database not available")
     
     try:
-        today = datetime.now(timezone.utc).date()
+        # Get current time in Eastern timezone
+        eastern = ZoneInfo("America/New_York")
+        now_eastern = datetime.now(eastern)
+        today = now_eastern.date()
+        current_time = now_eastern.time()
+        
+        # Market close time is 4:00 PM, we expire at 4:30 PM to account for settlement
+        expire_cutoff_time = datetime.strptime("16:30", "%H:%M").time()
         
         # Get all open positions
         open_positions = await db.positions.find({"status": "open"}, {"_id": 0}).to_list(1000)
@@ -202,8 +210,16 @@ async def expire_positions():
                 # Parse expiration date
                 exp_date = datetime.fromisoformat(pos["expiration"].replace('Z', '+00:00')).date()
                 
-                # Check if position has expired (on or before today)
-                if exp_date <= today:
+                # Check if position has expired:
+                # - If expiration date is before today: expired
+                # - If expiration date is today AND current time >= 4:30 PM ET: expired
+                should_expire = False
+                if exp_date < today:
+                    should_expire = True
+                elif exp_date == today and current_time >= expire_cutoff_time:
+                    should_expire = True
+                
+                if should_expire:
                     symbol = pos["symbol"]
                     
                     # Get closing price on expiration date
