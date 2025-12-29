@@ -1,36 +1,55 @@
-# Test Result Tracking
+backend:
+  - task: "Auto-Expiration with 4:30 PM ET Logic"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/portfolio.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: POST /api/positions/expire endpoint working correctly. Uses Eastern timezone (America/New_York) for time checks. Positions expire only if: (a) expiration date < today, OR (b) expiration date == today AND current time >= 4:30 PM ET. Current Eastern time is 11:54 AM EST, so positions expiring today correctly NOT expired yet. 0 positions expired as expected."
+  
+  - task: "Opened Column Backend Data"
+    implemented: true
+    working: true
+    file: "/app/backend/models/position.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ TESTED: GET /api/positions endpoint returns positions with valid opened_at field containing ISO datetime string. All 8 positions have valid opened_at timestamps in format: 2025-12-29T15:03:37.463183+00:00. Field is properly set via Position model default_factory."
 
-## Test Run - Auto-Expiration Feature + Opened Column
+frontend:
+  - task: "Opened Column Display"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "NOT TESTED: Frontend testing not performed as per system limitations. Code review shows Opened column implemented in portfolio table at line 3069 with date/time display from opened_at field (date on line 1, time on line 2)."
 
-### Features Implemented:
-1. **Opened Column**: Shows position created date/time in portfolio table
-2. **4:30 PM ET Expiration**: Positions expire at 4:30 PM Eastern time on expiration date
+metadata:
+  created_by: "main_agent"
+  version: "1.1"
+  test_sequence: 1
+  run_ui: false
 
-### Test Status:
-- Backend expire logic with 4:30 PM ET: ✅ IMPLEMENTED
-- Frontend Opened column: ✅ IMPLEMENTED
-- UI display updates: ✅ VERIFIED (via screenshot)
+test_plan:
+  current_focus:
+    - "Auto-Expiration with 4:30 PM ET Logic"
+    - "Opened Column Backend Data"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
 
-### Backend Changes:
-- File: `/app/backend/routes/portfolio.py`
-- Added `ZoneInfo` import for timezone handling
-- Modified expire logic to check:
-  - If expiration date < today: expire immediately
-  - If expiration date == today AND current time >= 4:30 PM ET: expire
-  - Otherwise: don't expire yet
-
-### Frontend Changes:
-- File: `/app/frontend/src/App.js`
-- Added "Opened" column to portfolio table header
-- Added date/time display showing opened_at field with:
-  - Date on first line
-  - Time on second line (smaller text)
-
-### Current State:
-- Eastern Time: ~11:51 AM EST (2025-12-29)
-- 3 positions already expired (from earlier testing)
-- 0 new positions expired (waiting for 4:30 PM ET)
-- 3 open positions remaining
-
-### Incorporate User Feedback:
-- None
+agent_communication:
+  - agent: "testing"
+    message: "✅ BACKEND TESTING COMPLETE: Auto-Expiration feature with 4:30 PM ET logic working correctly. All 6 backend tests passed. Expire endpoint properly uses Eastern timezone and correctly does NOT expire positions before 4:30 PM ET (current time 11:54 AM EST). All positions have valid opened_at timestamps for Opened column display. Frontend testing not performed due to system limitations."
