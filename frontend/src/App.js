@@ -76,16 +76,14 @@ const formatChartTick = (value, period) => {
     }
   }
   
-  // For 5D and longer periods with intraday data, show date
-  if (value.includes(' ')) {
-    const [datePart] = value.split(' ');
-    const date = new Date(datePart);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  }
+  // Extract date part
+  const datePart = value.includes(' ') ? value.split(' ')[0] : value;
   
-  // For daily data, show date
-  const date = new Date(value);
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  // Parse date parts manually to avoid timezone issues
+  const [year, month, day] = datePart.split('-').map(Number);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  
+  return `${months[month - 1]} ${day}`;
 };
 
 // Custom debounce hook
