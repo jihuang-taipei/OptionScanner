@@ -999,12 +999,7 @@ function App() {
                       {/* Render candlesticks using Bar */}
                       <Bar 
                         dataKey="close" 
-                        shape={(props) => {
-                          const yAxisDomain = history.length > 0 
-                            ? [Math.min(...history.map(d => d.low)), Math.max(...history.map(d => d.high))]
-                            : [0, 1];
-                          return <CandlestickBar {...props} yAxisDomain={yAxisDomain} />;
-                        }}
+                        shape={candlestickShape}
                       />
                     </ComposedChart>
                   )}
