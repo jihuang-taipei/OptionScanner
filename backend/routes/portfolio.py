@@ -201,8 +201,8 @@ async def expire_positions():
                 # Parse expiration date
                 exp_date = datetime.fromisoformat(pos["expiration"].replace('Z', '+00:00')).date()
                 
-                # Check if position has expired
-                if exp_date < today:
+                # Check if position has expired (on or before today)
+                if exp_date <= today:
                     symbol = pos["symbol"]
                     
                     # Get closing price on expiration date
