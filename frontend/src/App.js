@@ -985,97 +985,15 @@ function App() {
                         tickFormatter={(value) => value.toLocaleString()}
                         width={60}
                       />
-                      <Tooltip 
-                        content={({ active, payload, label }) => {
-                          if (active && payload && payload.length > 0) {
-                            const data = payload[0].payload;
-                            let displayLabel = label;
-                            if (label && label.includes(' ')) {
-                              const [datePart, timePart] = label.split(' ');
-                              const date = new Date(datePart);
-                              displayLabel = `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${timePart}`;
-                            } else if (label) {
-                              const date = new Date(label);
-                              displayLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                            }
-                            const isBullish = data.close >= data.open;
-                            return (
-                              <div className="bg-zinc-900 border border-white/10 rounded-lg p-3 text-sm">
-                                <p className="text-zinc-400 mb-2">{displayLabel}</p>
-                                <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono">
-                                  <span className="text-zinc-500">Open:</span>
-                                  <span className="text-white">${data.open?.toLocaleString()}</span>
-                                  <span className="text-zinc-500">High:</span>
-                                  <span className="text-green-400">${data.high?.toLocaleString()}</span>
-                                  <span className="text-zinc-500">Low:</span>
-                                  <span className="text-red-400">${data.low?.toLocaleString()}</span>
-                                  <span className="text-zinc-500">Close:</span>
-                                  <span className={isBullish ? 'text-green-400' : 'text-red-400'}>${data.close?.toLocaleString()}</span>
-                                </div>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                      {/* Render candlesticks using Bar for body and custom error bars for wicks */}
+                      <Tooltip content={<OHLCTooltip />} />
+                      {/* Render candlesticks using Bar */}
                       <Bar 
                         dataKey="close" 
                         shape={(props) => {
-                          const { x, y, width, height, payload } = props;
-                          const { open, high, low, close } = payload;
-                          const isBullish = close >= open;
-                          const color = isBullish ? '#22c55e' : '#ef4444';
-                          
-                          // Calculate positions
-                          const yScale = props.background?.height / (props.background?.y || 1);
-                          const chartHeight = 250; // Approximate chart height
-                          const domain = [Math.min(...history.map(d => d.low)), Math.max(...history.map(d => d.high))];
-                          const range = domain[1] - domain[0];
-                          
-                          const scaleY = (val) => chartHeight - ((val - domain[0]) / range) * chartHeight + 10;
-                          
-                          const bodyTop = scaleY(Math.max(open, close));
-                          const bodyBottom = scaleY(Math.min(open, close));
-                          const bodyHeight = Math.max(1, bodyBottom - bodyTop);
-                          const wickTop = scaleY(high);
-                          const wickBottom = scaleY(low);
-                          const candleWidth = Math.max(2, width * 0.7);
-                          const candleX = x + (width - candleWidth) / 2;
-                          const wickX = x + width / 2;
-                          
-                          return (
-                            <g>
-                              {/* Upper wick */}
-                              <line 
-                                x1={wickX} 
-                                y1={wickTop} 
-                                x2={wickX} 
-                                y2={bodyTop} 
-                                stroke={color} 
-                                strokeWidth={1}
-                              />
-                              {/* Lower wick */}
-                              <line 
-                                x1={wickX} 
-                                y1={bodyBottom} 
-                                x2={wickX} 
-                                y2={wickBottom} 
-                                stroke={color} 
-                                strokeWidth={1}
-                              />
-                              {/* Body */}
-                              <rect 
-                                x={candleX} 
-                                y={bodyTop} 
-                                width={candleWidth} 
-                                height={bodyHeight} 
-                                fill={isBullish ? color : color}
-                                stroke={color}
-                                strokeWidth={1}
-                              />
-                            </g>
-                          );
+                          const yAxisDomain = history.length > 0 
+                            ? [Math.min(...history.map(d => d.low)), Math.max(...history.map(d => d.high))]
+                            : [0, 1];
+                          return <CandlestickBar {...props} yAxisDomain={yAxisDomain} />;
                         }}
                       />
                     </ComposedChart>
