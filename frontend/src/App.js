@@ -2996,9 +2996,22 @@ function App() {
                 </div>
                 <div className="bg-zinc-800/50 rounded-lg p-4">
                   <div className="text-zinc-500 text-sm">Unrealized P/L</div>
-                  <div className={`text-2xl font-bold ${positions.filter(p => p.status === 'open').reduce((sum, p) => sum + (p.unrealized_pnl || 0), 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                    ${positions.filter(p => p.status === 'open').reduce((sum, p) => sum + (p.unrealized_pnl || 0), 0).toFixed(2)}
-                  </div>
+                  {(() => {
+                    const totalUnrealizedPnL = positions
+                      .filter(p => p.status === 'open')
+                      .reduce((sum, pos) => {
+                        const currentPrice = calculateCurrentStrategyPrice(pos);
+                        if (currentPrice !== null) {
+                          return sum + (pos.entry_price - Math.abs(currentPrice)) * pos.quantity * 100;
+                        }
+                        return sum + (pos.unrealized_pnl || 0);
+                      }, 0);
+                    return (
+                      <div className={`text-2xl font-bold ${totalUnrealizedPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {totalUnrealizedPnL >= 0 ? '+' : ''}${totalUnrealizedPnL.toFixed(2)}
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div className="bg-zinc-800/50 rounded-lg p-4">
                   <div className="text-zinc-500 text-sm">Realized P/L</div>
