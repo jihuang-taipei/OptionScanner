@@ -145,6 +145,9 @@ const CandlestickBar = memo(({ x, y, width, height, payload, yAxisDomain }) => {
   );
 });
 
+// Create a shape render function factory
+const createCandlestickShape = (yAxisDomain) => (props) => <CandlestickBar {...props} yAxisDomain={yAxisDomain} />;
+
 function App() {
   // Symbol state
   const [symbol, setSymbol] = useState("^SPX");
