@@ -131,10 +131,18 @@ async def close_position(position_id: str, exit_price: float):
         entry_value = position["entry_price"] * position["quantity"] * 100
         exit_value = exit_price * position["quantity"] * 100
         
-        if position["strategy_type"] in ['bull_put', 'bear_call', 'iron_condor', 'iron_butterfly']:
+        # For credit strategies: entry_price is positive (received credit), exit_price is cost to close
+        # P/L = Credit received - Cost to close = entry_value - exit_value
+        # For debit strategies: entry_price is negative (paid debit), exit_price is value received
+        # P/L = Value received + Entry cost = exit_value + entry_value (since entry is negative)
+        if position["strategy_type"] in ['bull_put', 'bear_call', 'iron_condor', 'iron_butterfly', 'short_call', 'short_put']:
+            # Credit strategies: P/L = Credit received - Cost to close
             realized_pnl = entry_value - exit_value
         else:
-            realized_pnl = exit_value - entry_value
+            # Debit strategies: entry_price is negative, so P/L = exit_value + entry_value
+            # Example: entry=-5, exit=7 -> P/L = 7 + (-5) = 2 profit
+            # Example: entry=-5, exit=3 -> P/L = 3 + (-5) = -2 loss
+            realized_pnl = exit_value + entry_value
         
         await db.positions.update_one(
             {"id": position_id},
