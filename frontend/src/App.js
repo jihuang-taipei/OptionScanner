@@ -1906,9 +1906,9 @@ function App() {
                     <span className="text-zinc-500 text-xs">
                       {symbol}: <span className="text-white font-mono">${calendarSpreads.current_price?.toLocaleString()}</span>
                       <span className="text-zinc-600 mx-2">|</span>
-                      Near: <span className="text-white">{new Date(calendarSpreads.near_expiration).toLocaleDateString()}</span>
+                      Near: <span className="text-white">{formatExpDate(calendarSpreads.near_expiration, { includeYear: true })}</span>
                       <span className="text-zinc-600 mx-2">|</span>
-                      Far: <span className="text-white">{new Date(calendarSpreads.far_expiration).toLocaleDateString()}</span>
+                      Far: <span className="text-white">{formatExpDate(calendarSpreads.far_expiration, { includeYear: true })}</span>
                       <span className="text-zinc-600 mx-2">|</span>
                       Found: <span className="text-white">{calendarSpreads.calendar_spreads?.length || 0}</span>
                     </span>
