@@ -1503,10 +1503,25 @@ function App() {
     }));
   };
 
+  // Expire positions that have passed their expiration date
+  const expirePositions = useCallback(async () => {
+    try {
+      const response = await axios.post(`${API}/positions/expire`);
+      if (response.data.expired_positions?.length > 0) {
+        console.log(`Expired ${response.data.expired_positions.length} positions`);
+      }
+    } catch (e) {
+      console.error("Error expiring positions:", e);
+    }
+  }, []);
+
   // Fetch positions
   const fetchPositions = useCallback(async () => {
     setIsLoadingPositions(true);
     try {
+      // First expire any positions that need to be expired
+      await expirePositions();
+      // Then fetch all positions
       const response = await axios.get(`${API}/positions`);
       setPositions(response.data);
     } catch (e) {
@@ -1514,7 +1529,7 @@ function App() {
     } finally {
       setIsLoadingPositions(false);
     }
-  }, []);
+  }, [expirePositions]);
 
   // Create a new position (paper trade)
   const createPosition = async (strategy, strategyType, strategyName, legs, entryPrice) => {
