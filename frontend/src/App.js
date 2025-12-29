@@ -1061,14 +1061,7 @@ function App() {
                         axisLine={false}
                         tickLine={false}
                         tick={{ fill: '#52525b', fontSize: 12 }}
-                        tickFormatter={(value) => {
-                          if (value && value.includes(' ')) {
-                            const timePart = value.split(' ')[1];
-                            return timePart;
-                          }
-                          const date = new Date(value);
-                          return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                        }}
+                        tickFormatter={(value) => formatChartTick(value, period)}
                         interval="preserveStartEnd"
                         minTickGap={50}
                       />
