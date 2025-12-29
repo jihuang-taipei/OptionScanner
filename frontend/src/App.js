@@ -3007,9 +3007,14 @@ function App() {
                     const totalUnrealizedPnL = positions
                       .filter(p => p.status === 'open')
                       .reduce((sum, pos) => {
-                        const currentPrice = calculateCurrentStrategyPrice(pos);
-                        if (currentPrice !== null) {
-                          return sum + (pos.entry_price - Math.abs(currentPrice)) * pos.quantity * 100;
+                        const closePrice = calculateCurrentStrategyPrice(pos);
+                        if (closePrice !== null) {
+                          const isDebitStrategy = pos.entry_price < 0;
+                          if (isDebitStrategy) {
+                            return sum + (-closePrice + pos.entry_price) * pos.quantity * 100;
+                          } else {
+                            return sum + (pos.entry_price - closePrice) * pos.quantity * 100;
+                          }
                         }
                         return sum + (pos.unrealized_pnl || 0);
                       }, 0);
