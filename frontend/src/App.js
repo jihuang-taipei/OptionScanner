@@ -772,13 +772,40 @@ function App() {
                 <BarChart3 className="w-5 h-5 text-zinc-400" />
                 Historical Performance
               </h2>
-              <div className="flex gap-1 bg-zinc-900/50 p-1 rounded-full">
-                <PeriodButton period="1d" currentPeriod={period} onClick={handlePeriodChange} label="1D" />
-                <PeriodButton period="5d" currentPeriod={period} onClick={handlePeriodChange} label="5D" />
-                <PeriodButton period="1mo" currentPeriod={period} onClick={handlePeriodChange} label="1M" />
-                <PeriodButton period="3mo" currentPeriod={period} onClick={handlePeriodChange} label="3M" />
-                <PeriodButton period="1y" currentPeriod={period} onClick={handlePeriodChange} label="1Y" />
-                <PeriodButton period="5y" currentPeriod={period} onClick={handlePeriodChange} label="5Y" />
+              <div className="flex items-center gap-3">
+                {/* Chart Type Selector */}
+                <div className="flex gap-1 bg-zinc-900/50 p-1 rounded-lg">
+                  <button
+                    onClick={() => setChartType("area")}
+                    className={`p-1.5 rounded transition-colors ${chartType === "area" ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-white"}`}
+                    title="Area Chart"
+                  >
+                    <TrendingUp className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setChartType("line")}
+                    className={`p-1.5 rounded transition-colors ${chartType === "line" ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-white"}`}
+                    title="Line Chart"
+                  >
+                    <LineChartIcon className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setChartType("candle")}
+                    className={`p-1.5 rounded transition-colors ${chartType === "candle" ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-white"}`}
+                    title="Candlestick Chart"
+                  >
+                    <BarChart3 className="w-4 h-4" />
+                  </button>
+                </div>
+                {/* Period Selector */}
+                <div className="flex gap-1 bg-zinc-900/50 p-1 rounded-full">
+                  <PeriodButton period="1d" currentPeriod={period} onClick={handlePeriodChange} label="1D" />
+                  <PeriodButton period="5d" currentPeriod={period} onClick={handlePeriodChange} label="5D" />
+                  <PeriodButton period="1mo" currentPeriod={period} onClick={handlePeriodChange} label="1M" />
+                  <PeriodButton period="3mo" currentPeriod={period} onClick={handlePeriodChange} label="3M" />
+                  <PeriodButton period="1y" currentPeriod={period} onClick={handlePeriodChange} label="1Y" />
+                  <PeriodButton period="5y" currentPeriod={period} onClick={handlePeriodChange} label="5Y" />
+                </div>
               </div>
             </div>
 
@@ -789,50 +816,205 @@ function App() {
             ) : (
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={history} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor={isPositive ? "#22c55e" : "#ef4444"} stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor={isPositive ? "#22c55e" : "#ef4444"} stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <XAxis 
-                      dataKey="date" 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#52525b', fontSize: 12 }}
-                      tickFormatter={(value) => {
-                        // Check if value contains time (intraday data)
-                        if (value && value.includes(' ')) {
-                          // Intraday format: "2025-12-29 14:30" -> "14:30"
-                          const timePart = value.split(' ')[1];
-                          return timePart;
-                        }
-                        // Daily format: "2025-12-29" -> "Dec 29"
-                        const date = new Date(value);
-                        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                      }}
-                      interval="preserveStartEnd"
-                      minTickGap={50}
-                    />
-                    <YAxis 
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fill: '#52525b', fontSize: 12 }}
-                      domain={['auto', 'auto']}
-                      tickFormatter={(value) => value.toLocaleString()}
-                      width={60}
-                    />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Area 
-                      type="monotone" 
-                      dataKey="close" 
-                      stroke={isPositive ? "#22c55e" : "#ef4444"}
-                      strokeWidth={2}
-                      fillOpacity={1} 
-                      fill="url(#colorPrice)" 
-                    />
-                  </AreaChart>
+                  {chartType === "area" ? (
+                    <AreaChart data={history} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={isPositive ? "#22c55e" : "#ef4444"} stopOpacity={0.3}/>
+                          <stop offset="95%" stopColor={isPositive ? "#22c55e" : "#ef4444"} stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <XAxis 
+                        dataKey="date" 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#52525b', fontSize: 12 }}
+                        tickFormatter={(value) => {
+                          if (value && value.includes(' ')) {
+                            const timePart = value.split(' ')[1];
+                            return timePart;
+                          }
+                          const date = new Date(value);
+                          return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        }}
+                        interval="preserveStartEnd"
+                        minTickGap={50}
+                      />
+                      <YAxis 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#52525b', fontSize: 12 }}
+                        domain={['auto', 'auto']}
+                        tickFormatter={(value) => value.toLocaleString()}
+                        width={60}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Area 
+                        type="monotone" 
+                        dataKey="close" 
+                        stroke={isPositive ? "#22c55e" : "#ef4444"}
+                        strokeWidth={2}
+                        fillOpacity={1} 
+                        fill="url(#colorPrice)" 
+                      />
+                    </AreaChart>
+                  ) : chartType === "line" ? (
+                    <LineChart data={history} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <XAxis 
+                        dataKey="date" 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#52525b', fontSize: 12 }}
+                        tickFormatter={(value) => {
+                          if (value && value.includes(' ')) {
+                            const timePart = value.split(' ')[1];
+                            return timePart;
+                          }
+                          const date = new Date(value);
+                          return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        }}
+                        interval="preserveStartEnd"
+                        minTickGap={50}
+                      />
+                      <YAxis 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#52525b', fontSize: 12 }}
+                        domain={['auto', 'auto']}
+                        tickFormatter={(value) => value.toLocaleString()}
+                        width={60}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Line 
+                        type="monotone" 
+                        dataKey="close" 
+                        stroke={isPositive ? "#22c55e" : "#ef4444"}
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                    </LineChart>
+                  ) : (
+                    /* Candlestick Chart */
+                    <ComposedChart data={history} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <XAxis 
+                        dataKey="date" 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#52525b', fontSize: 12 }}
+                        tickFormatter={(value) => {
+                          if (value && value.includes(' ')) {
+                            const timePart = value.split(' ')[1];
+                            return timePart;
+                          }
+                          const date = new Date(value);
+                          return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        }}
+                        interval="preserveStartEnd"
+                        minTickGap={50}
+                      />
+                      <YAxis 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#52525b', fontSize: 12 }}
+                        domain={['auto', 'auto']}
+                        tickFormatter={(value) => value.toLocaleString()}
+                        width={60}
+                      />
+                      <Tooltip 
+                        content={({ active, payload, label }) => {
+                          if (active && payload && payload.length > 0) {
+                            const data = payload[0].payload;
+                            let displayLabel = label;
+                            if (label && label.includes(' ')) {
+                              const [datePart, timePart] = label.split(' ');
+                              const date = new Date(datePart);
+                              displayLabel = `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${timePart}`;
+                            } else if (label) {
+                              const date = new Date(label);
+                              displayLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                            }
+                            const isBullish = data.close >= data.open;
+                            return (
+                              <div className="bg-zinc-900 border border-white/10 rounded-lg p-3 text-sm">
+                                <p className="text-zinc-400 mb-2">{displayLabel}</p>
+                                <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono">
+                                  <span className="text-zinc-500">Open:</span>
+                                  <span className="text-white">${data.open?.toLocaleString()}</span>
+                                  <span className="text-zinc-500">High:</span>
+                                  <span className="text-green-400">${data.high?.toLocaleString()}</span>
+                                  <span className="text-zinc-500">Low:</span>
+                                  <span className="text-red-400">${data.low?.toLocaleString()}</span>
+                                  <span className="text-zinc-500">Close:</span>
+                                  <span className={isBullish ? 'text-green-400' : 'text-red-400'}>${data.close?.toLocaleString()}</span>
+                                </div>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      {/* Render candlesticks using Bar for body and custom error bars for wicks */}
+                      <Bar 
+                        dataKey="close" 
+                        shape={(props) => {
+                          const { x, y, width, height, payload } = props;
+                          const { open, high, low, close } = payload;
+                          const isBullish = close >= open;
+                          const color = isBullish ? '#22c55e' : '#ef4444';
+                          
+                          // Calculate positions
+                          const yScale = props.background?.height / (props.background?.y || 1);
+                          const chartHeight = 250; // Approximate chart height
+                          const domain = [Math.min(...history.map(d => d.low)), Math.max(...history.map(d => d.high))];
+                          const range = domain[1] - domain[0];
+                          
+                          const scaleY = (val) => chartHeight - ((val - domain[0]) / range) * chartHeight + 10;
+                          
+                          const bodyTop = scaleY(Math.max(open, close));
+                          const bodyBottom = scaleY(Math.min(open, close));
+                          const bodyHeight = Math.max(1, bodyBottom - bodyTop);
+                          const wickTop = scaleY(high);
+                          const wickBottom = scaleY(low);
+                          const candleWidth = Math.max(2, width * 0.7);
+                          const candleX = x + (width - candleWidth) / 2;
+                          const wickX = x + width / 2;
+                          
+                          return (
+                            <g>
+                              {/* Upper wick */}
+                              <line 
+                                x1={wickX} 
+                                y1={wickTop} 
+                                x2={wickX} 
+                                y2={bodyTop} 
+                                stroke={color} 
+                                strokeWidth={1}
+                              />
+                              {/* Lower wick */}
+                              <line 
+                                x1={wickX} 
+                                y1={bodyBottom} 
+                                x2={wickX} 
+                                y2={wickBottom} 
+                                stroke={color} 
+                                strokeWidth={1}
+                              />
+                              {/* Body */}
+                              <rect 
+                                x={candleX} 
+                                y={bodyTop} 
+                                width={candleWidth} 
+                                height={bodyHeight} 
+                                fill={isBullish ? color : color}
+                                stroke={color}
+                                strokeWidth={1}
+                              />
+                            </g>
+                          );
+                        }}
+                      />
+                    </ComposedChart>
+                  )}
                 </ResponsiveContainer>
               </div>
             )}
