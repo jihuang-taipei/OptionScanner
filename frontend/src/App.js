@@ -3091,7 +3091,11 @@ function App() {
                           <td className={`py-3 px-2 text-right font-mono ${isDebitStrategy ? 'text-red-400' : 'text-green-400'}`}>
                             {isDebitStrategy ? `-$${Math.abs(pos.entry_price).toFixed(2)}` : `$${pos.entry_price.toFixed(2)}`}
                           </td>
-                          <td className={`py-3 px-2 text-right font-mono ${closePrice !== null ? (closePrice > 0 ? 'text-red-400' : 'text-green-400') : 'text-zinc-400'}`}>
+                          <td className={`py-3 px-2 text-right font-mono ${
+                            pos.status === 'open' 
+                              ? (closePrice !== null ? (closePrice > 0 ? 'text-red-400' : 'text-green-400') : 'text-zinc-400')
+                              : (pos.exit_price !== null ? (isDebitStrategy ? 'text-green-400' : 'text-red-400') : 'text-zinc-400')
+                          }`}>
                             {pos.status === 'open' && closePrice !== null 
                               ? (closePrice > 0 ? `-$${closePrice.toFixed(2)}` : `$${Math.abs(closePrice).toFixed(2)}`)
                               : pos.status === 'closed' && pos.exit_price !== null
