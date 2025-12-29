@@ -3053,7 +3053,7 @@ function App() {
                         <th className="text-left py-3 px-2">Strategy</th>
                         <th className="text-left py-3 px-2">Expiration</th>
                         <th className="text-right py-3 px-2">Entry</th>
-                        <th className="text-right py-3 px-2">Current</th>
+                        <th className="text-right py-3 px-2">Current/Exit</th>
                         <th className="text-right py-3 px-2">Qty</th>
                         <th className="text-right py-3 px-2">P/L</th>
                         <th className="text-center py-3 px-2">Status</th>
