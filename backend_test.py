@@ -744,8 +744,80 @@ class SPXAPITester:
         print(f"   Options chain validation passed - Symbol: {data['symbol']}, {len(data['calls'])} calls, {len(data['puts'])} puts")
         return True
 
+    def test_refactored_endpoints(self):
+        """Test the specific endpoints mentioned in the review request"""
+        print("\n🔍 Testing Refactored Frontend Endpoints...")
+        
+        # 1. Test stock quote endpoint (using SPX as example)
+        quote_success, quote_data = self.run_test(
+            "Stock Quote (SPX)",
+            "GET", 
+            "api/spx/quote",
+            200,
+            validate_response=self.validate_spx_quote
+        )
+        
+        # 2. Test options chain endpoint
+        # First get expirations
+        exp_success, exp_data = self.test_options_expirations()
+        if exp_success and exp_data.get('expirations'):
+            expiration = exp_data['expirations'][0]
+            options_success, options_data = self.run_test(
+                "Options Chain (SPX)",
+                "GET",
+                "api/spx/options/chain", 
+                200,
+                params={"expiration": expiration},
+                validate_response=self.validate_options_chain
+            )
+        else:
+            options_success = False
+            
+        # 3. Test bull put spreads (credit spreads)
+        if exp_success and exp_data.get('expirations'):
+            expiration = exp_data['expirations'][0]
+            spreads_success, spreads_data = self.run_test(
+                "Bull Put Spreads (Credit Spreads)",
+                "GET",
+                "api/spx/credit-spreads",
+                200,
+                params={"expiration": expiration, "spread": 5}
+            )
+        else:
+            spreads_success = False
+            
+        # 4. Test iron condors
+        if exp_success and exp_data.get('expirations'):
+            expiration = exp_data['expirations'][0]
+            condors_success, condors_data = self.run_test(
+                "Iron Condors (SPX)",
+                "GET", 
+                "api/spx/iron-condors",
+                200,
+                params={"expiration": expiration, "spread": 5}
+            )
+        else:
+            condors_success = False
+            
+        # 5. Test portfolio positions
+        positions_success, positions_data = self.run_test(
+            "Portfolio Positions",
+            "GET",
+            "api/positions", 
+            200,
+            validate_response=self.validate_positions_response
+        )
+        
+        return {
+            "quote": quote_success,
+            "options": options_success, 
+            "spreads": spreads_success,
+            "condors": condors_success,
+            "positions": positions_success
+        }
+
 def main():
-    print("🚀 Starting Auto-Expiration Feature Tests - 4:30 PM ET + Opened Column")
+    print("🚀 Testing Options Scanner After Frontend Refactoring")
     print("=" * 70)
     
     # Setup
@@ -755,104 +827,74 @@ def main():
     print("\n📡 Testing Basic Connectivity...")
     tester.test_basic_connectivity()
     
-    # FOCUS: Test Auto-Expiration Feature with 4:30 PM ET Logic
-    print("\n⏰ Testing Auto-Expiration Feature (4:30 PM ET Logic)...")
-    expire_success, expire_data = tester.test_positions_expire()
+    # FOCUS: Test the specific endpoints mentioned in review request
+    print("\n🎯 Testing Core API Endpoints After Refactoring...")
+    refactor_results = tester.test_refactored_endpoints()
     
-    # Detailed analysis of expiration logic
-    if expire_success and expire_data:
-        print(f"\n   📊 Expiration Results:")
-        print(f"   - Message: {expire_data.get('message', 'N/A')}")
-        print(f"   - Expired Positions: {len(expire_data.get('expired_positions', []))}")
+    # Test additional strategy endpoints to ensure they still work
+    print("\n📊 Testing Additional Strategy Endpoints...")
+    
+    # Get expirations for other tests
+    exp_success, exp_data = tester.test_options_expirations()
+    if exp_success and exp_data.get('expirations'):
+        expiration = exp_data['expirations'][0]
         
-        # Current time check (should be ~11:51 AM ET, so no positions should expire today)
-        from datetime import datetime
-        from zoneinfo import ZoneInfo
-        eastern = ZoneInfo("America/New_York")
-        now_et = datetime.now(eastern)
-        print(f"   - Current Eastern Time: {now_et.strftime('%Y-%m-%d %H:%M:%S %Z')}")
-        print(f"   - Expected: No positions expiring today before 4:30 PM ET")
-    
-    # FOCUS: Test Opened Column Data (opened_at field)
-    print("\n📋 Testing Opened Column Data (opened_at field)...")
-    all_positions_success, all_positions_data = tester.test_get_all_positions()
-    
-    # Validate opened_at field in positions
-    if all_positions_success and all_positions_data:
-        print(f"\n   📊 Opened Column Validation:")
-        print(f"   - Total Positions: {len(all_positions_data)}")
+        # Test other strategies
+        print("\n🦋 Testing Iron Butterflies...")
+        tester.test_iron_butterflies(expiration)
         
-        opened_at_valid = 0
-        for pos in all_positions_data:
-            if 'opened_at' in pos and pos['opened_at']:
-                opened_at_valid += 1
-                # Validate ISO datetime format
-                try:
-                    datetime.fromisoformat(pos['opened_at'].replace('Z', '+00:00'))
-                    print(f"   ✅ Position {pos.get('id', 'Unknown')[:8]}... has valid opened_at: {pos['opened_at']}")
-                except:
-                    print(f"   ❌ Position {pos.get('id', 'Unknown')[:8]}... has invalid opened_at: {pos['opened_at']}")
-            else:
-                print(f"   ❌ Position {pos.get('id', 'Unknown')[:8]}... missing opened_at field")
+        print("\n📈 Testing Straddles...")
+        tester.test_straddles(expiration)
         
-        print(f"   - Positions with valid opened_at: {opened_at_valid}/{len(all_positions_data)}")
+        print("\n📉 Testing Strangles...")
+        tester.test_strangles(expiration)
+        
+        # Test calendar spreads if we have multiple expirations
+        if len(exp_data['expirations']) >= 2:
+            print("\n📅 Testing Calendar Spreads...")
+            tester.test_calendar_spreads()
     
-    print("\n🟢 Testing Get Open Positions...")
-    open_positions_success, open_positions_data = tester.test_get_open_positions()
-    
-    print("\n🟡 Testing Get Expired Positions...")
-    expired_positions_success, expired_positions_data = tester.test_get_expired_positions()
-    
-    print("\n📊 Testing Portfolio Summary...")
-    summary_success, summary_data = tester.test_portfolio_summary()
+    # Test portfolio functionality
+    print("\n💼 Testing Portfolio Functionality...")
+    tester.test_get_all_positions()
+    tester.test_get_open_positions()
+    tester.test_portfolio_summary()
     
     # Print final results
     print("\n" + "=" * 70)
     print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
     
-    # Summary of Auto-Expiration feature
-    print("\n⏰ Auto-Expiration Feature Summary:")
-    portfolio_tests = [
-        ("Position Expiration (4:30 PM ET Logic)", expire_success),
-        ("Get All Positions (opened_at field)", all_positions_success),
-        ("Get Open Positions", open_positions_success),
-        ("Get Expired Positions", expired_positions_success),
-        ("Portfolio Summary", summary_success)
+    # Summary of refactoring validation
+    print("\n🎯 Frontend Refactoring Validation:")
+    refactor_tests = [
+        ("Stock Quote API", refactor_results["quote"]),
+        ("Options Chain API", refactor_results["options"]),
+        ("Bull Put Spreads API", refactor_results["spreads"]),
+        ("Iron Condors API", refactor_results["condors"]),
+        ("Portfolio Positions API", refactor_results["positions"])
     ]
     
-    portfolio_passed = sum(1 for _, success in portfolio_tests if success)
-    portfolio_total = len(portfolio_tests)
+    refactor_passed = sum(1 for _, success in refactor_tests if success)
+    refactor_total = len(refactor_tests)
     
-    print(f"   📈 Portfolio Tests: {portfolio_passed}/{portfolio_total} passed")
-    for test_name, success in portfolio_tests:
+    print(f"   📈 Core API Tests: {refactor_passed}/{refactor_total} passed")
+    for test_name, success in refactor_tests:
         status = "✅" if success else "❌"
         print(f"   {status} {test_name}")
     
     # Key Feature Validation
-    print("\n🎯 Key Feature Validation:")
+    print("\n🎯 Key Validation Results:")
     
-    # 1. Timezone Logic Validation
-    if expire_success:
-        print("   ✅ 4:30 PM ET expiration logic working")
-        if expire_data and len(expire_data.get('expired_positions', [])) == 0:
-            print("   ✅ Correctly NOT expiring positions before 4:30 PM ET")
-        else:
-            print("   ⚠️  Some positions expired (check if this is expected)")
+    if refactor_passed == refactor_total:
+        print("   ✅ All core APIs working after frontend refactoring")
+        print("   ✅ Backend endpoints remain functional")
+        print("   ✅ Data structures and responses intact")
     else:
-        print("   ❌ 4:30 PM ET expiration logic failed")
-    
-    # 2. Opened Column Data Validation
-    if all_positions_success and all_positions_data:
-        has_opened_at = all(pos.get('opened_at') for pos in all_positions_data)
-        if has_opened_at:
-            print("   ✅ All positions have opened_at field for Opened column")
-        else:
-            print("   ❌ Some positions missing opened_at field")
-    else:
-        print("   ❌ Could not validate opened_at field")
+        print("   ❌ Some core APIs failed after refactoring")
+        print("   ⚠️  Frontend refactoring may have affected backend integration")
     
     if tester.tests_passed == tester.tests_run:
-        print("🎉 All tests passed!")
+        print("🎉 All tests passed! Frontend refactoring successful.")
         return 0
     else:
         print("❌ Some tests failed")
