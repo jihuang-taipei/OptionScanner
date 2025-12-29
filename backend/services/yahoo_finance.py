@@ -124,7 +124,7 @@ class YahooFinanceService:
     
     @classmethod
     def fetch_expirations(cls, symbol: str) -> OptionsExpirations:
-        """Fetch available expiration dates for options"""
+        """Fetch available expiration dates for options (excludes expired dates)"""
         try:
             ticker = cls.get_ticker(symbol)
             expirations = ticker.options
@@ -132,7 +132,16 @@ class YahooFinanceService:
             if not expirations:
                 raise HTTPException(status_code=503, detail=f"No options data available for {symbol}")
             
-            return OptionsExpirations(symbol=symbol, expirations=list(expirations))
+            # Filter out expired dates (only show dates >= today)
+            today = datetime.now().strftime("%Y-%m-%d")
+            valid_expirations = [exp for exp in expirations if exp >= today]
+            
+            if not valid_expirations:
+                raise HTTPException(status_code=503, detail=f"No valid options expirations available for {symbol}")
+            
+            logger.info(f"Options expirations fetched for {symbol}: {len(valid_expirations)} valid dates (filtered from {len(expirations)})")
+            
+            return OptionsExpirations(symbol=symbol, expirations=valid_expirations)
         except HTTPException:
             raise
         except Exception as e:
