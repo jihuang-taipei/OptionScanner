@@ -3057,10 +3057,23 @@ function App() {
                     </thead>
                     <tbody>
                       {positions.map((pos) => {
-                        const currentPrice = pos.status === 'open' ? calculateCurrentStrategyPrice(pos) : null;
-                        const unrealizedPnL = currentPrice !== null 
-                          ? (pos.entry_price - Math.abs(currentPrice)) * pos.quantity * 100 
-                          : null;
+                        const closePrice = pos.status === 'open' ? calculateCurrentStrategyPrice(pos) : null;
+                        const isDebitStrategy = pos.entry_price < 0; // Negative entry = debit strategy
+                        
+                        // P/L calculation:
+                        // Credit strategy: Entry (positive) - Close Price (positive) = profit if close < entry
+                        // Debit strategy: -Close Price (what you receive) - Entry (negative cost) = profit if receive > cost
+                        let unrealizedPnL = null;
+                        if (closePrice !== null) {
+                          if (isDebitStrategy) {
+                            // Debit: you paid |entry|, now you'd receive |closePrice|
+                            // closePrice is negative (you receive), entry is negative (you paid)
+                            unrealizedPnL = (-closePrice + pos.entry_price) * pos.quantity * 100;
+                          } else {
+                            // Credit: you received entry, now you'd pay closePrice
+                            unrealizedPnL = (pos.entry_price - closePrice) * pos.quantity * 100;
+                          }
+                        }
                         
                         return (
                         <tr key={pos.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
@@ -3070,10 +3083,12 @@ function App() {
                             <div className="text-xs text-zinc-500">{pos.strategy_type}</div>
                           </td>
                           <td className="py-3 px-2 text-zinc-400">{new Date(pos.expiration).toLocaleDateString()}</td>
-                          <td className="py-3 px-2 text-right font-mono text-green-400">${pos.entry_price.toFixed(2)}</td>
-                          <td className="py-3 px-2 text-right font-mono text-cyan-400">
-                            {pos.status === 'open' && currentPrice !== null 
-                              ? `$${Math.abs(currentPrice).toFixed(2)}`
+                          <td className={`py-3 px-2 text-right font-mono ${isDebitStrategy ? 'text-red-400' : 'text-green-400'}`}>
+                            {isDebitStrategy ? `-$${Math.abs(pos.entry_price).toFixed(2)}` : `$${pos.entry_price.toFixed(2)}`}
+                          </td>
+                          <td className={`py-3 px-2 text-right font-mono ${closePrice !== null ? (closePrice > 0 ? 'text-red-400' : 'text-green-400') : 'text-zinc-400'}`}>
+                            {pos.status === 'open' && closePrice !== null 
+                              ? (closePrice > 0 ? `-$${closePrice.toFixed(2)}` : `$${Math.abs(closePrice).toFixed(2)}`)
                               : '-'
                             }
                           </td>
