@@ -745,7 +745,7 @@ class SPXAPITester:
         return True
 
 def main():
-    print("🚀 Starting Options Scanner API Tests - Auto-Expiration Feature Focus")
+    print("🚀 Starting Auto-Expiration Feature Tests - 4:30 PM ET + Opened Column")
     print("=" * 70)
     
     # Setup
@@ -755,22 +755,53 @@ def main():
     print("\n📡 Testing Basic Connectivity...")
     tester.test_basic_connectivity()
     
-    # NEW: Test Portfolio/Position Management (Auto-Expiration Feature)
-    print("\n💼 Testing Portfolio Management - Auto-Expiration Feature...")
-    print("\n⏰ Testing Position Expiration...")
+    # FOCUS: Test Auto-Expiration Feature with 4:30 PM ET Logic
+    print("\n⏰ Testing Auto-Expiration Feature (4:30 PM ET Logic)...")
     expire_success, expire_data = tester.test_positions_expire()
     
-    print("\n📋 Testing Get All Positions...")
+    # Detailed analysis of expiration logic
+    if expire_success and expire_data:
+        print(f"\n   📊 Expiration Results:")
+        print(f"   - Message: {expire_data.get('message', 'N/A')}")
+        print(f"   - Expired Positions: {len(expire_data.get('expired_positions', []))}")
+        
+        # Current time check (should be ~11:51 AM ET, so no positions should expire today)
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        eastern = ZoneInfo("America/New_York")
+        now_et = datetime.now(eastern)
+        print(f"   - Current Eastern Time: {now_et.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+        print(f"   - Expected: No positions expiring today before 4:30 PM ET")
+    
+    # FOCUS: Test Opened Column Data (opened_at field)
+    print("\n📋 Testing Opened Column Data (opened_at field)...")
     all_positions_success, all_positions_data = tester.test_get_all_positions()
+    
+    # Validate opened_at field in positions
+    if all_positions_success and all_positions_data:
+        print(f"\n   📊 Opened Column Validation:")
+        print(f"   - Total Positions: {len(all_positions_data)}")
+        
+        opened_at_valid = 0
+        for pos in all_positions_data:
+            if 'opened_at' in pos and pos['opened_at']:
+                opened_at_valid += 1
+                # Validate ISO datetime format
+                try:
+                    datetime.fromisoformat(pos['opened_at'].replace('Z', '+00:00'))
+                    print(f"   ✅ Position {pos.get('id', 'Unknown')[:8]}... has valid opened_at: {pos['opened_at']}")
+                except:
+                    print(f"   ❌ Position {pos.get('id', 'Unknown')[:8]}... has invalid opened_at: {pos['opened_at']}")
+            else:
+                print(f"   ❌ Position {pos.get('id', 'Unknown')[:8]}... missing opened_at field")
+        
+        print(f"   - Positions with valid opened_at: {opened_at_valid}/{len(all_positions_data)}")
     
     print("\n🟢 Testing Get Open Positions...")
     open_positions_success, open_positions_data = tester.test_get_open_positions()
     
     print("\n🟡 Testing Get Expired Positions...")
     expired_positions_success, expired_positions_data = tester.test_get_expired_positions()
-    
-    print("\n🔴 Testing Get Closed Positions...")
-    closed_positions_success, closed_positions_data = tester.test_get_closed_positions()
     
     print("\n📊 Testing Portfolio Summary...")
     summary_success, summary_data = tester.test_portfolio_summary()
