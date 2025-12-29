@@ -3193,12 +3193,22 @@ function App() {
                   <div className="text-green-400 font-mono">${closeDialog.position.entry_price.toFixed(2)}</div>
                 </div>
 
-                {quote && (
-                  <div>
-                    <div className="text-zinc-400 text-sm mb-1">Current {symbol} Price</div>
-                    <div className="text-white font-mono">${quote.price?.toFixed(2)}</div>
-                  </div>
-                )}
+                {(() => {
+                  const currentStrategyPrice = calculateCurrentStrategyPrice(closeDialog.position);
+                  return currentStrategyPrice !== null ? (
+                    <div>
+                      <div className="text-zinc-400 text-sm mb-1">Current Strategy Quote</div>
+                      <div className="text-cyan-400 font-mono">${Math.abs(currentStrategyPrice).toFixed(2)}</div>
+                      <p className="text-zinc-500 text-xs mt-1">Based on current option prices</p>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="text-zinc-400 text-sm mb-1">Current {symbol} Price</div>
+                      <div className="text-white font-mono">${quote?.price?.toFixed(2) || 'N/A'}</div>
+                      <p className="text-zinc-500 text-xs mt-1">Option chain not loaded for this expiration</p>
+                    </div>
+                  );
+                })()}
                 
                 <div>
                   <label className="text-zinc-400 text-sm mb-1 block">Exit Price (per contract)</label>
