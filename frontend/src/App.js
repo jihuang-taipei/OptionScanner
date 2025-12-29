@@ -3138,6 +3138,8 @@ function App() {
                           <td className="py-3 px-2 text-center">
                             {pos.status === 'open' ? (
                               <span className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-xs">Open</span>
+                            ) : pos.status === 'expired' ? (
+                              <span className="px-2 py-1 bg-amber-500/20 text-amber-400 rounded text-xs">Expired</span>
                             ) : (
                               <span className="px-2 py-1 bg-zinc-500/20 text-zinc-400 rounded text-xs">Closed</span>
                             )}
