@@ -1,62 +1,31 @@
 # Test Result Tracking
 
-## Test Run - OTM Filter Verification
+## Test Run - Auto-Expiration Feature
 
 ### Features to Test:
-1. Straddles & Strangles section - configurable OTM filter inputs (0.5% default, 0.1 step)
-2. Calendar Spreads section - configurable OTM filter input (0.5% default, 0.1 step)  
-3. Filter functionality - tables should filter strategies based on user-defined % range
-4. Input validation - values should be constrained between 0.01 and 10
+1. Backend `/api/positions/expire` endpoint - should expire positions with expiration date on or before today
+2. Frontend `expirePositions` function - should call the expire endpoint when portfolio is loaded
+3. Portfolio UI updates - should show expired positions with correct status and P/L
+4. Summary cards - "Closed/Expired" count and "Realized P/L" should include both closed and expired positions
 
 ### Test Status:
-- Straddles Filter UI: ✅ PASSED
-- Strangles Filter UI: ✅ PASSED
-- Calendar Spreads Filter UI: ✅ PASSED
-- Filter Functionality: ✅ ALL PASSED
-- Floating-point precision fix: ✅ PASSED (0.5 → 0.6/0.4 now works correctly)
+- Backend expire endpoint: ✅ PASSED (expired 3 positions)
+- Frontend integration: PENDING TESTING
+- UI display updates: PENDING TESTING
+- Summary calculations: PENDING TESTING
 
 ### Detailed Test Results:
 
-#### Straddles & Strangles Section:
-✅ **Filter Inputs Found**: Both "Straddle Strike ±" and "Strangle Strikes ±" inputs present
-✅ **Default Values**: Both inputs have correct default value of 0.5%
-✅ **Step Increment**: Both inputs have correct step of 0.1
-✅ **Input Validation**: Min=0.01, Max=10 constraints properly set
-✅ **Current Price Display**: SPX price $6,929.94 displayed correctly
-✅ **Expiration Display**: Shows "Exp: 12/29/2025"
-✅ **Tab Buttons**: Both "Straddles (100)" and "Strangles (100)" tabs present
-✅ **Results Display**: Shows "Showing X of Y straddles/strangles" format
-
-#### Filter Functionality Testing:
-✅ **Straddles Filter**: 
-  - Initial: 11 of 100 straddles (0.5%)
-  - Changed to 2.0%: 40 of 100 straddles (INCREASED correctly)
-  - Back to 0.5%: 11 of 100 straddles (DECREASED correctly)
-
-✅ **Strangles Filter**:
-  - Initial: 3 of 100 strangles (0.5%)
-  - Changed to 1.5%: 27 of 100 strangles (INCREASED correctly)
-
-#### Calendar Spreads Section:
-✅ **Filter Input Found**: "Strike ±" input present with correct default 0.5% and step 0.1
-✅ **Price Range Display**: Shows calculated range in parentheses
-✅ **Expiration Info**: Near and Far expiration dates displayed
-✅ **Found Count**: Shows "Found: 100" count
-❌ **Filter Functionality Issue**: Calendar filter did not change results count (remained 24 of 100)
+#### Backend Testing:
+✅ **Expire Endpoint**: `POST /api/positions/expire` returns correct response
+✅ **Expiration Logic**: Positions with `expiration <= today` are marked as expired
+✅ **P/L Calculation**: Exit price calculated based on intrinsic value at expiration
+✅ **Database Update**: Positions correctly updated with `status: 'expired'`, `exit_price`, and `realized_pnl`
 
 ### Agent Communication:
-- Testing agent completed comprehensive OTM filter verification
-- All UI elements are correctly implemented with proper defaults and constraints
-- Straddles and Strangles filters work correctly - counts increase/decrease as expected
-- Calendar Spreads filter UI is correct but functionality appears broken
-- Filter changes should immediately update displayed data but Calendar filter is not responding
-- Current observations: 
-  - Straddles section shows "Showing 11 of 100 straddles" with 0.5% filter
-  - Calendar Spreads shows "Showing 24 of 100 calendar spreads" with 0.5% filter (unchanged when filter modified)
-  
-### Critical Issue Found:
-- Calendar Spreads filter input exists and has correct attributes but changing the value does not update the filtered results
-- This suggests a potential bug in the calendar filter implementation
+- Feature implementation complete
+- Backend and frontend changes made
+- Ready for comprehensive testing
 
 ### Incorporate User Feedback:
 - None
