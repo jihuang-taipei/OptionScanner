@@ -962,12 +962,12 @@ function App() {
             ) : (
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  {chartType === "area" ? (
-                    <AreaChart data={history} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  {chartType === "bollinger" ? (
+                    <ComposedChart data={calculateBollingerBands(history)} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <defs>
-                        <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={isPositive ? "#22c55e" : "#ef4444"} stopOpacity={0.3}/>
-                          <stop offset="95%" stopColor={isPositive ? "#22c55e" : "#ef4444"} stopOpacity={0}/>
+                        <linearGradient id="bandGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#a855f7" stopOpacity={0.15}/>
+                          <stop offset="95%" stopColor="#a855f7" stopOpacity={0.05}/>
                         </linearGradient>
                       </defs>
                       <XAxis 
@@ -994,16 +994,47 @@ function App() {
                         tickFormatter={(value) => value.toLocaleString()}
                         width={60}
                       />
-                      <Tooltip content={<CustomTooltip />} />
+                      <Tooltip content={<BollingerTooltip />} />
+                      {/* Upper Band */}
                       <Area 
+                        type="monotone" 
+                        dataKey="upperBand" 
+                        stroke="#a855f7"
+                        strokeWidth={1}
+                        strokeDasharray="3 3"
+                        fillOpacity={0}
+                        fill="none"
+                        connectNulls
+                      />
+                      {/* Lower Band */}
+                      <Area 
+                        type="monotone" 
+                        dataKey="lowerBand" 
+                        stroke="#a855f7"
+                        strokeWidth={1}
+                        strokeDasharray="3 3"
+                        fillOpacity={0}
+                        fill="none"
+                        connectNulls
+                      />
+                      {/* SMA (Middle Band) */}
+                      <Line 
+                        type="monotone" 
+                        dataKey="sma" 
+                        stroke="#f59e0b"
+                        strokeWidth={1.5}
+                        dot={false}
+                        connectNulls
+                      />
+                      {/* Price Line */}
+                      <Line 
                         type="monotone" 
                         dataKey="close" 
                         stroke={isPositive ? "#22c55e" : "#ef4444"}
                         strokeWidth={2}
-                        fillOpacity={1} 
-                        fill="url(#colorPrice)" 
+                        dot={false}
                       />
-                    </AreaChart>
+                    </ComposedChart>
                   ) : chartType === "line" ? (
                     <LineChart data={history} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                       <XAxis 
