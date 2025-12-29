@@ -1226,7 +1226,7 @@ function App() {
                   <SelectContent className="bg-zinc-900 border-zinc-800">
                     {expirations.slice(0, 12).map((exp) => (
                       <SelectItem key={exp} value={exp} className="text-white hover:bg-zinc-800">
-                        {new Date(exp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        {formatExpDate(exp, { includeYear: true })}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1428,7 +1428,7 @@ function App() {
                 {creditSpreads && (
                   <div className="mb-4 flex gap-4 text-sm">
                     <span className="text-zinc-400">{symbol}: <span className="text-white font-mono">${creditSpreads.current_price.toLocaleString()}</span></span>
-                    <span className="text-zinc-400">Exp: <span className="text-white">{new Date(creditSpreads.expiration).toLocaleDateString()}</span></span>
+                    <span className="text-zinc-400">Exp: <span className="text-white">{formatExpDate(creditSpreads.expiration, { includeYear: true })}</span></span>
                   </div>
                 )}
 
@@ -1555,7 +1555,7 @@ function App() {
                     <span className="text-zinc-500 text-xs">
                       {symbol}: <span className="text-white font-mono">${ironCondors.current_price?.toLocaleString()}</span>
                       <span className="text-zinc-600 mx-2">|</span>
-                      Exp: <span className="text-white">{new Date(ironCondors.expiration).toLocaleDateString()}</span>
+                      Exp: <span className="text-white">{formatExpDate(ironCondors.expiration, { includeYear: true })}</span>
                       <span className="text-zinc-600 mx-2">|</span>
                       Found: <span className="text-white">{ironCondors.iron_condors?.length || 0}</span>
                     </span>
@@ -1661,7 +1661,7 @@ function App() {
                     <span className="text-zinc-500 text-xs">
                       {symbol}: <span className="text-white font-mono">${ironButterflies.current_price?.toLocaleString()}</span>
                       <span className="text-zinc-600 mx-2">|</span>
-                      Exp: <span className="text-white">{new Date(ironButterflies.expiration).toLocaleDateString()}</span>
+                      Exp: <span className="text-white">{formatExpDate(ironButterflies.expiration, { includeYear: true })}</span>
                       <span className="text-zinc-600 mx-2">|</span>
                       Found: <span className="text-white">{ironButterflies.iron_butterflies?.length || 0}</span>
                     </span>
@@ -1759,7 +1759,7 @@ function App() {
                     <span className="text-zinc-500 text-xs">
                       {symbol}: <span className="text-white font-mono">${straddles.current_price?.toLocaleString()}</span>
                       <span className="text-zinc-600 mx-2">|</span>
-                      Exp: <span className="text-white">{new Date(straddles.expiration).toLocaleDateString()}</span>
+                      Exp: <span className="text-white">{formatExpDate(straddles.expiration, { includeYear: true })}</span>
                     </span>
                   )}
                 </div>
