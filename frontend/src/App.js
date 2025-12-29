@@ -2378,22 +2378,22 @@ function App() {
                     </Select>
                   </div>
                   <div className="flex items-center gap-2">
-                    <label className="text-zinc-400 text-sm">Max Risk/Reward:</label>
-                    <Select value={maxRiskReward.toString()} onValueChange={(v) => setMaxRiskReward(parseFloat(v))}>
-                      <SelectTrigger className="w-24 bg-zinc-800 border-zinc-700 text-white text-sm h-8" data-testid="max-rr-filter">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-zinc-800">
-                        {[5, 10, 15, 20, 25, 50, 100].map((rr) => (
-                          <SelectItem key={rr} value={rr.toString()} className="text-white hover:bg-zinc-800">
-                            {rr}:1
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <label className="text-zinc-400 text-sm">Min P(OTM) ≥</label>
+                    <div className="relative">
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="5"
+                        value={minProbOTM}
+                        onChange={(e) => setMinProbOTM(Math.max(0, Math.min(100, parseInt(e.target.value) || 50)))}
+                        className="w-20 bg-zinc-800 border-zinc-700 text-white text-sm h-8 pr-6 text-center font-mono"
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">%</span>
+                    </div>
                   </div>
                   <button 
-                    onClick={() => { setMinCredit(0); setMaxRiskReward(100); }}
+                    onClick={() => { setMinCredit(0); setMaxRiskReward(100); setMinProbOTM(50); }}
                     className="text-zinc-500 hover:text-white text-sm underline transition-colors"
                   >
                     Reset filters
