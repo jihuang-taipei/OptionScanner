@@ -65,6 +65,29 @@ import {
   exportCalendarSpreads,
 } from "./utils/exportUtils";
 
+// Format X-axis tick based on period
+const formatChartTick = (value, period) => {
+  if (!value) return '';
+  
+  // For 1D intraday, show only time
+  if (period === '1d') {
+    if (value.includes(' ')) {
+      return value.split(' ')[1]; // "HH:MM"
+    }
+  }
+  
+  // For 5D and longer periods with intraday data, show date
+  if (value.includes(' ')) {
+    const [datePart] = value.split(' ');
+    const date = new Date(datePart);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+  
+  // For daily data, show date
+  const date = new Date(value);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
 // Custom debounce hook
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
