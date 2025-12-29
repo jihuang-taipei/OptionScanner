@@ -80,6 +80,71 @@ const useDebounce = (value, delay) => {
   return debouncedValue;
 };
 
+// OHLC Tooltip for Candlestick Chart
+const OHLCTooltip = memo(({ active, payload, label }) => {
+  if (active && payload && payload.length > 0) {
+    const data = payload[0].payload;
+    let displayLabel = label;
+    if (label && label.includes(' ')) {
+      const [datePart, timePart] = label.split(' ');
+      const date = new Date(datePart);
+      displayLabel = `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}, ${timePart}`;
+    } else if (label) {
+      const date = new Date(label);
+      displayLabel = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+    const isBullish = data.close >= data.open;
+    return (
+      <div className="bg-zinc-900 border border-white/10 rounded-lg p-3 text-sm">
+        <p className="text-zinc-400 mb-2">{displayLabel}</p>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 font-mono">
+          <span className="text-zinc-500">Open:</span>
+          <span className="text-white">${data.open?.toLocaleString()}</span>
+          <span className="text-zinc-500">High:</span>
+          <span className="text-green-400">${data.high?.toLocaleString()}</span>
+          <span className="text-zinc-500">Low:</span>
+          <span className="text-red-400">${data.low?.toLocaleString()}</span>
+          <span className="text-zinc-500">Close:</span>
+          <span className={isBullish ? 'text-green-400' : 'text-red-400'}>${data.close?.toLocaleString()}</span>
+        </div>
+      </div>
+    );
+  }
+  return null;
+});
+
+// Candlestick shape component
+const CandlestickBar = memo(({ x, y, width, height, payload, yAxisDomain }) => {
+  if (!payload || !yAxisDomain) return null;
+  
+  const { open, high, low, close } = payload;
+  const isBullish = close >= open;
+  const color = isBullish ? '#22c55e' : '#ef4444';
+  
+  const [minVal, maxVal] = yAxisDomain;
+  const range = maxVal - minVal;
+  const chartHeight = 250;
+  
+  const scaleY = (val) => chartHeight - ((val - minVal) / range) * chartHeight + 10;
+  
+  const bodyTop = scaleY(Math.max(open, close));
+  const bodyBottom = scaleY(Math.min(open, close));
+  const bodyHeight = Math.max(1, bodyBottom - bodyTop);
+  const wickTop = scaleY(high);
+  const wickBottom = scaleY(low);
+  const candleWidth = Math.max(2, width * 0.7);
+  const candleX = x + (width - candleWidth) / 2;
+  const wickX = x + width / 2;
+  
+  return (
+    <g>
+      <line x1={wickX} y1={wickTop} x2={wickX} y2={bodyTop} stroke={color} strokeWidth={1} />
+      <line x1={wickX} y1={bodyBottom} x2={wickX} y2={wickBottom} stroke={color} strokeWidth={1} />
+      <rect x={candleX} y={bodyTop} width={candleWidth} height={bodyHeight} fill={color} stroke={color} strokeWidth={1} />
+    </g>
+  );
+});
+
 function App() {
   // Symbol state
   const [symbol, setSymbol] = useState("^SPX");
