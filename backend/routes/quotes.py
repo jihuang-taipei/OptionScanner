@@ -56,9 +56,15 @@ async def get_spx_quote():
 
 
 @router.get("/history", response_model=SPXHistory)
-async def get_history(symbol: str = "^GSPC", period: str = "1mo"):
-    """Get historical data for any stock/index"""
-    return YahooFinanceService.fetch_history(symbol, period)
+async def get_history(symbol: str = "^GSPC", period: str = "1mo", interval: str = None):
+    """Get historical data for any stock/index
+    
+    Args:
+        symbol: Stock/index symbol (default: ^GSPC)
+        period: Time period - 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max
+        interval: Data interval - 1m, 5m, 15m, 1h, 1d (auto-selected if not provided)
+    """
+    return YahooFinanceService.fetch_history(symbol, period, interval)
 
 
 @router.get("/spx/history", response_model=SPXHistory)

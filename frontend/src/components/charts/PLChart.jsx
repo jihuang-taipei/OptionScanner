@@ -1,8 +1,8 @@
-import { ResponsiveContainer, ComposedChart, Area, XAxis, YAxis, ReferenceLine } from 'recharts';
+import { memo } from 'react';
+import { ResponsiveContainer, ComposedChart, XAxis, YAxis, Tooltip, ReferenceLine, Area, Line } from 'recharts';
 import { calculatePLData } from '../../utils/calculations';
 
-// P/L Chart Tooltip
-export const PLTooltip = ({ active, payload, label }) => {
+const PLTooltip = memo(({ active, payload, label }) => {
   if (active && payload && payload.length) {
     const pl = payload[0].value;
     return (
@@ -15,17 +15,15 @@ export const PLTooltip = ({ active, payload, label }) => {
     );
   }
   return null;
-};
+});
 
-// P/L Chart Component
-export const PLChart = ({ strategy, currentPrice, onClose }) => {
+const PLChart = memo(({ strategy, currentPrice, onClose }) => {
   if (!strategy) return null;
   
   const plData = calculatePLData(strategy, currentPrice);
   const maxProfit = Math.max(...plData.map(d => d.pl));
   const maxLoss = Math.min(...plData.map(d => d.pl));
   
-  // Find breakeven points
   const breakevenPoints = [];
   for (let i = 1; i < plData.length; i++) {
     if ((plData[i-1].pl < 0 && plData[i].pl >= 0) || (plData[i-1].pl >= 0 && plData[i].pl < 0)) {
@@ -77,21 +75,37 @@ export const PLChart = ({ strategy, currentPrice, onClose }) => {
               tickLine={false}
               tick={{ fill: '#71717a', fontSize: 11 }}
               tickFormatter={(v) => `$${v}`}
+              domain={[maxLoss * 1.1, maxProfit * 1.1]}
             />
-            <ReferenceLine y={0} stroke="#3f3f46" strokeDasharray="3 3" />
-            <ReferenceLine x={currentPrice} stroke="#fbbf24" strokeDasharray="3 3" />
-            <Area
-              type="monotone"
-              dataKey="pl"
-              stroke="#22c55e"
-              strokeWidth={2}
+            <Tooltip content={<PLTooltip />} />
+            <ReferenceLine y={0} stroke="#52525b" strokeDasharray="3 3" />
+            <ReferenceLine x={currentPrice} stroke="#3b82f6" strokeDasharray="3 3" label={{ value: 'Current', fill: '#3b82f6', fontSize: 10 }} />
+            <Area 
+              type="monotone" 
+              dataKey="pl" 
+              stroke="none"
               fill="url(#plGradientPositive)"
+              fillOpacity={1}
+              isAnimationActive={false}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="pl" 
+              stroke="#a855f7"
+              strokeWidth={2}
+              dot={false}
+              isAnimationActive={false}
             />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
+      
+      <div className="text-xs text-zinc-500 text-center">
+        P/L at expiration based on underlying price. Current price: ${currentPrice?.toLocaleString()}
+      </div>
     </div>
   );
-};
+});
 
 export default PLChart;
+export { PLTooltip };

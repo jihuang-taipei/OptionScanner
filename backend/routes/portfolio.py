@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from typing import List
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 import yfinance as yf
 import logging
 
@@ -130,10 +131,18 @@ async def close_position(position_id: str, exit_price: float):
         entry_value = position["entry_price"] * position["quantity"] * 100
         exit_value = exit_price * position["quantity"] * 100
         
-        if position["strategy_type"] in ['bull_put', 'bear_call', 'iron_condor', 'iron_butterfly']:
+        # For credit strategies: entry_price is positive (received credit), exit_price is cost to close
+        # P/L = Credit received - Cost to close = entry_value - exit_value
+        # For debit strategies: entry_price is negative (paid debit), exit_price is value received
+        # P/L = Value received + Entry cost = exit_value + entry_value (since entry is negative)
+        if position["strategy_type"] in ['bull_put', 'bear_call', 'iron_condor', 'iron_butterfly', 'short_call', 'short_put']:
+            # Credit strategies: P/L = Credit received - Cost to close
             realized_pnl = entry_value - exit_value
         else:
-            realized_pnl = exit_value - entry_value
+            # Debit strategies: entry_price is negative, so P/L = exit_value + entry_value
+            # Example: entry=-5, exit=7 -> P/L = 7 + (-5) = 2 profit
+            # Example: entry=-5, exit=3 -> P/L = 3 + (-5) = -2 loss
+            realized_pnl = exit_value + entry_value
         
         await db.positions.update_one(
             {"id": position_id},
@@ -178,6 +187,134 @@ async def delete_position(position_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to delete position: {str(e)}")
 
 
+@router.post("/positions/expire")
+async def expire_positions():
+    """
+    Check all open positions and expire those past their expiration date.
+    Calculate final P/L based on closing price at expiration.
+    Positions expire at 4:30 PM Eastern time on expiration date.
+    """
+    if db is None:
+        raise HTTPException(status_code=503, detail="Database not available")
+    
+    try:
+        # Get current time in Eastern timezone
+        eastern = ZoneInfo("America/New_York")
+        now_eastern = datetime.now(eastern)
+        today = now_eastern.date()
+        current_time = now_eastern.time()
+        
+        # Market close time is 4:00 PM, we expire at 4:30 PM to account for settlement
+        expire_cutoff_time = datetime.strptime("16:30", "%H:%M").time()
+        
+        # Get all open positions
+        open_positions = await db.positions.find({"status": "open"}, {"_id": 0}).to_list(1000)
+        
+        expired_count = 0
+        expired_positions = []
+        
+        for pos in open_positions:
+            try:
+                # Parse expiration date
+                exp_date = datetime.fromisoformat(pos["expiration"].replace('Z', '+00:00')).date()
+                
+                # Check if position has expired:
+                # - If expiration date is before today: expired
+                # - If expiration date is today AND current time >= 4:30 PM ET: expired
+                should_expire = False
+                if exp_date < today:
+                    should_expire = True
+                elif exp_date == today and current_time >= expire_cutoff_time:
+                    should_expire = True
+                
+                if should_expire:
+                    symbol = pos["symbol"]
+                    
+                    # Get closing price on expiration date
+                    ticker = yf.Ticker(symbol)
+                    
+                    # Try to get historical data around expiration date
+                    hist = ticker.history(start=exp_date.isoformat(), end=(exp_date + timedelta(days=5)).isoformat())
+                    
+                    if hist.empty:
+                        # Fallback to recent price
+                        hist = ticker.history(period="5d")
+                    
+                    if not hist.empty:
+                        closing_price = float(hist['Close'].iloc[0])
+                    else:
+                        logger.warning(f"Could not get closing price for {symbol}, using current price")
+                        info = ticker.info
+                        closing_price = info.get('regularMarketPrice', info.get('previousClose', 0))
+                    
+                    # Calculate P/L based on option expiration values
+                    exit_price = 0
+                    for leg in pos["legs"]:
+                        strike = leg["strike"]
+                        option_type = leg["option_type"]
+                        action = leg["action"]
+                        
+                        # Calculate intrinsic value at expiration
+                        if option_type == "call":
+                            intrinsic = max(0, closing_price - strike)
+                        else:  # put
+                            intrinsic = max(0, strike - closing_price)
+                        
+                        # Add or subtract based on position
+                        if action == "sell":
+                            exit_price += intrinsic  # Have to pay intrinsic if ITM
+                        else:  # buy
+                            exit_price -= intrinsic  # Receive intrinsic if ITM
+                    
+                    # Calculate realized P/L
+                    entry_value = pos["entry_price"] * pos["quantity"] * 100
+                    exit_value = exit_price * pos["quantity"] * 100
+                    
+                    # For credit strategies (entry_price >= 0): profit = entry - exit
+                    # For debit strategies (entry_price < 0): profit = exit + entry (entry is negative)
+                    if pos["entry_price"] >= 0:  # Credit strategy
+                        realized_pnl = entry_value - exit_value
+                    else:  # Debit strategy
+                        # Example: entry=-5, exit=7 -> P/L = 7 + (-5) = 2 profit
+                        realized_pnl = exit_value + entry_value
+                    
+                    # Update position as expired
+                    await db.positions.update_one(
+                        {"id": pos["id"]},
+                        {"$set": {
+                            "status": "expired",
+                            "closed_at": datetime.now(timezone.utc).isoformat(),
+                            "exit_price": round(exit_price, 2),
+                            "realized_pnl": round(realized_pnl, 2)
+                        }}
+                    )
+                    
+                    expired_count += 1
+                    expired_positions.append({
+                        "id": pos["id"],
+                        "strategy_name": pos["strategy_name"],
+                        "expiration": pos["expiration"],
+                        "closing_price": closing_price,
+                        "exit_price": round(exit_price, 2),
+                        "realized_pnl": round(realized_pnl, 2)
+                    })
+                    
+                    logger.info(f"Position expired: {pos['strategy_name']}, P/L: ${realized_pnl:.2f}")
+                    
+            except Exception as e:
+                logger.error(f"Error processing position {pos.get('id')}: {str(e)}")
+                continue
+        
+        return {
+            "message": f"Expired {expired_count} positions",
+            "expired_positions": expired_positions
+        }
+        
+    except Exception as e:
+        logger.error(f"Error expiring positions: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to expire positions: {str(e)}")
+
+
 @router.get("/portfolio/summary", response_model=PortfolioSummary)
 async def get_portfolio_summary():
     """Get portfolio summary with all positions and P/L"""
@@ -188,7 +325,7 @@ async def get_portfolio_summary():
         positions = await get_positions()
         
         open_positions = [p for p in positions if p.status == "open"]
-        closed_positions = [p for p in positions if p.status == "closed"]
+        closed_positions = [p for p in positions if p.status in ["closed", "expired"]]
         
         total_unrealized = sum(p.unrealized_pnl or 0 for p in open_positions)
         total_realized = sum(p.realized_pnl or 0 for p in closed_positions)

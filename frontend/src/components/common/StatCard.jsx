@@ -37,9 +37,24 @@ export const PeriodButton = ({ period, currentPeriod, onClick, label }) => (
 // Custom Tooltip for Chart
 export const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
+    // Format label based on whether it's intraday or daily data
+    let displayLabel = label;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    if (label && label.includes(' ')) {
+      // Intraday: "2025-12-29 14:30" -> "Dec 29, 14:30"
+      const [datePart, timePart] = label.split(' ');
+      const [year, month, day] = datePart.split('-').map(Number);
+      displayLabel = `${months[month - 1]} ${day}, ${timePart}`;
+    } else if (label) {
+      // Daily: "2025-12-29" -> "Dec 29, 2025"
+      const [year, month, day] = label.split('-').map(Number);
+      displayLabel = `${months[month - 1]} ${day}, ${year}`;
+    }
+    
     return (
       <div className="custom-tooltip bg-zinc-900 border border-white/10 rounded-lg p-3">
-        <p className="text-zinc-400 text-sm mb-1">{label}</p>
+        <p className="text-zinc-400 text-sm mb-1">{displayLabel}</p>
         <p className="font-mono text-lg text-white font-medium">
           ${payload[0].value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </p>

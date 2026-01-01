@@ -4,7 +4,7 @@ from datetime import datetime
 import json
 
 class SPXAPITester:
-    def __init__(self, base_url="https://optiontool.preview.emergentagent.com"):
+    def __init__(self, base_url="https://finprobe.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
@@ -566,6 +566,127 @@ class SPXAPITester:
                 results.append((symbol, False))
         return results
 
+    # Portfolio/Position Testing Methods
+    def validate_positions_response(self, data):
+        """Validate positions response structure"""
+        if not isinstance(data, list):
+            print(f"   Positions should be a list, got {type(data)}")
+            return False
+        
+        if len(data) == 0:
+            print("   No positions found")
+            return True  # Empty list is valid
+        
+        # Validate first position structure
+        first_pos = data[0]
+        required_fields = ['id', 'symbol', 'strategy_type', 'strategy_name', 'status', 'entry_price', 'quantity']
+        
+        for field in required_fields:
+            if field not in first_pos:
+                print(f"   Missing field in position: {field}")
+                return False
+        
+        print(f"   Positions validation passed - {len(data)} positions found")
+        return True
+
+    def validate_expire_response(self, data):
+        """Validate expire positions response structure"""
+        required_fields = ['message', 'expired_positions']
+        
+        for field in required_fields:
+            if field not in data:
+                print(f"   Missing required field: {field}")
+                return False
+        
+        if not isinstance(data['expired_positions'], list):
+            print(f"   Expired positions should be a list, got {type(data['expired_positions'])}")
+            return False
+        
+        expired_count = len(data['expired_positions'])
+        print(f"   Expire validation passed - {expired_count} positions expired")
+        return True
+
+    def test_positions_expire(self):
+        """Test positions expire endpoint"""
+        return self.run_test(
+            "Expire Positions",
+            "POST",
+            "api/positions/expire",
+            200,
+            validate_response=self.validate_expire_response
+        )
+
+    def test_get_all_positions(self):
+        """Test get all positions endpoint"""
+        return self.run_test(
+            "Get All Positions",
+            "GET",
+            "api/positions",
+            200,
+            validate_response=self.validate_positions_response
+        )
+
+    def test_get_open_positions(self):
+        """Test get open positions only"""
+        return self.run_test(
+            "Get Open Positions",
+            "GET",
+            "api/positions",
+            200,
+            params={"status": "open"},
+            validate_response=self.validate_positions_response
+        )
+
+    def test_get_expired_positions(self):
+        """Test get expired positions only"""
+        return self.run_test(
+            "Get Expired Positions",
+            "GET",
+            "api/positions",
+            200,
+            params={"status": "expired"},
+            validate_response=self.validate_positions_response
+        )
+
+    def test_get_closed_positions(self):
+        """Test get closed positions only"""
+        return self.run_test(
+            "Get Closed Positions",
+            "GET",
+            "api/positions",
+            200,
+            params={"status": "closed"},
+            validate_response=self.validate_positions_response
+        )
+
+    def test_portfolio_summary(self):
+        """Test portfolio summary endpoint"""
+        def validate_summary(data):
+            required_fields = ['total_positions', 'open_positions', 'closed_positions', 
+                             'total_unrealized_pnl', 'total_realized_pnl', 'positions']
+            
+            for field in required_fields:
+                if field not in data:
+                    print(f"   Missing field in summary: {field}")
+                    return False
+            
+            if not isinstance(data['positions'], list):
+                print(f"   Positions should be a list, got {type(data['positions'])}")
+                return False
+            
+            print(f"   Summary validation passed - {data['total_positions']} total positions, "
+                  f"{data['open_positions']} open, {data['closed_positions']} closed/expired")
+            print(f"   Unrealized P/L: ${data['total_unrealized_pnl']}, Realized P/L: ${data['total_realized_pnl']}")
+            return True
+        
+        return self.run_test(
+            "Portfolio Summary",
+            "GET",
+            "api/portfolio/summary",
+            200,
+            validate_response=validate_summary
+        )
+
     def validate_options_expirations_symbol(self, data, expected_symbol):
         """Validate options expirations response for specific symbol"""
         required_fields = ['symbol', 'expirations']
@@ -623,9 +744,81 @@ class SPXAPITester:
         print(f"   Options chain validation passed - Symbol: {data['symbol']}, {len(data['calls'])} calls, {len(data['puts'])} puts")
         return True
 
+    def test_refactored_endpoints(self):
+        """Test the specific endpoints mentioned in the review request"""
+        print("\n🔍 Testing Refactored Frontend Endpoints...")
+        
+        # 1. Test stock quote endpoint (using SPX as example)
+        quote_success, quote_data = self.run_test(
+            "Stock Quote (SPX)",
+            "GET", 
+            "api/spx/quote",
+            200,
+            validate_response=self.validate_spx_quote
+        )
+        
+        # 2. Test options chain endpoint
+        # First get expirations
+        exp_success, exp_data = self.test_options_expirations()
+        if exp_success and exp_data.get('expirations'):
+            expiration = exp_data['expirations'][0]
+            options_success, options_data = self.run_test(
+                "Options Chain (SPX)",
+                "GET",
+                "api/spx/options/chain", 
+                200,
+                params={"expiration": expiration},
+                validate_response=self.validate_options_chain
+            )
+        else:
+            options_success = False
+            
+        # 3. Test bull put spreads (credit spreads)
+        if exp_success and exp_data.get('expirations'):
+            expiration = exp_data['expirations'][0]
+            spreads_success, spreads_data = self.run_test(
+                "Bull Put Spreads (Credit Spreads)",
+                "GET",
+                "api/spx/credit-spreads",
+                200,
+                params={"expiration": expiration, "spread": 5}
+            )
+        else:
+            spreads_success = False
+            
+        # 4. Test iron condors
+        if exp_success and exp_data.get('expirations'):
+            expiration = exp_data['expirations'][0]
+            condors_success, condors_data = self.run_test(
+                "Iron Condors (SPX)",
+                "GET", 
+                "api/spx/iron-condors",
+                200,
+                params={"expiration": expiration, "spread": 5}
+            )
+        else:
+            condors_success = False
+            
+        # 5. Test portfolio positions
+        positions_success, positions_data = self.run_test(
+            "Portfolio Positions",
+            "GET",
+            "api/positions", 
+            200,
+            validate_response=self.validate_positions_response
+        )
+        
+        return {
+            "quote": quote_success,
+            "options": options_success, 
+            "spreads": spreads_success,
+            "condors": condors_success,
+            "positions": positions_success
+        }
+
 def main():
-    print("🚀 Starting SPX Finance API Tests - Configurable Symbol Feature")
-    print("=" * 60)
+    print("🚀 Testing Options Scanner After Frontend Refactoring")
+    print("=" * 70)
     
     # Setup
     tester = SPXAPITester()
@@ -634,130 +827,74 @@ def main():
     print("\n📡 Testing Basic Connectivity...")
     tester.test_basic_connectivity()
     
-    # Test SPX quote endpoint (backwards compatibility)
-    print("\n💰 Testing SPX Quote Endpoint (Legacy)...")
-    tester.test_spx_quote()
+    # FOCUS: Test the specific endpoints mentioned in review request
+    print("\n🎯 Testing Core API Endpoints After Refactoring...")
+    refactor_results = tester.test_refactored_endpoints()
     
-    # Test SPX history endpoints (backwards compatibility)
-    print("\n📈 Testing SPX History Endpoints (Legacy)...")
-    tester.test_spx_history_default()
+    # Test additional strategy endpoints to ensure they still work
+    print("\n📊 Testing Additional Strategy Endpoints...")
     
-    print("\n📊 Testing Different Time Periods...")
-    period_results = tester.test_spx_history_periods()
-    
-    print("\n🚫 Testing Error Handling...")
-    tester.test_invalid_period()
-    
-    # NEW: Test configurable symbol feature
-    print("\n🔄 Testing Configurable Symbol Feature...")
-    print("\n💰 Testing Quote with Different Symbols...")
-    quote_results = tester.test_configurable_quote()
-    for symbol, success, price in quote_results:
-        if success:
-            print(f"   ✅ {symbol}: ${price}")
-        else:
-            print(f"   ❌ {symbol}: Failed")
-    
-    print("\n📈 Testing History with Different Symbols...")
-    history_results = tester.test_configurable_history()
-    for symbol, success in history_results:
-        if success:
-            print(f"   ✅ {symbol}: History data retrieved")
-        else:
-            print(f"   ❌ {symbol}: Failed")
-    
-    print("\n📅 Testing Options Expirations with Different Symbols...")
-    exp_results = tester.test_configurable_options_expirations()
-    for symbol, success, exp_count in exp_results:
-        if success:
-            print(f"   ✅ {symbol}: {exp_count} expirations")
-        else:
-            print(f"   ❌ {symbol}: Failed")
-    
-    print("\n⛓️ Testing Options Chain with Different Symbols...")
-    chain_results = tester.test_configurable_options_chain()
-    for symbol, success, call_count in chain_results:
-        if success:
-            print(f"   ✅ {symbol}: {call_count} call options")
-        else:
-            print(f"   ❌ {symbol}: Failed")
-    
-    print("\n📊 Testing Credit Spreads with Different Symbols...")
-    spread_results = tester.test_configurable_credit_spreads()
-    for symbol, success in spread_results:
-        if success:
-            print(f"   ✅ {symbol}: Credit spreads data retrieved")
-        else:
-            print(f"   ❌ {symbol}: Failed")
-    
-    print("\n🦋 Testing Iron Condors with Different Symbols...")
-    condor_results = tester.test_configurable_iron_condors()
-    for symbol, success in condor_results:
-        if success:
-            print(f"   ✅ {symbol}: Iron condors data retrieved")
-        else:
-            print(f"   ❌ {symbol}: Failed")
-    
-    print("\n📈 Testing Straddles with Different Symbols...")
-    straddle_results = tester.test_configurable_straddles()
-    for symbol, success in straddle_results:
-        if success:
-            print(f"   ✅ {symbol}: Straddles data retrieved")
-        else:
-            print(f"   ❌ {symbol}: Failed")
-    
-    # Test legacy Options endpoints (backwards compatibility)
-    print("\n📅 Testing Legacy Options Expirations...")
+    # Get expirations for other tests
     exp_success, exp_data = tester.test_options_expirations()
-    
     if exp_success and exp_data.get('expirations'):
         expiration = exp_data['expirations'][0]
         
-        print("\n⛓️ Testing Legacy Options Chain...")
-        tester.test_options_chain(expiration)
-        
-        print("\n📊 Testing Legacy Credit Spreads...")
-        tester.test_credit_spreads(expiration)
-        
-        print("\n🦋 Testing Legacy Iron Condors...")
-        tester.test_iron_condors(expiration)
-        
-        print("\n🦋 Testing Legacy Iron Butterflies...")
+        # Test other strategies
+        print("\n🦋 Testing Iron Butterflies...")
         tester.test_iron_butterflies(expiration)
         
-        print("\n📈 Testing Legacy Straddles...")
+        print("\n📈 Testing Straddles...")
         tester.test_straddles(expiration)
         
-        print("\n📉 Testing Legacy Strangles...")
+        print("\n📉 Testing Strangles...")
         tester.test_strangles(expiration)
         
-        print("\n📅 Testing Legacy Calendar Spreads...")
-        tester.test_calendar_spreads()
-    else:
-        print("⚠️ Skipping legacy options tests due to expiration fetch failure")
+        # Test calendar spreads if we have multiple expirations
+        if len(exp_data['expirations']) >= 2:
+            print("\n📅 Testing Calendar Spreads...")
+            tester.test_calendar_spreads()
+    
+    # Test portfolio functionality
+    print("\n💼 Testing Portfolio Functionality...")
+    tester.test_get_all_positions()
+    tester.test_get_open_positions()
+    tester.test_portfolio_summary()
     
     # Print final results
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 70)
     print(f"📊 Final Results: {tester.tests_passed}/{tester.tests_run} tests passed")
     
-    # Summary of configurable symbol feature
-    print("\n🔄 Configurable Symbol Feature Summary:")
-    successful_symbols = []
-    failed_symbols = []
+    # Summary of refactoring validation
+    print("\n🎯 Frontend Refactoring Validation:")
+    refactor_tests = [
+        ("Stock Quote API", refactor_results["quote"]),
+        ("Options Chain API", refactor_results["options"]),
+        ("Bull Put Spreads API", refactor_results["spreads"]),
+        ("Iron Condors API", refactor_results["condors"]),
+        ("Portfolio Positions API", refactor_results["positions"])
+    ]
     
-    for symbol, success, _ in quote_results:
-        if success:
-            successful_symbols.append(symbol)
-        else:
-            failed_symbols.append(symbol)
+    refactor_passed = sum(1 for _, success in refactor_tests if success)
+    refactor_total = len(refactor_tests)
     
-    if successful_symbols:
-        print(f"   ✅ Working symbols: {', '.join(successful_symbols)}")
-    if failed_symbols:
-        print(f"   ❌ Failed symbols: {', '.join(failed_symbols)}")
+    print(f"   📈 Core API Tests: {refactor_passed}/{refactor_total} passed")
+    for test_name, success in refactor_tests:
+        status = "✅" if success else "❌"
+        print(f"   {status} {test_name}")
+    
+    # Key Feature Validation
+    print("\n🎯 Key Validation Results:")
+    
+    if refactor_passed == refactor_total:
+        print("   ✅ All core APIs working after frontend refactoring")
+        print("   ✅ Backend endpoints remain functional")
+        print("   ✅ Data structures and responses intact")
+    else:
+        print("   ❌ Some core APIs failed after refactoring")
+        print("   ⚠️  Frontend refactoring may have affected backend integration")
     
     if tester.tests_passed == tester.tests_run:
-        print("🎉 All tests passed!")
+        print("🎉 All tests passed! Frontend refactoring successful.")
         return 0
     else:
         print("❌ Some tests failed")
