@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile for Options Scanner Application
 # Stage 1: Build React Frontend
-FROM node:18-alpine AS frontend-build
+FROM node:20-alpine AS frontend-build
 
 WORKDIR /app/frontend
 
