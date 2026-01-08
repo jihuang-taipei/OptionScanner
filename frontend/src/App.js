@@ -301,12 +301,12 @@ function App() {
   // Iron Condors state
   const [ironCondors, setIronCondors] = useState(null);
   const [isLoadingCondors, setIsLoadingCondors] = useState(false);
-  const [minProfitProb, setMinProfitProb] = useState(60);  // P(Profit) filter for Iron Condors, default 60%
+  const [minProfitProb, setMinProfitProb] = useState(50);  // P(Profit) filter for Iron Condors, default 50%
   
   // Iron Butterflies state
   const [ironButterflies, setIronButterflies] = useState(null);
   const [isLoadingButterflies, setIsLoadingButterflies] = useState(false);
-  const [wingWidth, setWingWidth] = useState(25);
+  const [wingWidth, setWingWidth] = useState(30);
   const [centerRange, setCenterRange] = useState(0.5);  // Center strike within ±x% of current price
   
   // Straddle/Strangle state
@@ -1615,7 +1615,7 @@ function App() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-zinc-900 border-zinc-800">
-                    {[10, 15, 20, 25, 50, 75, 100].map((w) => (
+                    {[10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((w) => (
                       <SelectItem key={w} value={w.toString()} className="text-white hover:bg-zinc-800">
                         ${w}
                       </SelectItem>
