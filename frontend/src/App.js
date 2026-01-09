@@ -2320,6 +2320,26 @@ function App() {
                   </div>
                 </div>
                 
+                <div className="mt-3 pt-3 border-t border-zinc-700/30">
+                  <label className="text-zinc-400 text-xs block mb-1">Close before expiration (hours)</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={closeBeforeExpiryHours}
+                      onChange={(e) => setCloseBeforeExpiryHours(Math.max(0, parseInt(e.target.value) || 0))}
+                      className="w-20 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded text-white text-sm"
+                      min="0"
+                      max="168"
+                    />
+                    <span className="text-zinc-500 text-sm">hours</span>
+                    <span className={`text-xs ml-2 ${closeBeforeExpiryHours > 0 ? 'text-amber-400' : 'text-zinc-500'}`}>
+                      {closeBeforeExpiryHours > 0 
+                        ? `Close when < ${closeBeforeExpiryHours}h to expiry` 
+                        : 'Disabled (0 = off)'}
+                    </span>
+                  </div>
+                </div>
+                
                 {/* Auto-close log */}
                 {autoCloseLog.length > 0 && (
                   <div className="mt-3 pt-3 border-t border-zinc-700/50">
