@@ -115,7 +115,7 @@ async def get_position(position_id: str):
 
 
 @router.put("/positions/{position_id}/close")
-async def close_position(position_id: str, exit_price: float):
+async def close_position(position_id: str, exit_price: float, notes: str = None):
     """Close a position and calculate realized P/L"""
     if db is None:
         raise HTTPException(status_code=503, detail="Database not available")
@@ -144,17 +144,28 @@ async def close_position(position_id: str, exit_price: float):
             # Example: entry=-5, exit=3 -> P/L = 3 + (-5) = -2 loss
             realized_pnl = exit_value + entry_value
         
+        # Build update dict
+        update_data = {
+            "status": "closed",
+            "closed_at": datetime.now(timezone.utc).isoformat(),
+            "exit_price": exit_price,
+            "realized_pnl": round(realized_pnl, 2)
+        }
+        
+        # Append notes if provided
+        if notes:
+            existing_notes = position.get("notes", "") or ""
+            if existing_notes:
+                update_data["notes"] = f"{existing_notes} | {notes}"
+            else:
+                update_data["notes"] = notes
+        
         await db.positions.update_one(
             {"id": position_id},
-            {"$set": {
-                "status": "closed",
-                "closed_at": datetime.now(timezone.utc).isoformat(),
-                "exit_price": exit_price,
-                "realized_pnl": round(realized_pnl, 2)
-            }}
+            {"$set": update_data}
         )
         
-        logger.info(f"Position closed: {position_id}, P/L: ${realized_pnl:.2f}")
+        logger.info(f"Position closed: {position_id}, P/L: ${realized_pnl:.2f}, Notes: {notes}")
         
         updated_position = await db.positions.find_one({"id": position_id}, {"_id": 0})
         return PositionWithPnL(**updated_position)
