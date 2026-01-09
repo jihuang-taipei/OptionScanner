@@ -934,7 +934,10 @@ function App() {
     if (intervalRef.current) clearInterval(intervalRef.current);
     if (countdownRef.current) clearInterval(countdownRef.current);
 
-    if (autoRefreshInterval > 0) {
+    // Don't auto-refresh if market is closed
+    const isMarketClosed = quote?.market_state === 'CLOSED' || quote?.market_state === 'POSTPOST';
+    
+    if (autoRefreshInterval > 0 && !isMarketClosed) {
       setCountdown(autoRefreshInterval);
 
       // Countdown timer
@@ -957,7 +960,7 @@ function App() {
       if (intervalRef.current) clearInterval(intervalRef.current);
       if (countdownRef.current) clearInterval(countdownRef.current);
     };
-  }, [autoRefreshInterval]);
+  }, [autoRefreshInterval, quote?.market_state]);
 
   const handleAutoRefreshChange = (value) => {
     setAutoRefreshInterval(value);
