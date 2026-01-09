@@ -1,19 +1,32 @@
 # SPX Finance Tracker - PRD
 
 ## Original Problem Statement
-Build an app to retrieve SPX quote from Yahoo Finance
+Build a comprehensive financial analysis application for options trading, starting with SPX quotes from Yahoo Finance.
 
 ## User Requirements
 1. Current price display (simple quote)
 2. Full quote (price, change, volume, high/low, etc.)
 3. Historical chart with price data
+4. Options chain viewer
+5. Strategy scanners (Credit Spreads, Iron Condors, etc.)
+6. Paper Trading portfolio
+7. Performance analytics
+8. Risk management
 
 ## Architecture
 - **Backend**: FastAPI + yfinance library for Yahoo Finance data
 - **Frontend**: React + Recharts for charting
-- **Database**: MongoDB (available but not used for this MVP - data is fetched live)
+- **Database**: MongoDB for portfolio positions
 
-## Core Features Implemented (Dec 2025)
+## Tech Stack
+- Backend: FastAPI, yfinance, Motor (MongoDB), scipy (Black-Scholes Greeks)
+- Frontend: React, Recharts, Tailwind CSS, Lucide Icons, shadcn/ui
+
+---
+
+## Features Implemented
+
+### Core Features (Dec 2025)
 - [x] Real-time SPX (^GSPC) price from Yahoo Finance
 - [x] Price change and percentage display (green/red color coding)
 - [x] Stats grid: Open, Day High, Day Low, Previous Close
@@ -21,78 +34,168 @@ Build an app to retrieve SPX quote from Yahoo Finance
 - [x] 52-Week Range indicator with visual progress bar
 - [x] Refresh button with loading state
 - [x] Dark theme "Midnight Trader" design with glassmorphism cards
-- [x] **Auto-refresh at configurable intervals** (Off, 10s, 30s, 1min, 5min) with live countdown
-- [x] **Options Chain** (SPY as proxy) with Calls/Puts tabs, expiration selector, Strike, Bid/Ask, IV%, Volume, OI
-- [x] **Greeks Display** (Delta, Gamma, Theta, Vega) calculated via Black-Scholes model with color-coded columns
-- [x] **Credit Spreads Scanner** - Bull Put & Bear Call spreads with configurable width ($1-$20), showing net credit, max profit/loss, breakeven, risk/reward ratio, P(OTM)
-- [x] **Credit Spread Filters** - Filter by Min Credit ($0-$2) and Max Risk/Reward (5:1 to 100:1), with Reset button and "X of Y" counter
+- [x] Auto-refresh at configurable intervals with live countdown
+- [x] Options Chain with Calls/Puts tabs, Greeks display
+- [x] Credit Spreads Scanner (Bull Put & Bear Call)
+- [x] Iron Condors Scanner
+- [x] Iron Butterflies Scanner
+- [x] Straddles & Strangles Scanner
+- [x] Calendar Spreads Scanner
+- [x] P/L Chart visualization
+- [x] Paper Trading Portfolio
+- [x] Position export to CSV
+
+### Major Refactoring (Jan 9, 2026)
+- [x] **App.js Refactored**: Reduced from 2749 lines to 932 lines (66% reduction!)
+- [x] **Custom Hooks Created**:
+  - `useQuoteData` - Quote and market data management
+  - `useOptionsData` - Options chain and strategies
+  - `usePortfolio` - Portfolio positions CRUD
+  - `useAutoClose` - Auto take-profit/stop-loss
+  - `useAnalytics` - Trade journal calculations
+  - `useRiskManagement` - Risk metrics
+  - `useStrategyBuilder` - Multi-leg builder
+- [x] **Components Extracted**:
+  - `/components/portfolio/` - Portfolio modal, dialogs, tables
+  - `/components/analytics/` - Analytics, Risk, Builder dashboards
+
+### Trade Journal & Performance Analytics (Jan 9, 2026)
+- [x] **Win Rate tracking** with Win/Loss count
+- [x] **P/L Metrics**: Total P/L, Avg P/L, Profit Factor, Max Win, Max Loss
+- [x] **Selectable Periods**: 7 Days, 30 Days, 90 Days, All Time
+- [x] **Charts**: 
+  - Win/Loss Distribution pie chart
+  - P/L by Strategy Type bar chart
+  - Monthly Performance timeline
+  - P/L by Holding Period chart
+- [x] **Best/Worst Trades** list
+
+### Risk Management Dashboard (Jan 9, 2026)
+- [x] **Trading Capital** input (configurable)
+- [x] **Risk Metrics**:
+  - Capital at Risk ($ and %)
+  - Max Potential Loss
+  - Margin Utilization
+  - Available Capital
+- [x] **Concentration Analysis**:
+  - Risk by Symbol pie chart
+  - Risk by Strategy pie chart
+- [x] **Expiration Timeline** chart
+- [x] **Risk Alerts** for high concentration or utilization
+- [x] **Capital Utilization** progress bar
+
+### Multi-Leg Strategy Builder (Jan 9, 2026)
+- [x] **Custom Strategy Creation** with add/remove legs
+- [x] **Quick Add Templates**:
+  - Bull Put Spread
+  - Bear Call Spread
+  - Iron Condor
+  - Straddle
+  - Strangle
+- [x] **Real-time Calculations**:
+  - Net Premium (credit/debit)
+  - Max Profit
+  - Max Loss
+  - Breakeven prices
+- [x] **P/L at Expiration Chart** - live payoff diagram
+- [x] **Save as Template** functionality
+- [x] **Paper Trade** directly from builder
+
+### Previous Session Features (Jan 9, 2026)
+- [x] Portfolio current price fix for multi-expiration positions
+- [x] Calendar Spread real-time P/L calculation
+- [x] Auto Take Profit / Stop Loss automation
+- [x] Auto-close by expiration time
+- [x] Market-aware refresh pausing
+- [x] Desktop app (Electron) with auto-update
+- [x] Installers for Windows, macOS, Linux
+- [x] iOS app scaffolding (React Native)
+
+---
 
 ## API Endpoints
-- `GET /api/spx/quote` - Current SPX quote with all metrics
-- `GET /api/spx/history?period={1d|5d|1mo|3mo|1y|5y}` - Historical data
-- `GET /api/spx/options/expirations` - Available options expiration dates
-- `GET /api/spx/options/chain?expiration={date}` - Options chain for specific expiration
-- `GET /api/spx/credit-spreads?expiration={date}&spread={width}` - Credit spread opportunities
+- `GET /api/quote` - Current quote with market state
+- `GET /api/history` - Historical data
+- `GET /api/options/expirations` - Options expiration dates
+- `GET /api/options/chain` - Options chain with Greeks
+- `GET /api/credit-spreads` - Credit spread opportunities
+- `GET /api/iron-condors` - Iron condor opportunities
+- `GET /api/iron-butterflies` - Iron butterfly opportunities
+- `GET /api/straddles` - Straddle opportunities
+- `GET /api/strangles` - Strangle opportunities
+- `GET /api/calendar-spreads` - Calendar spread opportunities
+- `GET /api/positions` - Portfolio positions
+- `POST /api/positions` - Create position
+- `PUT /api/positions/{id}/close` - Close position
+- `DELETE /api/positions/{id}` - Delete position
 
-## Tech Stack
-- Backend: FastAPI, yfinance, Motor (MongoDB), scipy (Black-Scholes Greeks)
-- Frontend: React, Recharts, Tailwind CSS, Lucide Icons, shadcn/ui
+---
 
-## Backlog / Future Enhancements
-- P1: Add multiple stock/index tracking
-- P2: Price alerts/notifications
-- P2: Save favorite watchlist to MongoDB
-- P3: Technical indicators (MA, RSI, MACD)
+## File Structure
+```
+/app
+├── backend/
+│   ├── models/position.py
+│   ├── routes/portfolio.py
+│   ├── services/yahoo_finance.py
+│   └── server.py
+├── frontend/src/
+│   ├── hooks/
+│   │   ├── useQuoteData.js
+│   │   ├── useOptionsData.js
+│   │   ├── usePortfolio.js
+│   │   ├── useAutoClose.js
+│   │   ├── useAnalytics.js
+│   │   ├── useRiskManagement.js
+│   │   └── useStrategyBuilder.js
+│   ├── components/
+│   │   ├── analytics/
+│   │   │   ├── AnalyticsDashboard.jsx
+│   │   │   ├── RiskDashboard.jsx
+│   │   │   └── StrategyBuilder.jsx
+│   │   ├── portfolio/
+│   │   │   ├── PortfolioModal.jsx
+│   │   │   ├── AutoClosePanel.jsx
+│   │   │   ├── PositionsTable.jsx
+│   │   │   ├── TradeDialog.jsx
+│   │   │   └── ClosePositionDialog.jsx
+│   │   └── ...
+│   └── App.js (932 lines, refactored)
+└── ...
+```
 
-## Features Implemented (Jan 2026)
-
-### Portfolio Current Price Fix - Jan 9, 2026
-- **Fixed**: Iron Condors and other strategies now show correct current prices in Portfolio
-- **Root Cause**: The app was only using the currently selected expiration's options chain for price calculation, but positions could have different expirations
-- **Solution**: 
-  1. Added `positionOptionsCache` state to cache options chains for each position's expiration
-  2. Modified `calculateCurrentStrategyPrice` to use cached data matching the position's expiration
-  3. Fixed backend NaN/inf values in options data that caused JSON serialization errors
-  4. Sorted positions in portfolio table (open positions appear first, then by newest date)
-- **Files Modified**:
-  - `/app/frontend/src/App.js` - Added caching logic and sorted positions
-  - `/app/backend/services/yahoo_finance.py` - Fixed NaN/inf handling in `_process_options`
-
-### Calendar Spread Real-time P/L - Jan 9, 2026
-- **Feature**: Calendar spreads now show real-time current price and P/L calculation
-- **Implementation**:
-  1. Updated `fetchPositionOptionsChains` to collect expirations from individual calendar spread legs
-  2. Updated `calculateCurrentStrategyPrice` to lookup each leg's expiration from the cache
-  3. Removed the "N/A" hardcoding for calendar spreads in the UI
-- **Files Modified**:
-  - `/app/frontend/src/App.js` - Updated fetching and calculation logic
-
-### Auto Take Profit / Stop Loss - Jan 9, 2026
-- **Feature**: Automatically close positions when they reach configurable profit or loss thresholds
-- **Implementation**:
-  1. Added `autoCloseEnabled`, `takeProfitPercent`, `stopLossPercent` state variables
-  2. Added `calculatePLPercent` function to compute percentage gain/loss
-  3. Added `autoClosePosition` function to automatically close positions
-  4. Added useEffect hook to monitor positions and trigger auto-close
-  5. Added UI panel with enable/disable toggle and configurable thresholds
-  6. Added P/L % column to portfolio table
-  7. Added auto-close activity log showing recent automatic closures
-- **Settings**:
-  - Take Profit: Default 50% (configurable)
-  - Stop Loss: Default 100% (configurable)
-- **Files Modified**:
-  - `/app/frontend/src/App.js` - Added auto-close logic and UI
-
-### Previous Session Fixes (from handoff)
-- Fixed "off-by-one" date display bug with `formatExpDate` helper
-- Implemented Portfolio CSV export (All/Open/Closed)
-- Fixed CSV date format to avoid comma separation
-- Added "N/A" display for Calendar Spread current prices (multi-expiration limitation)
-
-## Known Limitations
-- None currently - all strategy types now support real-time P/L calculation
+---
 
 ## Backlog / Future Enhancements
-- P1: Save to Watchlist - Allow users to save and track specific strategies
-- P2: Frontend refactoring - Extract App.js logic into custom hooks (useQuoteData, useOptionsData, etc.)
-- P3: Add `react-hooks/exhaustive-deps` lint fixes (recurring technical debt)
+
+### P1 - High Priority
+- [ ] Save to Watchlist - Save and track specific strategies
+- [ ] Complete iOS app UI implementation
+
+### P2 - Medium Priority  
+- [ ] Performance Report export (PDF/detailed CSV)
+- [ ] Complete Electron app (custom icons, code signing)
+- [ ] Historical IV percentile (requires data source)
+
+### P3 - Lower Priority
+- [ ] Fix remaining `react-hooks/exhaustive-deps` warnings
+- [ ] Add technical indicators (MA, RSI, MACD) to charts
+- [ ] Price alerts/notifications
+
+---
+
+## Testing Status
+- **Last Test**: Jan 9, 2026
+- **Test Report**: `/app/test_reports/iteration_5.json`
+- **Result**: 100% pass rate (52 tests passed)
+- **Features Tested**: Analytics, Risk Dashboard, Strategy Builder, all header buttons
+
+---
+
+## Known Issues
+- None currently blocking
+
+## Notes
+- All strategy types support real-time P/L calculation
+- Trading capital default is $100,000 (configurable)
+- Auto-close thresholds: Take Profit 80%, Stop Loss 80%, Close before expiry 0.5h
