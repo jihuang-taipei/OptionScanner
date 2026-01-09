@@ -252,9 +252,23 @@ function App() {
     portfolio.fetchPositions
   );
 
+  // Analytics
+  const analytics = useAnalytics(positions);
+
+  // Risk Management
+  const risk = useRiskManagement(positions, calculateCurrentStrategyPrice);
+
+  // Strategy Builder
+  const strategyBuilder = useStrategyBuilder(quote, optionsChain, selectedExpiration);
+
   // P/L Chart state
   const [selectedStrategy, setSelectedStrategy] = useState(null);
   const [showPLChart, setShowPLChart] = useState(false);
+
+  // Dashboard modals
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showRisk, setShowRisk] = useState(false);
+  const [showBuilder, setShowBuilder] = useState(false);
 
   // Collapsed sections state
   const [collapsedSections, setCollapsedSections] = useState({
