@@ -393,6 +393,24 @@ function App() {
                 </span>
               )}
             </button>
+
+            {/* Analytics Button */}
+            <button onClick={() => setShowAnalytics(true)} className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2.5 rounded-full font-medium hover:bg-purple-500 transition-all duration-200 active:scale-95" data-testid="analytics-button">
+              <Target className="w-4 h-4" />
+              Analytics
+            </button>
+
+            {/* Risk Button */}
+            <button onClick={() => setShowRisk(true)} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-full font-medium hover:bg-blue-500 transition-all duration-200 active:scale-95" data-testid="risk-button">
+              <Shield className="w-4 h-4" />
+              Risk
+            </button>
+
+            {/* Strategy Builder Button */}
+            <button onClick={() => setShowBuilder(true)} className="flex items-center gap-2 bg-amber-600 text-white px-4 py-2.5 rounded-full font-medium hover:bg-amber-500 transition-all duration-200 active:scale-95" data-testid="builder-button">
+              <Zap className="w-4 h-4" />
+              Builder
+            </button>
           </div>
         </header>
 
