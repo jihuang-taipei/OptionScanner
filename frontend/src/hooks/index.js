@@ -5,4 +5,5 @@ export { useAutoClose } from './useAutoClose';
 export { useAnalytics } from './useAnalytics';
 export { useRiskManagement } from './useRiskManagement';
 export { useStrategyBuilder } from './useStrategyBuilder';
+export { useTechnicalIndicators } from './useTechnicalIndicators';
 export { useToast } from './use-toast';
