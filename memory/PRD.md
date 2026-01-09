@@ -67,6 +67,22 @@ Build an app to retrieve SPX quote from Yahoo Finance
 - **Files Modified**:
   - `/app/frontend/src/App.js` - Updated fetching and calculation logic
 
+### Auto Take Profit / Stop Loss - Jan 9, 2026
+- **Feature**: Automatically close positions when they reach configurable profit or loss thresholds
+- **Implementation**:
+  1. Added `autoCloseEnabled`, `takeProfitPercent`, `stopLossPercent` state variables
+  2. Added `calculatePLPercent` function to compute percentage gain/loss
+  3. Added `autoClosePosition` function to automatically close positions
+  4. Added useEffect hook to monitor positions and trigger auto-close
+  5. Added UI panel with enable/disable toggle and configurable thresholds
+  6. Added P/L % column to portfolio table
+  7. Added auto-close activity log showing recent automatic closures
+- **Settings**:
+  - Take Profit: Default 50% (configurable)
+  - Stop Loss: Default 100% (configurable)
+- **Files Modified**:
+  - `/app/frontend/src/App.js` - Added auto-close logic and UI
+
 ### Previous Session Fixes (from handoff)
 - Fixed "off-by-one" date display bug with `formatExpDate` helper
 - Implemented Portfolio CSV export (All/Open/Closed)
