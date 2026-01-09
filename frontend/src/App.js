@@ -957,6 +957,97 @@ function App() {
           onClosePosition={closePosition}
         />
 
+        {/* Analytics Modal */}
+        {showAnalytics && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={() => setShowAnalytics(false)}>
+            <div className="glass-card p-6 w-full max-w-6xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-medium text-white flex items-center gap-2">
+                  <Target className="w-6 h-6 text-purple-400" />
+                  Trade Journal & Analytics
+                </h3>
+                <button onClick={() => setShowAnalytics(false)} className="text-zinc-400 hover:text-white transition-colors">
+                  <ChevronDown className="w-5 h-5" />
+                </button>
+              </div>
+              <AnalyticsDashboard
+                analyticsPeriod={analytics.analyticsPeriod}
+                setAnalyticsPeriod={analytics.setAnalyticsPeriod}
+                winRateStats={analytics.winRateStats}
+                pnlByStrategy={analytics.pnlByStrategy}
+                pnlByHoldingPeriod={analytics.pnlByHoldingPeriod}
+                monthlyPerformance={analytics.monthlyPerformance}
+                topTrades={analytics.topTrades}
+                overallStats={analytics.overallStats}
+                onExport={() => console.log('Export analytics')}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Risk Management Modal */}
+        {showRisk && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={() => setShowRisk(false)}>
+            <div className="glass-card p-6 w-full max-w-5xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-medium text-white flex items-center gap-2">
+                  <Shield className="w-6 h-6 text-blue-400" />
+                  Risk Management Dashboard
+                </h3>
+                <button onClick={() => setShowRisk(false)} className="text-zinc-400 hover:text-white transition-colors">
+                  <ChevronDown className="w-5 h-5" />
+                </button>
+              </div>
+              <RiskDashboard
+                tradingCapital={risk.tradingCapital}
+                setTradingCapital={risk.setTradingCapital}
+                riskMetrics={risk.riskMetrics}
+                symbolConcentration={risk.symbolConcentration}
+                strategyConcentration={risk.strategyConcentration}
+                riskAlerts={risk.riskAlerts}
+                expirationRisk={risk.expirationRisk}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Strategy Builder Modal */}
+        {showBuilder && (
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" onClick={() => setShowBuilder(false)}>
+            <div className="glass-card p-6 w-full max-w-5xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-medium text-white flex items-center gap-2">
+                  <Zap className="w-6 h-6 text-amber-400" />
+                  Multi-Leg Strategy Builder
+                </h3>
+                <button onClick={() => setShowBuilder(false)} className="text-zinc-400 hover:text-white transition-colors">
+                  <ChevronDown className="w-5 h-5" />
+                </button>
+              </div>
+              <StrategyBuilder
+                legs={strategyBuilder.legs}
+                builderName={strategyBuilder.builderName}
+                setBuilderName={strategyBuilder.setBuilderName}
+                savedStrategies={strategyBuilder.savedStrategies}
+                addLeg={strategyBuilder.addLeg}
+                updateLeg={strategyBuilder.updateLeg}
+                removeLeg={strategyBuilder.removeLeg}
+                clearLegs={strategyBuilder.clearLegs}
+                saveStrategy={strategyBuilder.saveStrategy}
+                loadStrategy={strategyBuilder.loadStrategy}
+                deleteStrategy={strategyBuilder.deleteStrategy}
+                addCommonStrategy={strategyBuilder.addCommonStrategy}
+                netPremium={strategyBuilder.netPremium}
+                profitLoss={strategyBuilder.profitLoss}
+                strategyType={strategyBuilder.strategyType}
+                selectedExpiration={selectedExpiration}
+                onTrade={handleTrade}
+                symbol={symbol}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Footer */}
         <footer className="mt-12 text-center text-zinc-600 text-sm">
           <p>Data provided by Yahoo Finance. Prices may be delayed.</p>
