@@ -1,7 +1,7 @@
 import { useState, useMemo, memo } from "react";
 import "@/App.css";
-import { RefreshCw, TrendingUp, TrendingDown, Activity, BarChart3, ArrowUpRight, ArrowDownRight, Clock, ChevronDown, ChevronRight, Table2, Calculator, Download, Calendar, Briefcase, LineChart as LineChartIcon, Shield, Target, Zap } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, ComposedChart, Bar } from "recharts";
+import { RefreshCw, TrendingUp, TrendingDown, Activity, BarChart3, ArrowUpRight, ArrowDownRight, Clock, ChevronDown, ChevronRight, Table2, Calculator, Download, Calendar, Briefcase, LineChart as LineChartIcon, Shield, Target, Zap, FileText } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, ComposedChart, Bar, ReferenceLine } from "recharts";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +20,7 @@ import { Input } from "./components/ui/input";
 
 // Import components
 import { StatCard, PeriodButton, CustomTooltip } from "./components/common";
-import { PLChart } from "./components/charts";
+import { PLChart, IndicatorSettings } from "./components/charts";
 import {
   OptionsTable,
   CreditSpreadTable,
@@ -42,7 +42,7 @@ import {
 } from "./components/analytics";
 
 // Import custom hooks
-import { useQuoteData, useOptionsData, usePortfolio, useAutoClose, useAnalytics, useRiskManagement, useStrategyBuilder } from "./hooks";
+import { useQuoteData, useOptionsData, usePortfolio, useAutoClose, useAnalytics, useRiskManagement, useStrategyBuilder, useTechnicalIndicators } from "./hooks";
 
 // Import utilities and constants
 import { REFRESH_INTERVALS, POPULAR_SYMBOLS } from "./utils/constants";
@@ -55,6 +55,7 @@ import {
   exportIronButterflies,
   exportCalendarSpreads,
 } from "./utils/exportUtils";
+import { generatePerformanceReport } from "./utils/pdfExport";
 
 // ============================================================================
 // CHART UTILITIES
