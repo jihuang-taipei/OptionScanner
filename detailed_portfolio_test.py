@@ -6,7 +6,7 @@ import requests
 import json
 from datetime import datetime
 
-BASE_URL = "https://options-analyzer-15.preview.emergentagent.com"
+BASE_URL = "https://finview-37.preview.emergentagent.com"
 
 def test_detailed_portfolio():
     print("🔍 Detailed Portfolio Testing - Auto-Expiration Feature")
