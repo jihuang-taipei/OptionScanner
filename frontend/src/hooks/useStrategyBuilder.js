@@ -215,7 +215,8 @@ export const useStrategyBuilder = (quote, optionsChain, selectedExpiration) => {
 
   // Quick add common strategies
   const addCommonStrategy = useCallback((type) => {
-    const atm = quote?.price ? Math.round(quote.price / 5) * 5 : 6000;
+    const currentPrice = quote?.price;
+    const atm = currentPrice ? Math.round(currentPrice / 5) * 5 : 6000;
     const width = 5;
     
     switch (type) {
@@ -259,7 +260,7 @@ export const useStrategyBuilder = (quote, optionsChain, selectedExpiration) => {
       default:
         break;
     }
-  }, [quote?.price, generateLeg]);
+  }, [quote, generateLeg]);
 
   return {
     // State
