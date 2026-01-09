@@ -126,6 +126,54 @@ option-scanner/
 | `DB_NAME` | options_scanner | Database name |
 | `REACT_APP_BACKEND_URL` | - | Backend URL for frontend |
 
+---
+
+## Windows Installation
+
+### Quick Install (Recommended)
+
+1. **Install Docker Desktop**: Download from [docker.com](https://www.docker.com/products/docker-desktop/)
+2. **Start Docker Desktop**: Wait for the whale icon to appear in the system tray
+3. **Run the Installer**: 
+   - Option A: Run `installer\windows\install.bat`
+   - Option B: Run `installer\windows\install.ps1` in PowerShell
+4. **Use Desktop Shortcuts**: Double-click "Options Scanner" to start
+
+### Manual Windows Installation
+
+```batch
+# Open Command Prompt in the app folder
+cd C:\path\to\OptionsScanner
+
+# Build and start
+docker-compose up -d
+
+# Open browser
+start http://localhost:8000
+```
+
+### Windows Files
+
+| File | Description |
+|------|-------------|
+| `start-options-scanner.bat` | Start the application |
+| `stop-options-scanner.bat` | Stop the application |
+| `view-logs.bat` | View application logs |
+| `installer\windows\install.bat` | Windows installer (batch) |
+| `installer\windows\install.ps1` | Windows installer (PowerShell) |
+| `installer\windows\options-scanner.iss` | Inno Setup script for GUI installer |
+
+### Creating a Distributable Package
+
+```batch
+# Run the package creator
+installer\windows\create-package.bat
+```
+
+This creates a folder with all necessary files that can be zipped and distributed.
+
+---
+
 ## License
 
 MIT
