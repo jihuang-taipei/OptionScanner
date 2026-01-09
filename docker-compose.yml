@@ -1,4 +1,4 @@
-version: '3.8'
+#version: '3.8'
 
 services:
   # Production: Single container with built frontend
@@ -12,8 +12,8 @@ services:
       - PYTHONUNBUFFERED=1
       - CORS_ORIGINS=*
       # Optional: Add MongoDB for paper trading persistence
-      # - MONGO_URL=mongodb://mongo:27017
-      # - DB_NAME=options_scanner
+      - MONGO_URL=mongodb://mongo:27017
+      - DB_NAME=options_scanner
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/"]
@@ -21,20 +21,25 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-    # Uncomment to add MongoDB for paper trading
-    # depends_on:
-    #   - mongo
+
+    depends_on:
+      mongo:
+        condition: service_healthy
 
   # Optional: MongoDB for paper trading feature
-  # Uncomment to enable persistent portfolio storage
-  # mongo:
-  #   image: mongo:6
-  #   ports:
-  #     - "27017:27017"
-  #   volumes:
-  #     - mongo_data:/data/db
-  #   restart: unless-stopped
+  mongo:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 # Uncomment if using MongoDB
-# volumes:
-#   mongo_data:
+volumes:
+  mongo_data:
