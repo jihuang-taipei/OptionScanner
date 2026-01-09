@@ -389,6 +389,46 @@ function App() {
     }
   }, [expirePositions]);
 
+  // Fetch options chains for open positions to enable current price calculation
+  const fetchPositionOptionsChains = useCallback(async (openPositions) => {
+    if (!openPositions || openPositions.length === 0) return;
+    
+    // Get unique expirations from open positions (excluding calendar spreads)
+    const uniqueExpirations = [...new Set(
+      openPositions
+        .filter(p => p.status === 'open' && p.strategy_type !== 'calendar_spread')
+        .map(p => p.expiration)
+        .filter(exp => exp && !positionOptionsCache[exp])
+    )];
+    
+    if (uniqueExpirations.length === 0) return;
+    
+    // Fetch options chains for each unique expiration
+    const newCache = { ...positionOptionsCache };
+    
+    for (const expiration of uniqueExpirations) {
+      try {
+        // Get the symbol from the first position with this expiration
+        const posForExp = openPositions.find(p => p.expiration === expiration);
+        const posSymbol = posForExp?.symbol || symbol;
+        
+        const response = await axios.get(`${API}/options/chain?symbol=${posSymbol}&expiration=${expiration}`);
+        newCache[expiration] = response.data;
+      } catch (e) {
+        console.error(`Error fetching options chain for expiration ${expiration}:`, e);
+      }
+    }
+    
+    setPositionOptionsCache(newCache);
+  }, [symbol, positionOptionsCache]);
+
+  // Fetch options chains when positions change
+  useEffect(() => {
+    if (positions.length > 0) {
+      fetchPositionOptionsChains(positions);
+    }
+  }, [positions, fetchPositionOptionsChains]);
+
   // Create a new position (paper trade)
   const createPosition = async (strategy, strategyType, strategyName, legs, entryPrice) => {
     try {
