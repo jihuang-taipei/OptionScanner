@@ -2425,6 +2425,20 @@ function App() {
                                 : '-'
                             }
                           </td>
+                          <td className={`py-3 px-2 text-right font-mono text-xs ${
+                            plPercent !== null
+                              ? plPercent >= 0 ? 'text-green-400' : 'text-red-400'
+                              : 'text-zinc-500'
+                          }`}>
+                            {pos.status === 'open' && plPercent !== null ? (
+                              <span className={`${
+                                autoCloseEnabled && plPercent >= takeProfitPercent ? 'bg-emerald-500/30 px-1 rounded' :
+                                autoCloseEnabled && plPercent <= -stopLossPercent ? 'bg-red-500/30 px-1 rounded' : ''
+                              }`}>
+                                {plPercent >= 0 ? '+' : ''}{plPercent.toFixed(1)}%
+                              </span>
+                            ) : pos.status === 'open' ? '-' : ''}
+                          </td>
                           <td className="py-3 px-2 text-center">
                             {pos.status === 'open' ? (
                               <span className="px-2 py-1 bg-emerald-500/20 text-emerald-400 rounded text-xs">Open</span>
