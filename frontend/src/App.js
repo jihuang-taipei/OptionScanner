@@ -1979,12 +1979,42 @@ function App() {
                   <Briefcase className="w-6 h-6 text-emerald-400" />
                   Paper Trading Portfolio
                 </h3>
-                <button 
-                  onClick={() => setShowPortfolio(false)}
-                  className="text-zinc-400 hover:text-white transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-3">
+                  {/* Export Buttons */}
+                  <button
+                    onClick={() => exportPortfolio(positions, 'all')}
+                    disabled={!positions.length}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title="Export All Positions to CSV"
+                  >
+                    <Download className="w-3 h-3" />
+                    All
+                  </button>
+                  <button
+                    onClick={() => exportPortfolio(positions, 'open')}
+                    disabled={!positions.filter(p => p.status === 'open').length}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs bg-emerald-800 hover:bg-emerald-700 text-emerald-300 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title="Export Open Positions to CSV"
+                  >
+                    <Download className="w-3 h-3" />
+                    Open
+                  </button>
+                  <button
+                    onClick={() => exportPortfolio(positions, 'closed')}
+                    disabled={!positions.filter(p => p.status === 'closed' || p.status === 'expired').length}
+                    className="flex items-center gap-1 px-3 py-1.5 text-xs bg-zinc-700 hover:bg-zinc-600 text-zinc-300 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title="Export Closed/Expired Positions to CSV"
+                  >
+                    <Download className="w-3 h-3" />
+                    Closed
+                  </button>
+                  <button 
+                    onClick={() => setShowPortfolio(false)}
+                    className="text-zinc-400 hover:text-white transition-colors ml-2"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               {/* Portfolio Summary */}
