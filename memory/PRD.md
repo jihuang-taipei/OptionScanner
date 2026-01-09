@@ -58,6 +58,15 @@ Build an app to retrieve SPX quote from Yahoo Finance
   - `/app/frontend/src/App.js` - Added caching logic and sorted positions
   - `/app/backend/services/yahoo_finance.py` - Fixed NaN/inf handling in `_process_options`
 
+### Calendar Spread Real-time P/L - Jan 9, 2026
+- **Feature**: Calendar spreads now show real-time current price and P/L calculation
+- **Implementation**:
+  1. Updated `fetchPositionOptionsChains` to collect expirations from individual calendar spread legs
+  2. Updated `calculateCurrentStrategyPrice` to lookup each leg's expiration from the cache
+  3. Removed the "N/A" hardcoding for calendar spreads in the UI
+- **Files Modified**:
+  - `/app/frontend/src/App.js` - Updated fetching and calculation logic
+
 ### Previous Session Fixes (from handoff)
 - Fixed "off-by-one" date display bug with `formatExpDate` helper
 - Implemented Portfolio CSV export (All/Open/Closed)
