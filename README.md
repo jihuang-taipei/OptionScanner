@@ -14,8 +14,65 @@ A comprehensive options analysis and paper trading application for stocks and in
   - Calendar Spreads
 - **P/L Visualization**: Interactive profit/loss charts for all strategies
 - **Paper Trading**: Virtual portfolio to practice trading strategies
-- **Export**: Download options data as CSV
+- **Auto Take Profit/Stop Loss**: Automatic position management
+- **Export**: Download options data and portfolio as CSV
 - **Multi-Symbol**: Analyze any stock or index (SPX, SPY, AAPL, etc.)
+- **Desktop App**: Native Electron app with auto-updates (Windows, macOS, Linux)
+
+## Installation Options
+
+| Method | Best For |
+|--------|----------|
+| [Electron Desktop App](#electron-desktop-app) | End users wanting a native app with auto-updates |
+| [Docker](#quick-start-with-docker) | Developers and self-hosting |
+| [Platform Installers](#platform-installers) | Docker-based local installation |
+
+---
+
+## Electron Desktop App
+
+The easiest way to use Options Scanner - a native desktop application with automatic updates.
+
+### Download
+
+Download the latest release for your platform:
+
+| Platform | Download |
+|----------|----------|
+| Windows | `Options Scanner-x.x.x-win-x64.exe` |
+| macOS (Intel) | `Options Scanner-x.x.x-mac-x64.dmg` |
+| macOS (Apple Silicon) | `Options Scanner-x.x.x-mac-arm64.dmg` |
+| Linux | `Options Scanner-x.x.x-linux-x64.AppImage` |
+
+### Features
+
+- **Auto-updates**: Automatically checks and installs updates
+- **System tray**: Runs in background, quick access from tray
+- **Native menus**: Platform-specific keyboard shortcuts
+- **Docker integration**: Manages backend containers automatically
+
+### Build from Source
+
+```bash
+# Prerequisites: Node.js 18+, Docker Desktop
+
+# Build frontend
+cd frontend
+npm install && npm run build
+
+# Build Electron app
+cd ../electron
+npm install
+npm run build          # Current platform
+npm run build:win      # Windows
+npm run build:mac      # macOS
+npm run build:linux    # Linux
+npm run build:all      # All platforms
+```
+
+See [electron/README.md](electron/README.md) for detailed build instructions.
+
+---
 
 ## Quick Start with Docker
 
