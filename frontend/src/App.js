@@ -340,6 +340,9 @@ function App() {
   const [maxRiskAmount, setMaxRiskAmount] = useState(1000);  // Default $1,000 risk per trade
   const [minRewardAmount, setMinRewardAmount] = useState(1000);  // Default $1,000 min reward
   const [showPositionSizing, setShowPositionSizing] = useState(true);  // Show by default
+  
+  // Cache for position-specific options chains (keyed by expiration date)
+  const [positionOptionsCache, setPositionOptionsCache] = useState({});
 
   // Collapsed sections state
   const [collapsedSections, setCollapsedSections] = useState({
