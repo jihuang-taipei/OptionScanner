@@ -1083,7 +1083,7 @@ function App() {
                 monthlyPerformance={analytics.monthlyPerformance}
                 topTrades={analytics.topTrades}
                 overallStats={analytics.overallStats}
-                onExport={() => console.log('Export analytics')}
+                onExport={handleExportPDF}
               />
             </div>
           </div>
