@@ -61,10 +61,12 @@ export const AnalyticsDashboard = memo(({
           ))}
           <button
             onClick={onExport}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition-colors ml-2"
-            title="Export Report"
+            className="flex items-center gap-2 px-4 py-1.5 text-sm bg-red-600 hover:bg-red-500 text-white rounded-lg transition-colors ml-2"
+            title="Export Performance Report as PDF"
+            data-testid="export-pdf-btn"
           >
-            <Download className="w-4 h-4" />
+            <FileText className="w-4 h-4" />
+            Export PDF
           </button>
         </div>
       </div>
