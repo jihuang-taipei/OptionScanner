@@ -65,10 +65,9 @@ Build an app to retrieve SPX quote from Yahoo Finance
 - Added "N/A" display for Calendar Spread current prices (multi-expiration limitation)
 
 ## Known Limitations
-- **Calendar Spreads**: Still show "N/A" for current price because they have legs with different expirations (requires fetching two option chains)
+- None currently - all strategy types now support real-time P/L calculation
 
 ## Backlog / Future Enhancements
 - P1: Save to Watchlist - Allow users to save and track specific strategies
 - P2: Frontend refactoring - Extract App.js logic into custom hooks (useQuoteData, useOptionsData, etc.)
-- P3: Real-time P/L for Calendar Spreads - Implement multi-expiration data fetching
 - P3: Add `react-hooks/exhaustive-deps` lint fixes (recurring technical debt)
