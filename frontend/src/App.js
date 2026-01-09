@@ -271,6 +271,9 @@ function App() {
   const [showRisk, setShowRisk] = useState(false);
   const [showBuilder, setShowBuilder] = useState(false);
 
+  // Technical Indicators
+  const indicators = useTechnicalIndicators(history);
+
   // Collapsed sections state
   const [collapsedSections, setCollapsedSections] = useState({
     optionsChain: false,
@@ -302,6 +305,26 @@ function App() {
     setCloseDialog({ open: true, position: pos });
     const currentPrice = calculateCurrentStrategyPrice(pos);
     setClosePrice(currentPrice !== null ? Math.abs(currentPrice).toFixed(2) : "");
+  };
+
+  // Handle PDF export
+  const handleExportPDF = async () => {
+    try {
+      await generatePerformanceReport({
+        positions,
+        winRateStats: analytics.winRateStats,
+        overallStats: analytics.overallStats,
+        pnlByStrategy: analytics.pnlByStrategy,
+        pnlByHoldingPeriod: analytics.pnlByHoldingPeriod,
+        monthlyPerformance: analytics.monthlyPerformance,
+        topTrades: analytics.topTrades,
+        analyticsPeriod: analytics.analyticsPeriod,
+        tradingCapital: risk.tradingCapital,
+        riskMetrics: risk.riskMetrics,
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    }
   };
 
   return (
