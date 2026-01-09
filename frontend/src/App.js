@@ -2247,8 +2247,8 @@ function App() {
                           }`}>
                             {pos.status === 'open' && closePrice !== null 
                               ? (closePrice > 0 ? `-$${closePrice.toFixed(2)}` : `$${Math.abs(closePrice).toFixed(2)}`)
-                              : pos.status === 'open' && pos.strategy_type === 'calendar_spread'
-                                ? <span className="text-zinc-500 text-xs" title="Calendar spreads have multiple expirations">N/A</span>
+                              : pos.status === 'open' && closePrice === null
+                                ? <span className="text-zinc-500 text-xs" title="Loading price data...">...</span>
                                 : (pos.status === 'closed' || pos.status === 'expired') && pos.exit_price !== null
                                   ? (isDebitStrategy 
                                       ? `$${Math.abs(pos.exit_price).toFixed(2)}`
