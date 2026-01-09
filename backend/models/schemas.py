@@ -30,6 +30,7 @@ class SPXQuote(BaseModel):
     fifty_two_week_high: float
     fifty_two_week_low: float
     timestamp: str
+    market_state: Optional[str] = None  # REGULAR, PRE, POST, CLOSED
 
 
 class HistoricalDataPoint(BaseModel):
