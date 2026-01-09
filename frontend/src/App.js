@@ -2325,8 +2325,9 @@ function App() {
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
+                      step="0.5"
                       value={closeBeforeExpiryHours}
-                      onChange={(e) => setCloseBeforeExpiryHours(Math.max(0, parseInt(e.target.value) || 0))}
+                      onChange={(e) => setCloseBeforeExpiryHours(Math.max(0, parseFloat(e.target.value) || 0))}
                       className="w-20 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded text-white text-sm"
                       min="0"
                       max="168"
