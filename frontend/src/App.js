@@ -582,6 +582,85 @@ function App() {
     return closePrice;
   }, [optionsChain, positionOptionsCache, selectedExpiration]);
 
+  // Calculate P/L percentage for a position
+  const calculatePLPercent = useCallback((position, closePrice) => {
+    if (closePrice === null || !position) return null;
+    
+    const isDebitStrategy = position.entry_price < 0;
+    const entryPrice = Math.abs(position.entry_price);
+    
+    if (entryPrice === 0) return null;
+    
+    if (isDebitStrategy) {
+      // Debit strategy: profit when close price > entry price (you receive more than you paid)
+      // closePrice is negative (you receive), entry is negative (you paid)
+      const currentValue = Math.abs(closePrice);
+      return ((currentValue - entryPrice) / entryPrice) * 100;
+    } else {
+      // Credit strategy: profit when close price < entry price (you pay less to close)
+      // entry is positive (you received), closePrice is positive (you pay to close)
+      return ((entryPrice - closePrice) / entryPrice) * 100;
+    }
+  }, []);
+
+  // Auto-close positions based on take profit / stop loss thresholds
+  const autoClosePosition = useCallback(async (position, closePrice, plPercent) => {
+    try {
+      const exitPrice = Math.abs(closePrice);
+      await axios.put(`${API}/positions/${position.id}/close?exit_price=${exitPrice}`);
+      
+      const reason = plPercent >= takeProfitPercent ? 'Take Profit' : 'Stop Loss';
+      setAutoCloseLog(prev => [...prev, {
+        id: position.id,
+        name: position.strategy_name,
+        reason,
+        plPercent: plPercent.toFixed(1),
+        timestamp: new Date().toLocaleTimeString()
+      }]);
+      
+      await fetchPositions();
+      console.log(`Auto-closed ${position.strategy_name}: ${reason} at ${plPercent.toFixed(1)}%`);
+    } catch (e) {
+      console.error(`Error auto-closing position ${position.strategy_name}:`, e);
+    }
+  }, [takeProfitPercent, fetchPositions]);
+
+  // Track positions being auto-closed to prevent duplicate closes
+  const autoClosingRef = useRef(new Set());
+
+  // Effect to check and auto-close positions when enabled
+  useEffect(() => {
+    if (!autoCloseEnabled || positions.length === 0) return;
+    
+    const openPositions = positions.filter(p => p.status === 'open');
+    
+    for (const position of openPositions) {
+      // Skip if already being closed
+      if (autoClosingRef.current.has(position.id)) continue;
+      
+      const closePrice = calculateCurrentStrategyPrice(position);
+      if (closePrice === null) continue;
+      
+      const plPercent = calculatePLPercent(position, closePrice);
+      if (plPercent === null) continue;
+      
+      // Check take profit threshold
+      if (plPercent >= takeProfitPercent) {
+        autoClosingRef.current.add(position.id);
+        autoClosePosition(position, closePrice, plPercent).finally(() => {
+          autoClosingRef.current.delete(position.id);
+        });
+      }
+      // Check stop loss threshold (negative P/L)
+      else if (plPercent <= -stopLossPercent) {
+        autoClosingRef.current.add(position.id);
+        autoClosePosition(position, closePrice, plPercent).finally(() => {
+          autoClosingRef.current.delete(position.id);
+        });
+      }
+    }
+  }, [autoCloseEnabled, positions, takeProfitPercent, stopLossPercent, calculateCurrentStrategyPrice, calculatePLPercent, autoClosePosition]);
+
   // Delete a position
   const deletePosition = async (positionId) => {
     if (!window.confirm("Are you sure you want to delete this position?")) return;
