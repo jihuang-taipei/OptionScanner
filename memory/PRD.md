@@ -10,8 +10,9 @@ Build a comprehensive financial analysis application for options trading, starti
 4. Options chain viewer
 5. Strategy scanners (Credit Spreads, Iron Condors, etc.)
 6. Paper Trading portfolio
-7. Performance analytics
+7. Performance analytics with PDF export
 8. Risk management
+9. Technical indicators (MA, RSI, MACD)
 
 ## Architecture
 - **Backend**: FastAPI + yfinance library for Yahoo Finance data
@@ -20,7 +21,7 @@ Build a comprehensive financial analysis application for options trading, starti
 
 ## Tech Stack
 - Backend: FastAPI, yfinance, Motor (MongoDB), scipy (Black-Scholes Greeks)
-- Frontend: React, Recharts, Tailwind CSS, Lucide Icons, shadcn/ui
+- Frontend: React, Recharts, Tailwind CSS, Lucide Icons, shadcn/ui, jsPDF
 
 ---
 
@@ -46,7 +47,7 @@ Build a comprehensive financial analysis application for options trading, starti
 - [x] Position export to CSV
 
 ### Major Refactoring (Jan 9, 2026)
-- [x] **App.js Refactored**: Reduced from 2749 lines to 932 lines (66% reduction!)
+- [x] **App.js Refactored**: Reduced from 2749 lines to ~1000 lines
 - [x] **Custom Hooks Created**:
   - `useQuoteData` - Quote and market data management
   - `useOptionsData` - Options chain and strategies
@@ -55,9 +56,11 @@ Build a comprehensive financial analysis application for options trading, starti
   - `useAnalytics` - Trade journal calculations
   - `useRiskManagement` - Risk metrics
   - `useStrategyBuilder` - Multi-leg builder
+  - `useTechnicalIndicators` - MA, RSI, MACD calculations
 - [x] **Components Extracted**:
   - `/components/portfolio/` - Portfolio modal, dialogs, tables
   - `/components/analytics/` - Analytics, Risk, Builder dashboards
+  - `/components/charts/IndicatorSettings` - Technical indicator settings
 
 ### Trade Journal & Performance Analytics (Jan 9, 2026)
 - [x] **Win Rate tracking** with Win/Loss count
@@ -69,6 +72,38 @@ Build a comprehensive financial analysis application for options trading, starti
   - Monthly Performance timeline
   - P/L by Holding Period chart
 - [x] **Best/Worst Trades** list
+
+### PDF Performance Report (Jan 9, 2026) ✨ NEW
+- [x] **Full detailed PDF report** with all trades
+- [x] **Executive Summary**: Total P/L, Win Rate, Profit Factor, Best/Worst trades
+- [x] **Performance by Strategy**: Breakdown by strategy type
+- [x] **Performance by Holding Period**: Short vs long-term trades
+- [x] **Monthly Performance**: Month-by-month P/L
+- [x] **Best/Worst Trades**: Top 5 each
+- [x] **Complete Trade History**: All closed positions with dates, entry/exit prices, P/L
+- [x] **Multi-page PDF** with automatic pagination
+- [x] Filename format: `performance_report_{period}_{date}.pdf`
+
+### Technical Indicators (Jan 9, 2026) ✨ NEW
+- [x] **Moving Averages (MA)**:
+  - Short period (default: 20, configurable 5-100)
+  - Long period (default: 50, configurable 10-200)
+  - SMA(Short) in cyan, SMA(Long) in orange
+- [x] **RSI (Relative Strength Index)**:
+  - Period configurable (default: 14, range 5-50)
+  - Overbought (>70) and Oversold (<30) zones
+  - Status display: overbought/oversold/neutral
+  - Separate panel below main chart
+- [x] **MACD (Moving Average Convergence Divergence)**:
+  - Fast EMA (default: 12, range 5-30)
+  - Slow EMA (default: 26, range 10-50)
+  - Signal line (default: 9, range 3-20)
+  - Histogram bars
+  - Bullish/Bearish status display
+  - Separate panel below RSI
+- [x] **Toggle controls** for each indicator
+- [x] **Real-time values** display in settings panel
+- [x] New chart type selector icon for indicators
 
 ### Risk Management Dashboard (Jan 9, 2026)
 - [x] **Trading Capital** input (configurable)
@@ -100,16 +135,6 @@ Build a comprehensive financial analysis application for options trading, starti
 - [x] **P/L at Expiration Chart** - live payoff diagram
 - [x] **Save as Template** functionality
 - [x] **Paper Trade** directly from builder
-
-### Previous Session Features (Jan 9, 2026)
-- [x] Portfolio current price fix for multi-expiration positions
-- [x] Calendar Spread real-time P/L calculation
-- [x] Auto Take Profit / Stop Loss automation
-- [x] Auto-close by expiration time
-- [x] Market-aware refresh pausing
-- [x] Desktop app (Electron) with auto-update
-- [x] Installers for Windows, macOS, Linux
-- [x] iOS app scaffolding (React Native)
 
 ---
 
@@ -147,20 +172,20 @@ Build a comprehensive financial analysis application for options trading, starti
 │   │   ├── useAutoClose.js
 │   │   ├── useAnalytics.js
 │   │   ├── useRiskManagement.js
-│   │   └── useStrategyBuilder.js
+│   │   ├── useStrategyBuilder.js
+│   │   └── useTechnicalIndicators.js  ✨ NEW
 │   ├── components/
 │   │   ├── analytics/
 │   │   │   ├── AnalyticsDashboard.jsx
 │   │   │   ├── RiskDashboard.jsx
 │   │   │   └── StrategyBuilder.jsx
+│   │   ├── charts/
+│   │   │   └── IndicatorSettings.jsx  ✨ NEW
 │   │   ├── portfolio/
-│   │   │   ├── PortfolioModal.jsx
-│   │   │   ├── AutoClosePanel.jsx
-│   │   │   ├── PositionsTable.jsx
-│   │   │   ├── TradeDialog.jsx
-│   │   │   └── ClosePositionDialog.jsx
 │   │   └── ...
-│   └── App.js (932 lines, refactored)
+│   ├── utils/
+│   │   └── pdfExport.js  ✨ NEW
+│   └── App.js
 └── ...
 ```
 
@@ -173,29 +198,30 @@ Build a comprehensive financial analysis application for options trading, starti
 - [ ] Complete iOS app UI implementation
 
 ### P2 - Medium Priority  
-- [ ] Performance Report export (PDF/detailed CSV)
 - [ ] Complete Electron app (custom icons, code signing)
 - [ ] Historical IV percentile (requires data source)
+- [ ] Price alerts/notifications
 
 ### P3 - Lower Priority
-- [ ] Fix remaining `react-hooks/exhaustive-deps` warnings
-- [ ] Add technical indicators (MA, RSI, MACD) to charts
-- [ ] Price alerts/notifications
+- [ ] Add more technical indicators (Stochastic, ADX, etc.)
+- [ ] Strategy backtesting
 
 ---
 
 ## Testing Status
 - **Last Test**: Jan 9, 2026
-- **Test Report**: `/app/test_reports/iteration_5.json`
-- **Result**: 100% pass rate (52 tests passed)
-- **Features Tested**: Analytics, Risk Dashboard, Strategy Builder, all header buttons
+- **Test Report**: `/app/test_reports/iteration_6.json`
+- **Result**: 100% pass rate
+- **Features Tested**: Technical Indicators (MA/RSI/MACD), PDF Export
 
 ---
 
 ## Known Issues
-- None currently blocking
+- Console warning about chart width/height being -1 on initial render (cosmetic, charts render correctly)
 
 ## Notes
 - All strategy types support real-time P/L calculation
 - Trading capital default is $100,000 (configurable)
 - Auto-close thresholds: Take Profit 80%, Stop Loss 80%, Close before expiry 0.5h
+- Technical indicator periods are fully configurable
+- PDF export includes complete trade history across multiple pages
