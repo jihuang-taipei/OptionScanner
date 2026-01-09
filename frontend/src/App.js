@@ -337,7 +337,7 @@ function App() {
   const [closePrice, setClosePrice] = useState("");
 
   // Auto take profit / stop loss state
-  const [autoCloseEnabled, setAutoCloseEnabled] = useState(false);
+  const [autoCloseEnabled, setAutoCloseEnabled] = useState(true);   // Default: enabled
   const [takeProfitPercent, setTakeProfitPercent] = useState(80);  // Default: close at 80% profit
   const [stopLossPercent, setStopLossPercent] = useState(80);      // Default: close at 80% loss
   const [autoCloseLog, setAutoCloseLog] = useState([]);            // Log of auto-closed positions
