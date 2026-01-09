@@ -43,3 +43,32 @@ Build an app to retrieve SPX quote from Yahoo Finance
 - P2: Price alerts/notifications
 - P2: Save favorite watchlist to MongoDB
 - P3: Technical indicators (MA, RSI, MACD)
+
+## Features Implemented (Jan 2026)
+
+### Portfolio Current Price Fix - Jan 9, 2026
+- **Fixed**: Iron Condors and other strategies now show correct current prices in Portfolio
+- **Root Cause**: The app was only using the currently selected expiration's options chain for price calculation, but positions could have different expirations
+- **Solution**: 
+  1. Added `positionOptionsCache` state to cache options chains for each position's expiration
+  2. Modified `calculateCurrentStrategyPrice` to use cached data matching the position's expiration
+  3. Fixed backend NaN/inf values in options data that caused JSON serialization errors
+  4. Sorted positions in portfolio table (open positions appear first, then by newest date)
+- **Files Modified**:
+  - `/app/frontend/src/App.js` - Added caching logic and sorted positions
+  - `/app/backend/services/yahoo_finance.py` - Fixed NaN/inf handling in `_process_options`
+
+### Previous Session Fixes (from handoff)
+- Fixed "off-by-one" date display bug with `formatExpDate` helper
+- Implemented Portfolio CSV export (All/Open/Closed)
+- Fixed CSV date format to avoid comma separation
+- Added "N/A" display for Calendar Spread current prices (multi-expiration limitation)
+
+## Known Limitations
+- **Calendar Spreads**: Still show "N/A" for current price because they have legs with different expirations (requires fetching two option chains)
+
+## Backlog / Future Enhancements
+- P1: Save to Watchlist - Allow users to save and track specific strategies
+- P2: Frontend refactoring - Extract App.js logic into custom hooks (useQuoteData, useOptionsData, etc.)
+- P3: Real-time P/L for Calendar Spreads - Implement multi-expiration data fetching
+- P3: Add `react-hooks/exhaustive-deps` lint fixes (recurring technical debt)
