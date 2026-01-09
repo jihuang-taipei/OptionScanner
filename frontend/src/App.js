@@ -1073,17 +1073,24 @@ function App() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button 
-                  className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-2.5 rounded-full font-medium hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-200"
+                  className={`flex items-center gap-2 bg-zinc-900 border border-zinc-800 text-zinc-300 px-4 py-2.5 rounded-full font-medium hover:bg-zinc-800 hover:border-zinc-700 transition-all duration-200 ${
+                    quote?.market_state === 'CLOSED' ? 'border-amber-800/50' : ''
+                  }`}
                   data-testid="auto-refresh-dropdown"
                 >
                   <Clock className="w-4 h-4" />
                   <span className="text-sm">
-                    {autoRefreshInterval === 0 
-                      ? "Auto: Off" 
-                      : `Auto: ${REFRESH_INTERVALS.find(i => i.value === autoRefreshInterval)?.label}`}
+                    {quote?.market_state === 'CLOSED' || quote?.market_state === 'POSTPOST'
+                      ? "Market Closed"
+                      : autoRefreshInterval === 0 
+                        ? "Auto: Off" 
+                        : `Auto: ${REFRESH_INTERVALS.find(i => i.value === autoRefreshInterval)?.label}`}
                   </span>
-                  {autoRefreshInterval > 0 && (
+                  {autoRefreshInterval > 0 && countdown > 0 && quote?.market_state !== 'CLOSED' && quote?.market_state !== 'POSTPOST' && (
                     <span className="text-xs text-zinc-500 font-mono">({countdown}s)</span>
+                  )}
+                  {(quote?.market_state === 'CLOSED' || quote?.market_state === 'POSTPOST') && (
+                    <span className="text-xs text-amber-500">Paused</span>
                   )}
                   <ChevronDown className="w-3 h-3 text-zinc-500" />
                 </button>
