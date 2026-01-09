@@ -20,7 +20,8 @@
     "build:all": "electron-builder --win --mac --linux",
     "pack": "electron-builder --dir",
     "postinstall": "electron-builder install-app-deps",
-    "check-updates": "node scripts/check-updates.js"
+    "check-updates": "node scripts/check-updates.js",
+    "verify-signing": "bash scripts/verify-signing.sh"
   },
   "dependencies": {
     "electron-updater": "^6.1.7",
@@ -28,6 +29,7 @@
     "electron-store": "^8.1.0"
   },
   "devDependencies": {
+    "@electron/notarize": "^2.2.0",
     "electron": "^28.1.0",
     "electron-builder": "^24.9.1",
     "cross-env": "^7.0.3"
