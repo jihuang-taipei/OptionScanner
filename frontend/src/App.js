@@ -338,8 +338,8 @@ function App() {
 
   // Auto take profit / stop loss state
   const [autoCloseEnabled, setAutoCloseEnabled] = useState(false);
-  const [takeProfitPercent, setTakeProfitPercent] = useState(50);  // Default: close at 50% profit
-  const [stopLossPercent, setStopLossPercent] = useState(100);     // Default: close at 100% loss (max loss)
+  const [takeProfitPercent, setTakeProfitPercent] = useState(80);  // Default: close at 80% profit
+  const [stopLossPercent, setStopLossPercent] = useState(80);      // Default: close at 80% loss
   const [autoCloseLog, setAutoCloseLog] = useState([]);            // Log of auto-closed positions
 
   // Position sizing state
