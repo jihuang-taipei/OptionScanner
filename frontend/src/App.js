@@ -2364,7 +2364,19 @@ function App() {
                       }).map((pos) => {
                         const closePrice = pos.status === 'open' ? calculateCurrentStrategyPrice(pos) : null;
                         const isDebitStrategy = pos.entry_price < 0; // Negative entry = debit strategy
-                        const plPercent = pos.status === 'open' ? calculatePLPercent(pos, closePrice) : null;
+                        
+                        // Calculate P/L % for open positions using current price
+                        // For closed/expired positions, calculate from realized P/L
+                        let plPercent = null;
+                        if (pos.status === 'open') {
+                          plPercent = calculatePLPercent(pos, closePrice);
+                        } else if ((pos.status === 'closed' || pos.status === 'expired') && pos.realized_pnl !== null) {
+                          // Calculate P/L % from realized P/L
+                          const entryValue = Math.abs(pos.entry_price) * pos.quantity * 100;
+                          if (entryValue !== 0) {
+                            plPercent = (pos.realized_pnl / entryValue) * 100;
+                          }
+                        }
                         
                         // P/L calculation:
                         // Credit strategy: Entry (positive) - Close Price (positive) = profit if close < entry
@@ -2387,6 +2399,9 @@ function App() {
                           <td className="py-3 px-2">
                             <div className="font-medium text-white">{pos.strategy_name}</div>
                             <div className="text-xs text-zinc-500">{pos.strategy_type}</div>
+                            {pos.notes && pos.notes.includes('Auto-closed') && (
+                              <div className="text-xs text-amber-400 mt-1">{pos.notes}</div>
+                            )}
                           </td>
                           <td className="py-3 px-2 text-zinc-400">
                             <div className="text-sm">{new Date(pos.opened_at).toLocaleDateString()}</div>
