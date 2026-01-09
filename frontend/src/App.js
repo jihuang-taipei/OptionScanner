@@ -2152,7 +2152,12 @@ function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {positions.map((pos) => {
+                      {[...positions].sort((a, b) => {
+                        // Sort: open positions first, then by opened date (newest first)
+                        if (a.status === 'open' && b.status !== 'open') return -1;
+                        if (a.status !== 'open' && b.status === 'open') return 1;
+                        return new Date(b.opened_at) - new Date(a.opened_at);
+                      }).map((pos) => {
                         const closePrice = pos.status === 'open' ? calculateCurrentStrategyPrice(pos) : null;
                         const isDebitStrategy = pos.entry_price < 0; // Negative entry = debit strategy
                         
