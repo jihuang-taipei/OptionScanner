@@ -430,14 +430,25 @@ function App() {
   // For credit strategies: returns what you'd PAY to close (debit)
   // For debit strategies: returns what you'd RECEIVE to close (credit)
   const calculateCurrentStrategyPrice = useCallback((position) => {
-    if (!optionsChain || !position?.legs) return null;
+    if (!position?.legs) return null;
     
     // Calendar spreads have legs with different expirations - can't calculate from single chain
     if (position.strategy_type === 'calendar_spread') {
       return null; // Return null to indicate N/A for calendar spreads
     }
     
-    const { calls, puts } = optionsChain;
+    // Use cached options chain for the position's specific expiration
+    // Fall back to current optionsChain if expiration matches
+    let chainToUse = null;
+    if (position.expiration && positionOptionsCache[position.expiration]) {
+      chainToUse = positionOptionsCache[position.expiration];
+    } else if (optionsChain && position.expiration === selectedExpiration) {
+      chainToUse = optionsChain;
+    }
+    
+    if (!chainToUse) return null;
+    
+    const { calls, puts } = chainToUse;
     if (!calls || !puts) return null;
     
     let closePrice = 0;
@@ -464,7 +475,7 @@ function App() {
     // closePrice > 0 means you PAY to close (credit strategy profitable scenario)
     // closePrice < 0 means you RECEIVE to close (debit strategy)
     return closePrice;
-  }, [optionsChain]);
+  }, [optionsChain, positionOptionsCache, selectedExpiration]);
 
   // Delete a position
   const deletePosition = async (positionId) => {
