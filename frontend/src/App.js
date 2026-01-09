@@ -607,9 +607,11 @@ function App() {
   const autoClosePosition = useCallback(async (position, closePrice, plPercent) => {
     try {
       const exitPrice = Math.abs(closePrice);
-      await axios.put(`${API}/positions/${position.id}/close?exit_price=${exitPrice}`);
-      
       const reason = plPercent >= takeProfitPercent ? 'Take Profit' : 'Stop Loss';
+      const notes = `Auto-closed: ${reason} at ${plPercent.toFixed(1)}%`;
+      
+      await axios.put(`${API}/positions/${position.id}/close?exit_price=${exitPrice}&notes=${encodeURIComponent(notes)}`);
+      
       setAutoCloseLog(prev => [...prev, {
         id: position.id,
         name: position.strategy_name,
