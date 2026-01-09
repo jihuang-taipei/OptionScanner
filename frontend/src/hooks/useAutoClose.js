@@ -94,7 +94,6 @@ export const useAutoClose = (
         const hoursToExpiry = getHoursToExpiry(position);
         if (hoursToExpiry !== null && hoursToExpiry > 0 && hoursToExpiry <= closeBeforeExpiryHours) {
           autoClosingRef.current.add(position.id);
-          // eslint-disable-next-line react-hooks/set-state-in-effect
           autoClosePositionExpiry(position, closePrice, hoursToExpiry).finally(() => {
             autoClosingRef.current.delete(position.id);
           });
@@ -107,7 +106,6 @@ export const useAutoClose = (
       // Check take profit threshold
       if (plPercent >= takeProfitPercent) {
         autoClosingRef.current.add(position.id);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         autoClosePosition(position, closePrice, plPercent).finally(() => {
           autoClosingRef.current.delete(position.id);
         });
@@ -115,7 +113,6 @@ export const useAutoClose = (
       // Check stop loss threshold
       else if (plPercent <= -stopLossPercent) {
         autoClosingRef.current.add(position.id);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         autoClosePosition(position, closePrice, plPercent).finally(() => {
           autoClosingRef.current.delete(position.id);
         });
