@@ -41,6 +41,9 @@ class YahooFinanceService:
             change = current_price - previous_close
             change_percent = (change / previous_close) * 100 if previous_close else 0
             
+            # Get market state from yfinance info
+            market_state = info.get('marketState', 'CLOSED')  # REGULAR, PRE, POST, CLOSED
+            
             return SPXQuote(
                 symbol=symbol,
                 price=round(current_price, 2),
@@ -54,7 +57,8 @@ class YahooFinanceService:
                 market_cap=info.get('marketCap'),
                 fifty_two_week_high=round(float(info.get('fiftyTwoWeekHigh', 0)), 2),
                 fifty_two_week_low=round(float(info.get('fiftyTwoWeekLow', 0)), 2),
-                timestamp=datetime.now(timezone.utc).isoformat()
+                timestamp=datetime.now(timezone.utc).isoformat(),
+                market_state=market_state
             )
         except HTTPException:
             raise
