@@ -176,3 +176,44 @@ export const exportCalendarSpreads = (spreads, nearExp, farExp) => {
   const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
   downloadCSV(csv, `SPX_CalendarSpreads_${nearExp}_${farExp}.csv`);
 };
+
+export const exportPortfolio = (positions, statusFilter = 'all') => {
+  if (!positions || positions.length === 0) return;
+  
+  // Filter positions if needed
+  const filteredPositions = statusFilter === 'all' 
+    ? positions 
+    : positions.filter(p => p.status === statusFilter);
+  
+  if (filteredPositions.length === 0) return;
+  
+  const headers = [
+    'Symbol', 'Strategy', 'Type', 'Expiration', 'Opened', 'Closed',
+    'Entry Price', 'Exit Price', 'Quantity', 'Status', 'Realized P/L', 'Notes'
+  ];
+  
+  const rows = filteredPositions.map(pos => {
+    // Format dates
+    const openedDate = pos.opened_at ? new Date(pos.opened_at).toLocaleString() : '';
+    const closedDate = pos.closed_at ? new Date(pos.closed_at).toLocaleString() : '';
+    
+    return [
+      pos.symbol,
+      pos.strategy_name,
+      pos.strategy_type,
+      pos.expiration,
+      openedDate,
+      closedDate,
+      pos.entry_price,
+      pos.exit_price ?? '',
+      pos.quantity,
+      pos.status,
+      pos.realized_pnl ?? '',
+      `"${(pos.notes || '').replace(/"/g, '""')}"` // Escape quotes in notes
+    ];
+  });
+  
+  const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+  const timestamp = new Date().toISOString().split('T')[0];
+  downloadCSV(csv, `Portfolio_${statusFilter}_${timestamp}.csv`);
+};
