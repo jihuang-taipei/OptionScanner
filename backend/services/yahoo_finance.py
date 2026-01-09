@@ -206,24 +206,44 @@ class YahooFinanceService:
     @classmethod
     def _process_options(cls, df: pd.DataFrame, current_price: float, T: float, r: float, option_type: str) -> List[OptionContract]:
         """Process options dataframe into OptionContract list"""
+        import math
+        
+        def safe_float(val, default=0.0):
+            """Convert to float, handling NaN and inf values"""
+            if pd.isna(val) or (isinstance(val, float) and (math.isnan(val) or math.isinf(val))):
+                return default
+            return float(val)
+        
+        def safe_int(val, default=None):
+            """Convert to int, handling NaN values"""
+            if pd.isna(val):
+                return default
+            return int(val)
+        
         options = []
         for _, row in df.iterrows():
-            strike = float(row['strike'])
-            iv = float(row['impliedVolatility']) if not pd.isna(row['impliedVolatility']) else 0.3
+            strike = safe_float(row['strike'])
+            iv = safe_float(row['impliedVolatility'], 0.3)
             
             delta, gamma, theta, vega = calculate_greeks(current_price, strike, T, r, iv, option_type)
             
+            # Ensure greeks are not NaN/inf
+            delta = safe_float(delta, 0.0)
+            gamma = safe_float(gamma, 0.0)
+            theta = safe_float(theta, 0.0)
+            vega = safe_float(vega, 0.0)
+            
             options.append(OptionContract(
                 strike=round(strike, 2),
-                lastPrice=round(float(row['lastPrice']), 2),
-                bid=round(float(row['bid']), 2),
-                ask=round(float(row['ask']), 2),
-                change=round(float(row['change']) if not pd.isna(row['change']) else 0, 2),
-                percentChange=round(float(row['percentChange']) if not pd.isna(row['percentChange']) else 0, 2),
-                volume=int(row['volume']) if not pd.isna(row['volume']) else None,
-                openInterest=int(row['openInterest']) if not pd.isna(row['openInterest']) else None,
+                lastPrice=round(safe_float(row['lastPrice']), 2),
+                bid=round(safe_float(row['bid']), 2),
+                ask=round(safe_float(row['ask']), 2),
+                change=round(safe_float(row['change']), 2),
+                percentChange=round(safe_float(row['percentChange']), 2),
+                volume=safe_int(row['volume']),
+                openInterest=safe_int(row['openInterest']),
                 impliedVolatility=round(iv * 100, 2),
-                inTheMoney=bool(row['inTheMoney']),
+                inTheMoney=bool(row['inTheMoney']) if not pd.isna(row['inTheMoney']) else False,
                 delta=delta,
                 gamma=gamma,
                 theta=theta,
