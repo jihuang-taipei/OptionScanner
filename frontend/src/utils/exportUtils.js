@@ -193,23 +193,32 @@ export const exportPortfolio = (positions, statusFilter = 'all') => {
   
   if (filteredPositions.length === 0) return;
   
+  // Helper to format date without commas (YYYY-MM-DD HH:MM:SS)
+  const formatDateTime = (isoString) => {
+    if (!isoString) return '';
+    const d = new Date(isoString);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const seconds = String(d.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  };
+  
   const headers = [
     'Symbol', 'Strategy', 'Type', 'Expiration', 'Opened', 'Closed',
     'Entry Price', 'Exit Price', 'Quantity', 'Status', 'Realized P/L', 'Notes'
   ];
   
   const rows = filteredPositions.map(pos => {
-    // Format dates
-    const openedDate = pos.opened_at ? new Date(pos.opened_at).toLocaleString() : '';
-    const closedDate = pos.closed_at ? new Date(pos.closed_at).toLocaleString() : '';
-    
     return [
       pos.symbol,
       pos.strategy_name,
       pos.strategy_type,
       pos.expiration,
-      openedDate,
-      closedDate,
+      formatDateTime(pos.opened_at),
+      formatDateTime(pos.closed_at),
       pos.entry_price,
       pos.exit_price ?? '',
       pos.quantity,
