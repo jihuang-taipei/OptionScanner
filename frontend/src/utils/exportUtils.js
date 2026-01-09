@@ -181,9 +181,15 @@ export const exportPortfolio = (positions, statusFilter = 'all') => {
   if (!positions || positions.length === 0) return;
   
   // Filter positions if needed
-  const filteredPositions = statusFilter === 'all' 
-    ? positions 
-    : positions.filter(p => p.status === statusFilter);
+  let filteredPositions;
+  if (statusFilter === 'all') {
+    filteredPositions = positions;
+  } else if (statusFilter === 'closed') {
+    // Include both 'closed' and 'expired' statuses
+    filteredPositions = positions.filter(p => p.status === 'closed' || p.status === 'expired');
+  } else {
+    filteredPositions = positions.filter(p => p.status === statusFilter);
+  }
   
   if (filteredPositions.length === 0) return;
   
