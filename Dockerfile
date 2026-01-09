@@ -9,7 +9,7 @@ COPY frontend/package.json ./
 
 # Copy yarn.lock if it exists (bracket trick makes it optional)
 COPY frontend/yarn.loc[k] ./
-
+#
 # Install dependencies
 RUN yarn install
 
