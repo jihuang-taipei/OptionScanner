@@ -498,11 +498,44 @@ function App() {
   const calculateCurrentStrategyPrice = useCallback((position) => {
     if (!position?.legs) return null;
     
-    // Calendar spreads have legs with different expirations - can't calculate from single chain
+    // For calendar spreads, we need to look up each leg's expiration separately
     if (position.strategy_type === 'calendar_spread') {
-      return null; // Return null to indicate N/A for calendar spreads
+      let closePrice = 0;
+      
+      for (const leg of position.legs) {
+        // Each leg has its own expiration
+        const legExpiration = leg.expiration;
+        if (!legExpiration) return null;
+        
+        // Get the chain for this leg's expiration
+        let chainToUse = positionOptionsCache[legExpiration];
+        if (!chainToUse && optionsChain && legExpiration === selectedExpiration) {
+          chainToUse = optionsChain;
+        }
+        
+        if (!chainToUse) return null;
+        
+        const { calls, puts } = chainToUse;
+        if (!calls || !puts) return null;
+        
+        const optionList = leg.option_type === 'call' ? calls : puts;
+        const option = optionList.find(o => o.strike === leg.strike);
+        
+        if (!option) return null;
+        
+        const currentPrice = option.lastPrice || option.bid || 0;
+        
+        if (leg.action === 'sell') {
+          closePrice += currentPrice; // Pay to buy back
+        } else {
+          closePrice -= currentPrice; // Receive from selling
+        }
+      }
+      
+      return closePrice;
     }
     
+    // For non-calendar strategies, use position's expiration
     // Use cached options chain for the position's specific expiration
     // Fall back to current optionsChain if expiration matches
     let chainToUse = null;
