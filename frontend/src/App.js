@@ -1,6 +1,6 @@
 import { useState, useMemo, memo } from "react";
 import "@/App.css";
-import { RefreshCw, TrendingUp, TrendingDown, Activity, BarChart3, ArrowUpRight, ArrowDownRight, Clock, ChevronDown, ChevronRight, Table2, Calculator, Download, Calendar, Briefcase, LineChart as LineChartIcon } from "lucide-react";
+import { RefreshCw, TrendingUp, TrendingDown, Activity, BarChart3, ArrowUpRight, ArrowDownRight, Clock, ChevronDown, ChevronRight, Table2, Calculator, Download, Calendar, Briefcase, LineChart as LineChartIcon, Shield, Target, Zap } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, ComposedChart, Bar } from "recharts";
 import {
   DropdownMenu,
@@ -35,9 +35,14 @@ import {
   TradeDialog,
   ClosePositionDialog,
 } from "./components/portfolio";
+import {
+  AnalyticsDashboard,
+  RiskDashboard,
+  StrategyBuilder,
+} from "./components/analytics";
 
 // Import custom hooks
-import { useQuoteData, useOptionsData, usePortfolio, useAutoClose } from "./hooks";
+import { useQuoteData, useOptionsData, usePortfolio, useAutoClose, useAnalytics, useRiskManagement, useStrategyBuilder } from "./hooks";
 
 // Import utilities and constants
 import { REFRESH_INTERVALS, POPULAR_SYMBOLS } from "./utils/constants";
