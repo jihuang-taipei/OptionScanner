@@ -115,7 +115,7 @@ export const StrategyBuilder = memo(({
             {legs.length === 0 ? (
               <div className="bg-zinc-800/30 rounded-lg p-8 text-center text-zinc-500">
                 <p>No legs added yet.</p>
-                <p className="text-sm mt-1">Click "Add Leg" or use Quick Add templates</p>
+                <p className="text-sm mt-1">Click &quot;Add Leg&quot; or use Quick Add templates</p>
               </div>
             ) : (
               <div className="space-y-2">
