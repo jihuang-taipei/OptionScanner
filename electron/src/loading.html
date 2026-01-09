@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Options Scanner - Loading</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #18181b 0%, #27272a 100%);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .container {
+      text-align: center;
+      padding: 40px;
+    }
+
+    .logo {
+      font-size: 48px;
+      margin-bottom: 20px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.05); }
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .status {
+      font-size: 16px;
+      color: #a1a1aa;
+      margin-bottom: 30px;
+    }
+
+    .loader {
+      width: 200px;
+      height: 4px;
+      background: #3f3f46;
+      border-radius: 2px;
+      overflow: hidden;
+      margin: 0 auto 20px;
+    }
+
+    .loader-bar {
+      width: 30%;
+      height: 100%;
+      background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+      border-radius: 2px;
+      animation: loading 1.5s ease-in-out infinite;
+    }
+
+    @keyframes loading {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(400%); }
+    }
+
+    .steps {
+      text-align: left;
+      max-width: 300px;
+      margin: 30px auto 0;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      color: #71717a;
+      font-size: 14px;
+    }
+
+    .step.active {
+      color: #10b981;
+    }
+
+    .step.done {
+      color: #10b981;
+    }
+
+    .step-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .step.active .step-icon {
+      background: #10b981;
+      border-color: #10b981;
+      animation: spin 1s linear infinite;
+    }
+
+    .step.done .step-icon::after {
+      content: '✓';
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .footer {
+      position: absolute;
+      bottom: 20px;
+      font-size: 12px;
+      color: #52525b;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">📊</div>
+    <h1>Options Scanner</h1>
+    <p class="status" id="status">Starting up...</p>
+    
+    <div class="loader">
+      <div class="loader-bar"></div>
+    </div>
+
+    <div class="steps">
+      <div class="step" id="step-docker">
+        <div class="step-icon"></div>
+        <span>Checking Docker</span>
+      </div>
+      <div class="step" id="step-containers">
+        <div class="step-icon"></div>
+        <span>Starting containers</span>
+      </div>
+      <div class="step" id="step-backend">
+        <div class="step-icon"></div>
+        <span>Waiting for backend</span>
+      </div>
+      <div class="step" id="step-ready">
+        <div class="step-icon"></div>
+        <span>Ready</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Options Scanner Desktop
+  </div>
+
+  <script>
+    // Simulate startup progress
+    const steps = ['step-docker', 'step-containers', 'step-backend', 'step-ready'];
+    const statuses = [
+      'Checking Docker...',
+      'Starting containers...',
+      'Waiting for backend...',
+      'Almost ready...'
+    ];
+
+    let currentStep = 0;
+
+    function updateStep() {
+      if (currentStep > 0) {
+        document.getElementById(steps[currentStep - 1]).classList.remove('active');
+        document.getElementById(steps[currentStep - 1]).classList.add('done');
+      }
+
+      if (currentStep < steps.length) {
+        document.getElementById(steps[currentStep]).classList.add('active');
+        document.getElementById('status').textContent = statuses[currentStep];
+        currentStep++;
+
+        if (currentStep < steps.length) {
+          setTimeout(updateStep, 2000 + Math.random() * 2000);
+        }
+      }
+    }
+
+    // Start animation
+    setTimeout(updateStep, 500);
+  </script>
+</body>
+</html>
