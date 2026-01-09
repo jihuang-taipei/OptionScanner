@@ -2346,8 +2346,12 @@ function App() {
                     <div className="text-zinc-500 text-xs mb-2">Recent Auto-Closes:</div>
                     <div className="max-h-20 overflow-y-auto space-y-1">
                       {autoCloseLog.slice(-5).reverse().map((log, idx) => (
-                        <div key={idx} className={`text-xs ${log.reason === 'Take Profit' ? 'text-emerald-400' : 'text-red-400'}`}>
-                          {log.timestamp} - {log.name}: {log.reason} at {log.plPercent}%
+                        <div key={idx} className={`text-xs ${
+                          log.reason === 'Take Profit' ? 'text-emerald-400' : 
+                          log.reason.startsWith('Expiry') ? 'text-amber-400' : 
+                          'text-red-400'
+                        }`}>
+                          {log.timestamp} - {log.name}: {log.reason} {log.plPercent !== 'N/A' ? `at ${log.plPercent}%` : ''}
                         </div>
                       ))}
                     </div>
