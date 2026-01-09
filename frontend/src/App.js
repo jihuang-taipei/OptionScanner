@@ -499,13 +499,16 @@ function App() {
 
           {/* Chart Card */}
           <div className="glass-card p-6 lg:col-span-2" data-testid="chart-container">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-medium text-white flex items-center gap-2">
                 <BarChart3 className="w-5 h-5 text-zinc-400" />
                 Historical Performance
               </h2>
               <div className="flex items-center gap-3">
                 <div className="flex gap-1 bg-zinc-900/50 p-1 rounded-lg">
+                  <button onClick={() => setChartType("indicators")} className={`p-1.5 rounded transition-colors ${chartType === "indicators" ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-white"}`} title="Technical Indicators">
+                    <TrendingUp className="w-4 h-4" />
+                  </button>
                   <button onClick={() => setChartType("bollinger")} className={`p-1.5 rounded transition-colors ${chartType === "bollinger" ? "bg-zinc-700 text-white" : "text-zinc-500 hover:text-white"}`} title="Bollinger Bands">
                     <Activity className="w-4 h-4" />
                   </button>
@@ -526,39 +529,116 @@ function App() {
                 </div>
               </div>
             </div>
+            
+            {/* Technical Indicators Settings - show when indicators chart is selected */}
+            {chartType === "indicators" && (
+              <IndicatorSettings
+                showMA={indicators.showMA}
+                setShowMA={indicators.setShowMA}
+                showRSI={indicators.showRSI}
+                setShowRSI={indicators.setShowRSI}
+                showMACD={indicators.showMACD}
+                setShowMACD={indicators.setShowMACD}
+                maShortPeriod={indicators.maShortPeriod}
+                setMAShortPeriod={indicators.setMAShortPeriod}
+                maLongPeriod={indicators.maLongPeriod}
+                setMALongPeriod={indicators.setMALongPeriod}
+                rsiPeriod={indicators.rsiPeriod}
+                setRSIPeriod={indicators.setRSIPeriod}
+                macdFast={indicators.macdFast}
+                setMACDFast={indicators.setMACDFast}
+                macdSlow={indicators.macdSlow}
+                setMACDSlow={indicators.setMACDSlow}
+                macdSignal={indicators.macdSignal}
+                setMACDSignal={indicators.setMACDSignal}
+                latestIndicators={indicators.latestIndicators}
+                rsiSignal={indicators.rsiSignal}
+                macdSignalStatus={indicators.macdSignalStatus}
+              />
+            )}
+            
             {isLoadingHistory ? (
               <div className="h-72 flex items-center justify-center">
                 <RefreshCw className="w-8 h-8 text-zinc-600 animate-spin" />
               </div>
             ) : (
-              <div className="h-72">
-                <ResponsiveContainer width="100%" height="100%">
-                  {chartType === "bollinger" ? (
-                    <ComposedChart data={calculateBollingerBands(history)} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} tickFormatter={(v) => formatChartTick(v, period)} interval="preserveStartEnd" minTickGap={50} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} domain={['auto', 'auto']} tickFormatter={(v) => v.toLocaleString()} width={60} />
-                      <Tooltip content={<BollingerTooltip />} />
-                      <Area type="monotone" dataKey="upperBand" stroke="#a855f7" strokeWidth={1} strokeDasharray="3 3" fillOpacity={0} fill="none" connectNulls />
-                      <Area type="monotone" dataKey="lowerBand" stroke="#a855f7" strokeWidth={1} strokeDasharray="3 3" fillOpacity={0} fill="none" connectNulls />
-                      <Line type="monotone" dataKey="sma" stroke="#f59e0b" strokeWidth={1.5} dot={false} connectNulls />
-                      <Line type="monotone" dataKey="close" stroke={isPositive ? "#22c55e" : "#ef4444"} strokeWidth={2} dot={false} />
-                    </ComposedChart>
-                  ) : chartType === "line" ? (
-                    <LineChart data={history} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} tickFormatter={(v) => formatChartTick(v, period)} interval="preserveStartEnd" minTickGap={50} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} domain={['auto', 'auto']} tickFormatter={(v) => v.toLocaleString()} width={60} />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Line type="monotone" dataKey="close" stroke={isPositive ? "#22c55e" : "#ef4444"} strokeWidth={2} dot={false} />
-                    </LineChart>
-                  ) : (
-                    <ComposedChart data={history} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                      <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} tickFormatter={(v) => formatChartTick(v, period)} interval="preserveStartEnd" minTickGap={50} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} domain={['auto', 'auto']} tickFormatter={(v) => v.toLocaleString()} width={60} />
-                      <Tooltip content={<OHLCTooltip />} />
-                      <Bar dataKey="close" shape={candlestickShape} />
-                    </ComposedChart>
-                  )}
-                </ResponsiveContainer>
+              <div className={chartType === "indicators" ? "space-y-4" : ""}>
+                {/* Main Price Chart */}
+                <div className={chartType === "indicators" ? "h-56" : "h-72"}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    {chartType === "indicators" ? (
+                      <ComposedChart data={indicators.dataWithIndicators} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} tickFormatter={(v) => formatChartTick(v, period)} interval="preserveStartEnd" minTickGap={50} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} domain={['auto', 'auto']} tickFormatter={(v) => v.toLocaleString()} width={60} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Line type="monotone" dataKey="close" stroke={isPositive ? "#22c55e" : "#ef4444"} strokeWidth={2} dot={false} name="Price" />
+                        {indicators.showMA && (
+                          <>
+                            <Line type="monotone" dataKey="smaShort" stroke="#06b6d4" strokeWidth={1.5} dot={false} connectNulls name={`SMA(${indicators.maShortPeriod})`} />
+                            <Line type="monotone" dataKey="smaLong" stroke="#f97316" strokeWidth={1.5} dot={false} connectNulls name={`SMA(${indicators.maLongPeriod})`} />
+                          </>
+                        )}
+                      </ComposedChart>
+                    ) : chartType === "bollinger" ? (
+                      <ComposedChart data={calculateBollingerBands(history)} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} tickFormatter={(v) => formatChartTick(v, period)} interval="preserveStartEnd" minTickGap={50} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} domain={['auto', 'auto']} tickFormatter={(v) => v.toLocaleString()} width={60} />
+                        <Tooltip content={<BollingerTooltip />} />
+                        <Area type="monotone" dataKey="upperBand" stroke="#a855f7" strokeWidth={1} strokeDasharray="3 3" fillOpacity={0} fill="none" connectNulls />
+                        <Area type="monotone" dataKey="lowerBand" stroke="#a855f7" strokeWidth={1} strokeDasharray="3 3" fillOpacity={0} fill="none" connectNulls />
+                        <Line type="monotone" dataKey="sma" stroke="#f59e0b" strokeWidth={1.5} dot={false} connectNulls />
+                        <Line type="monotone" dataKey="close" stroke={isPositive ? "#22c55e" : "#ef4444"} strokeWidth={2} dot={false} />
+                      </ComposedChart>
+                    ) : chartType === "line" ? (
+                      <LineChart data={history} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} tickFormatter={(v) => formatChartTick(v, period)} interval="preserveStartEnd" minTickGap={50} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} domain={['auto', 'auto']} tickFormatter={(v) => v.toLocaleString()} width={60} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Line type="monotone" dataKey="close" stroke={isPositive ? "#22c55e" : "#ef4444"} strokeWidth={2} dot={false} />
+                      </LineChart>
+                    ) : (
+                      <ComposedChart data={history} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} tickFormatter={(v) => formatChartTick(v, period)} interval="preserveStartEnd" minTickGap={50} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} domain={['auto', 'auto']} tickFormatter={(v) => v.toLocaleString()} width={60} />
+                        <Tooltip content={<OHLCTooltip />} />
+                        <Bar dataKey="close" shape={candlestickShape} />
+                      </ComposedChart>
+                    )}
+                  </ResponsiveContainer>
+                </div>
+
+                {/* RSI Chart - shown below main chart when indicators mode */}
+                {chartType === "indicators" && indicators.showRSI && (
+                  <div className="h-24 border-t border-zinc-800 pt-2">
+                    <div className="text-xs text-zinc-500 mb-1">RSI ({indicators.rsiPeriod})</div>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={indicators.dataWithIndicators} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                        <XAxis dataKey="date" hide />
+                        <YAxis domain={[0, 100]} ticks={[30, 50, 70]} axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 10 }} width={30} />
+                        <ReferenceLine y={70} stroke="#ef4444" strokeDasharray="3 3" strokeOpacity={0.5} />
+                        <ReferenceLine y={30} stroke="#22c55e" strokeDasharray="3 3" strokeOpacity={0.5} />
+                        <Line type="monotone" dataKey="rsi" stroke="#a855f7" strokeWidth={1.5} dot={false} connectNulls />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+
+                {/* MACD Chart - shown below RSI when indicators mode */}
+                {chartType === "indicators" && indicators.showMACD && (
+                  <div className="h-24 border-t border-zinc-800 pt-2">
+                    <div className="text-xs text-zinc-500 mb-1">MACD ({indicators.macdFast}/{indicators.macdSlow}/{indicators.macdSignal})</div>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChart data={indicators.dataWithIndicators} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                        <XAxis dataKey="date" hide />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 10 }} width={30} domain={['auto', 'auto']} />
+                        <ReferenceLine y={0} stroke="#3f3f46" />
+                        <Bar dataKey="macdHistogram" fill="#f59e0b" opacity={0.5} />
+                        <Line type="monotone" dataKey="macd" stroke="#3b82f6" strokeWidth={1.5} dot={false} connectNulls />
+                        <Line type="monotone" dataKey="macdSignal" stroke="#ef4444" strokeWidth={1} dot={false} connectNulls />
+                      </ComposedChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </div>
             )}
           </div>
