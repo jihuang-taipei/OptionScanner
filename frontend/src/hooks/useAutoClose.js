@@ -73,6 +73,8 @@ export const useAutoClose = (
   }, [closeBeforeExpiryHours, calculatePLPercent, fetchPositions]);
 
   // Effect to check and auto-close positions
+  // NOTE: This effect intentionally triggers async API calls that update state
+  // It's designed to auto-close positions when P/L thresholds are met
   useEffect(() => {
     if (!autoCloseEnabled || positions.length === 0) return;
     
@@ -92,6 +94,7 @@ export const useAutoClose = (
         const hoursToExpiry = getHoursToExpiry(position);
         if (hoursToExpiry !== null && hoursToExpiry > 0 && hoursToExpiry <= closeBeforeExpiryHours) {
           autoClosingRef.current.add(position.id);
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           autoClosePositionExpiry(position, closePrice, hoursToExpiry).finally(() => {
             autoClosingRef.current.delete(position.id);
           });
@@ -104,6 +107,7 @@ export const useAutoClose = (
       // Check take profit threshold
       if (plPercent >= takeProfitPercent) {
         autoClosingRef.current.add(position.id);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         autoClosePosition(position, closePrice, plPercent).finally(() => {
           autoClosingRef.current.delete(position.id);
         });
@@ -111,6 +115,7 @@ export const useAutoClose = (
       // Check stop loss threshold
       else if (plPercent <= -stopLossPercent) {
         autoClosingRef.current.add(position.id);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         autoClosePosition(position, closePrice, plPercent).finally(() => {
           autoClosingRef.current.delete(position.id);
         });
