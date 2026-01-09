@@ -133,26 +133,83 @@ Use tools like:
 - [iconutil](https://developer.apple.com/library/archive/documentation/GraphicsAnimation/Conceptual/HighResolutionOSX/Optimizing/Optimizing.html) (macOS)
 - [ImageMagick](https://imagemagick.org/)
 
+---
+
 ## Code Signing
 
-### Windows
+Code signing is essential for distributing your application without security warnings.
 
-1. Obtain a code signing certificate
-2. Set environment variables:
-   ```
-   CSC_LINK=path/to/certificate.pfx
-   CSC_KEY_PASSWORD=your-password
-   ```
+### Quick Setup
 
-### macOS
+**Windows:**
+```bash
+# Run the setup script with your certificate
+./scripts/setup-windows-signing.sh path/to/certificate.pfx
 
-1. Join Apple Developer Program
-2. Create signing certificates in Xcode
-3. Set environment variables:
-   ```
-   APPLE_ID=your@apple.id
-   APPLE_ID_PASS=app-specific-password
-   ```
+# Build with signing
+CSC_LINK="certificate.pfx" CSC_KEY_PASSWORD="password" npm run build:win
+```
+
+**macOS:**
+```bash
+# Run the setup script (must be on macOS)
+./scripts/setup-macos-signing.sh
+
+# Build with signing and notarization
+APPLE_ID="you@apple.com" \
+APPLE_APP_SPECIFIC_PASSWORD="xxxx-xxxx-xxxx-xxxx" \
+APPLE_TEAM_ID="XXXXXXXXXX" \
+npm run build:mac
+```
+
+### Verify Signatures
+
+```bash
+npm run verify-signing
+# or
+./scripts/verify-signing.sh
+```
+
+### Documentation
+
+See [docs/CODE_SIGNING.md](docs/CODE_SIGNING.md) for complete instructions including:
+- Obtaining certificates
+- CI/CD integration (GitHub Actions)
+- Troubleshooting
+
+### Cost Summary
+
+| Platform | Certificate | Annual Cost |
+|----------|-------------|-------------|
+| Windows | OV Certificate | $200-500 |
+| Windows | EV Certificate (recommended) | $300-600 |
+| macOS | Apple Developer Program | $99-299 |
+| Linux | GPG Key | Free |
+
+---
+
+## CI/CD
+
+GitHub Actions workflow is included at `.github/workflows/electron-build.yml`:
+
+- Automatically builds for Windows, macOS, and Linux
+- Signs applications when credentials are provided
+- Creates draft GitHub releases with all artifacts
+
+### Required GitHub Secrets
+
+| Secret | Platform | Description |
+|--------|----------|-------------|
+| `WIN_CSC_LINK` | Windows | Base64-encoded .pfx certificate |
+| `WIN_CSC_KEY_PASSWORD` | Windows | Certificate password |
+| `MACOS_CERTIFICATE` | macOS | Base64-encoded .p12 certificate |
+| `MACOS_CERTIFICATE_PWD` | macOS | Certificate password |
+| `APPLE_ID` | macOS | Apple ID email |
+| `APPLE_APP_SPECIFIC_PASSWORD` | macOS | App-specific password |
+| `APPLE_TEAM_ID` | macOS | Developer Team ID |
+| `KEYCHAIN_PASSWORD` | macOS | Temporary keychain password |
+
+---
 
 ## Troubleshooting
 
