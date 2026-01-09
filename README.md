@@ -163,14 +163,109 @@ start http://localhost:8000
 | `installer\windows\install.ps1` | Windows installer (PowerShell) |
 | `installer\windows\options-scanner.iss` | Inno Setup script for GUI installer |
 
-### Creating a Distributable Package
+---
 
+## macOS Installation
+
+### Quick Install
+
+1. **Install Docker Desktop**: Download from [docker.com](https://www.docker.com/products/docker-desktop/)
+2. **Start Docker Desktop**: Wait for the whale icon in the menu bar
+3. **Run the Installer**:
+   ```bash
+   chmod +x install.sh
+   ./install.sh
+   ```
+4. **Launch**: Open "Options Scanner" from Applications
+
+### macOS Files
+
+| File | Description |
+|------|-------------|
+| `start.sh` | Start the application |
+| `stop.sh` | Stop the application |
+| `logs.sh` | View application logs |
+| `installer/macos/install.sh` | macOS installer |
+
+---
+
+## Linux Installation
+
+### Prerequisites
+
+Install Docker Engine for your distribution:
+
+**Ubuntu/Debian:**
+```bash
+curl -fsSL https://get.docker.com -o get-docker.sh
+sudo sh get-docker.sh
+sudo usermod -aG docker $USER
+# Log out and back in
+```
+
+**Fedora:**
+```bash
+sudo dnf install docker docker-compose
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+```
+
+**Arch Linux:**
+```bash
+sudo pacman -S docker docker-compose
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
+```
+
+### Quick Install
+
+```bash
+chmod +x install.sh
+./install.sh
+```
+
+### Linux Files
+
+| File | Description |
+|------|-------------|
+| `start.sh` | Start the application |
+| `stop.sh` | Stop the application |
+| `logs.sh` | View application logs |
+| `installer/linux/install.sh` | Linux installer |
+
+---
+
+## Cross-Platform Scripts
+
+These scripts work on both macOS and Linux:
+
+| Script | Description |
+|--------|-------------|
+| `install.sh` | Auto-detects OS and runs appropriate installer |
+| `start.sh` | Start the application |
+| `stop.sh` | Stop the application |
+| `logs.sh` | View live logs |
+
+---
+
+## Creating a Distributable Package
+
+### Windows
 ```batch
-# Run the package creator
 installer\windows\create-package.bat
 ```
 
-This creates a folder with all necessary files that can be zipped and distributed.
+### macOS/Linux
+```bash
+# Create a tar.gz archive
+tar -czvf OptionsScanner.tar.gz \
+    --exclude='node_modules' \
+    --exclude='.git' \
+    --exclude='__pycache__' \
+    backend frontend installer \
+    Dockerfile docker-compose*.yml \
+    *.sh *.bat *.md
+```
 
 ---
 
