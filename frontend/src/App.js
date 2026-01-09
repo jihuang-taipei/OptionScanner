@@ -336,6 +336,12 @@ function App() {
   const [closeDialog, setCloseDialog] = useState({ open: false, position: null });
   const [closePrice, setClosePrice] = useState("");
 
+  // Auto take profit / stop loss state
+  const [autoCloseEnabled, setAutoCloseEnabled] = useState(false);
+  const [takeProfitPercent, setTakeProfitPercent] = useState(50);  // Default: close at 50% profit
+  const [stopLossPercent, setStopLossPercent] = useState(100);     // Default: close at 100% loss (max loss)
+  const [autoCloseLog, setAutoCloseLog] = useState([]);            // Log of auto-closed positions
+
   // Position sizing state
   const [maxRiskAmount, setMaxRiskAmount] = useState(1000);  // Default $1,000 risk per trade
   const [minRewardAmount, setMinRewardAmount] = useState(1000);  // Default $1,000 min reward
