@@ -86,7 +86,10 @@
         }
       ],
       "icon": "assets/icon.ico",
-      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
+      "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+      "signingHashAlgorithms": ["sha256"],
+      "signDlls": true,
+      "publisherName": "Options Scanner"
     },
     "nsis": {
       "oneClick": false,
