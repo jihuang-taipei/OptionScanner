@@ -38,6 +38,7 @@
     "appId": "com.optionsscanner.app",
     "productName": "Options Scanner",
     "copyright": "Copyright © 2024 Options Scanner",
+    "afterSign": "scripts/notarize.js",
     "directories": {
       "output": "dist",
       "buildResources": "assets"
