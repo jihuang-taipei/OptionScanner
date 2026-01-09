@@ -13,16 +13,17 @@ export const useStrategyBuilder = (quote, optionsChain, selectedExpiration) => {
 
   // Add a new leg
   const addLeg = useCallback((leg = null) => {
+    const currentPrice = quote?.price;
     const newLeg = leg || {
       id: Date.now(),
       option_type: 'call',
       action: 'buy',
-      strike: quote?.price ? Math.round(quote.price / 5) * 5 : 6000,
+      strike: currentPrice ? Math.round(currentPrice / 5) * 5 : 6000,
       quantity: 1,
       price: 0,
     };
     setLegs(prev => [...prev, newLeg]);
-  }, [quote?.price]);
+  }, [quote]);
 
   // Update a leg
   const updateLeg = useCallback((legId, updates) => {
