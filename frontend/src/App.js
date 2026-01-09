@@ -396,13 +396,30 @@ function App() {
   const fetchPositionOptionsChains = useCallback(async (openPositions) => {
     if (!openPositions || openPositions.length === 0) return;
     
-    // Get unique expirations from open positions (excluding calendar spreads)
-    const uniqueExpirations = [...new Set(
-      openPositions
-        .filter(p => p.status === 'open' && p.strategy_type !== 'calendar_spread')
-        .map(p => p.expiration)
-        .filter(exp => exp && !fetchedExpirationsRef.current.has(exp))
-    )];
+    // Collect all unique expirations needed:
+    // 1. Position expirations for non-calendar strategies
+    // 2. Individual leg expirations for calendar spreads
+    const expirationsNeeded = new Set();
+    
+    openPositions
+      .filter(p => p.status === 'open')
+      .forEach(p => {
+        if (p.strategy_type === 'calendar_spread') {
+          // For calendar spreads, collect each leg's expiration
+          p.legs?.forEach(leg => {
+            if (leg.expiration && !fetchedExpirationsRef.current.has(leg.expiration)) {
+              expirationsNeeded.add(leg.expiration);
+            }
+          });
+        } else {
+          // For other strategies, use position expiration
+          if (p.expiration && !fetchedExpirationsRef.current.has(p.expiration)) {
+            expirationsNeeded.add(p.expiration);
+          }
+        }
+      });
+    
+    const uniqueExpirations = [...expirationsNeeded];
     
     if (uniqueExpirations.length === 0) return;
     
@@ -414,9 +431,8 @@ function App() {
     
     for (const expiration of uniqueExpirations) {
       try {
-        // Get the symbol from the first position with this expiration
-        const posForExp = openPositions.find(p => p.expiration === expiration);
-        const posSymbol = posForExp?.symbol || symbol;
+        // Get the symbol from any open position
+        const posSymbol = openPositions.find(p => p.status === 'open')?.symbol || symbol;
         
         const response = await axios.get(`${API}/options/chain?symbol=${posSymbol}&expiration=${expiration}`);
         newChains[expiration] = response.data;
