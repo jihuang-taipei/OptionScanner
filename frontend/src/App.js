@@ -628,8 +628,45 @@ function App() {
     }
   }, [takeProfitPercent, fetchPositions]);
 
+  // Auto-close position due to approaching expiration
+  const autoClosePositionExpiry = useCallback(async (position, closePrice, hoursToExpiry) => {
+    try {
+      const exitPrice = Math.abs(closePrice);
+      const notes = `Auto-closed: Expiry in ${hoursToExpiry.toFixed(1)}h (threshold: ${closeBeforeExpiryHours}h)`;
+      
+      await axios.put(`${API}/positions/${position.id}/close?exit_price=${exitPrice}&notes=${encodeURIComponent(notes)}`);
+      
+      const plPercent = calculatePLPercent(position, closePrice);
+      
+      setAutoCloseLog(prev => [...prev, {
+        id: position.id,
+        name: position.strategy_name,
+        reason: `Expiry (${hoursToExpiry.toFixed(1)}h)`,
+        plPercent: plPercent !== null ? plPercent.toFixed(1) : 'N/A',
+        timestamp: new Date().toLocaleTimeString()
+      }]);
+      
+      await fetchPositions();
+      console.log(`Auto-closed ${position.strategy_name}: Approaching expiry (${hoursToExpiry.toFixed(1)}h remaining)`);
+    } catch (e) {
+      console.error(`Error auto-closing position ${position.strategy_name}:`, e);
+    }
+  }, [closeBeforeExpiryHours, calculatePLPercent, fetchPositions]);
+
   // Track positions being auto-closed to prevent duplicate closes
   const autoClosingRef = useRef(new Set());
+
+  // Calculate hours until expiration for a position
+  const getHoursToExpiry = useCallback((position) => {
+    if (!position.expiration) return null;
+    
+    // Parse expiration date - options expire at 4:00 PM ET
+    const expDate = new Date(position.expiration + 'T16:00:00-05:00');
+    const now = new Date();
+    const hoursRemaining = (expDate - now) / (1000 * 60 * 60);
+    
+    return hoursRemaining;
+  }, []);
 
   // Effect to check and auto-close positions when enabled
   useEffect(() => {
@@ -645,6 +682,19 @@ function App() {
       if (closePrice === null) continue;
       
       const plPercent = calculatePLPercent(position, closePrice);
+      
+      // Check expiration time threshold first (if enabled)
+      if (closeBeforeExpiryHours > 0) {
+        const hoursToExpiry = getHoursToExpiry(position);
+        if (hoursToExpiry !== null && hoursToExpiry > 0 && hoursToExpiry <= closeBeforeExpiryHours) {
+          autoClosingRef.current.add(position.id);
+          autoClosePositionExpiry(position, closePrice, hoursToExpiry).finally(() => {
+            autoClosingRef.current.delete(position.id);
+          });
+          continue; // Skip other checks for this position
+        }
+      }
+      
       if (plPercent === null) continue;
       
       // Check take profit threshold
@@ -662,7 +712,7 @@ function App() {
         });
       }
     }
-  }, [autoCloseEnabled, positions, takeProfitPercent, stopLossPercent, calculateCurrentStrategyPrice, calculatePLPercent, autoClosePosition]);
+  }, [autoCloseEnabled, positions, takeProfitPercent, stopLossPercent, closeBeforeExpiryHours, calculateCurrentStrategyPrice, calculatePLPercent, autoClosePosition, autoClosePositionExpiry, getHoursToExpiry]);
 
   // Delete a position
   const deletePosition = async (positionId) => {
