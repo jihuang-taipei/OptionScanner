@@ -63,6 +63,7 @@ import {
   exportStrangles,
   exportIronButterflies,
   exportCalendarSpreads,
+  exportPortfolio,
 } from "./utils/exportUtils";
 
 // Format X-axis tick based on period
