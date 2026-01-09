@@ -2348,6 +2348,7 @@ function App() {
                         <th className="text-right py-3 px-2">Current/Exit</th>
                         <th className="text-right py-3 px-2">Qty</th>
                         <th className="text-right py-3 px-2">P/L</th>
+                        <th className="text-right py-3 px-2">P/L %</th>
                         <th className="text-center py-3 px-2">Status</th>
                         <th className="text-center py-3 px-2">Actions</th>
                       </tr>
@@ -2361,6 +2362,7 @@ function App() {
                       }).map((pos) => {
                         const closePrice = pos.status === 'open' ? calculateCurrentStrategyPrice(pos) : null;
                         const isDebitStrategy = pos.entry_price < 0; // Negative entry = debit strategy
+                        const plPercent = pos.status === 'open' ? calculatePLPercent(pos, closePrice) : null;
                         
                         // P/L calculation:
                         // Credit strategy: Entry (positive) - Close Price (positive) = profit if close < entry
