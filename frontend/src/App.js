@@ -2215,6 +2215,73 @@ function App() {
                 </div>
               </div>
 
+              {/* Auto Take Profit / Stop Loss Settings */}
+              <div className="bg-zinc-800/30 rounded-lg p-4 mb-6 border border-zinc-700/50">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <TrendingUpDown className="w-5 h-5 text-amber-400" />
+                    <span className="text-white font-medium">Auto Take Profit / Stop Loss</span>
+                  </div>
+                  <button
+                    onClick={() => setAutoCloseEnabled(!autoCloseEnabled)}
+                    className={`px-3 py-1 text-xs rounded-full font-medium transition-colors ${
+                      autoCloseEnabled 
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50' 
+                        : 'bg-zinc-700 text-zinc-400 border border-zinc-600'
+                    }`}
+                  >
+                    {autoCloseEnabled ? 'ENABLED' : 'DISABLED'}
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-zinc-400 text-xs block mb-1">Take Profit at % gain</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        value={takeProfitPercent}
+                        onChange={(e) => setTakeProfitPercent(Math.max(1, parseInt(e.target.value) || 0))}
+                        className="w-20 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded text-white text-sm"
+                        min="1"
+                        max="500"
+                      />
+                      <span className="text-zinc-500 text-sm">%</span>
+                      <span className="text-emerald-400 text-xs ml-2">Close when profit ≥ {takeProfitPercent}%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-zinc-400 text-xs block mb-1">Stop Loss at % loss</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        value={stopLossPercent}
+                        onChange={(e) => setStopLossPercent(Math.max(1, parseInt(e.target.value) || 0))}
+                        className="w-20 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded text-white text-sm"
+                        min="1"
+                        max="500"
+                      />
+                      <span className="text-zinc-500 text-sm">%</span>
+                      <span className="text-red-400 text-xs ml-2">Close when loss ≥ {stopLossPercent}%</span>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Auto-close log */}
+                {autoCloseLog.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-zinc-700/50">
+                    <div className="text-zinc-500 text-xs mb-2">Recent Auto-Closes:</div>
+                    <div className="max-h-20 overflow-y-auto space-y-1">
+                      {autoCloseLog.slice(-5).reverse().map((log, idx) => (
+                        <div key={idx} className={`text-xs ${log.reason === 'Take Profit' ? 'text-emerald-400' : 'text-red-400'}`}>
+                          {log.timestamp} - {log.name}: {log.reason} at {log.plPercent}%
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Portfolio Summary */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-zinc-800/50 rounded-lg p-4">
