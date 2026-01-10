@@ -271,9 +271,6 @@ function App() {
   const [showRisk, setShowRisk] = useState(false);
   const [showBuilder, setShowBuilder] = useState(false);
 
-  // Technical Indicators
-  const indicators = useTechnicalIndicators(history);
-
   // Collapsed sections state
   const [collapsedSections, setCollapsedSections] = useState({
     optionsChain: false,
